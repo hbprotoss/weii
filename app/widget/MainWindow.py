@@ -28,6 +28,9 @@ width:32 px; height:32 px;
 border-style: outset;
 border-radius: 5px;
 }
+QToolButton:hover {
+background-color:%s
+}
 QLabel#account {
 color: white;
 font-size: 16px;
@@ -48,7 +51,7 @@ class MainWindow(QDialog):
         self.theme = self.loadTheme('default')
         self.renderUI(self.theme)
         self.renderUserInfo(QPixmap(constant.DEFAULT_AVATER), '全部账户', 0, 0, 0)
-        self.home.setStyleSheet('background-color: rgb(255, 170, 0);')
+        self.home.setStyleSheet('background-color: %s;' % self.theme.skin['icon-hover'])
         pass
     
     def setupUI(self):
@@ -163,7 +166,8 @@ class MainWindow(QDialog):
         
         self.setStyleSheet(MainWindow_QSS % (
                         theme.skin['background-color'],
-                        theme.skin['background-image']
+                        theme.skin['background-image'],
+                        theme.skin['icon-hover']
                         ))
         pass
     
