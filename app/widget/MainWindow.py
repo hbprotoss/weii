@@ -83,6 +83,51 @@ class MainWindow( QDialog ):
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         pass
+    
+    def initTab(self):
+        '''
+        Initiate content tab for home, at, comment, private, profile, search
+        @return: A dict of button to widget of QScrollArea
+        '''
+        rtn = {}
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QPushButton('home'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.home] = widget
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QPushButton('at'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.at] = widget
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QPushButton('comment'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.comment] = widget
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QPushButton('private'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.private] = widget
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QPushButton('profile'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.profile] = widget
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QPushButton('search'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.search] = widget
+        
+        return rtn
 
     def setupUI( self ):
         '''
@@ -151,12 +196,15 @@ class MainWindow( QDialog ):
         v21.addWidget( self.search )
         v21.addStretch()
 
-        # # Scroll area
-        self.content_layout = QVBoxLayout()
-        widget = QWidget()
-        widget.setLayout( self.content_layout )
+        ## Scroll area
+        self.button_to_widget = self.initTab()
+        widget = self.button_to_widget[self.home]
+        self.content_widget = QStackedWidget()
+        for k,v in self.button_to_widget.items():
+            self.content_widget.addWidget(v)
+        self.content_widget.setCurrentWidget(widget)
         scroll_area = QScrollArea()
-        scroll_area.setWidget( widget )
+        scroll_area.setWidget( self.content_widget )
         h2.addWidget( scroll_area )
 
         pass
@@ -211,3 +259,5 @@ class MainWindow( QDialog ):
     def onClicked_BtnGroup(self):
         button = self.sender()
         self.button_group.setActive(button)
+        
+        self.content_widget.setCurrentWidget(self.button_to_widget[button])
