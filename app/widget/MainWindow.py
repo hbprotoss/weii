@@ -92,37 +92,37 @@ class MainWindow( QDialog ):
         rtn = {}
         
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton('home'))
+        layout.addWidget(QLabel('home'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.home] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton('at'))
+        layout.addWidget(QLabel('at'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.at] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton('comment'))
+        layout.addWidget(QLabel('comment'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.comment] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton('private'))
+        layout.addWidget(QLabel('private'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.private] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton('profile'))
+        layout.addWidget(QLabel('profile'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.profile] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton('search'))
+        layout.addWidget(QLabel('search'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.search] = widget
