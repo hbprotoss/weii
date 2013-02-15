@@ -11,6 +11,7 @@ from app import constant
 from app import misc
 from widget import Theme
 from widget import IconButton
+from widget.ContentWidget import *
 
 INFO = 'Info'
 SKIN = 'Skin'
@@ -82,7 +83,7 @@ class MainWindow( QDialog ):
                             )
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
-        pass
+        self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
     
     def initTab(self):
         '''
@@ -91,11 +92,7 @@ class MainWindow( QDialog ):
         '''
         rtn = {}
         
-        layout = QVBoxLayout()
-        layout.addWidget(QLabel('home'))
-        widget = QWidget()
-        widget.setLayout(layout)
-        rtn[self.home] = widget
+        rtn[self.home] = HomeWidget.HomeWidget()
         
         layout = QVBoxLayout()
         layout.addWidget(QLabel('at'))
@@ -200,11 +197,13 @@ class MainWindow( QDialog ):
         self.button_to_widget = self.initTab()
         widget = self.button_to_widget[self.home]
         self.content_widget = QStackedWidget()
+        #self.content_widget.setStyleSheet('border-style:solid;border-width:5px')
         for k,v in self.button_to_widget.items():
             self.content_widget.addWidget(v)
         self.content_widget.setCurrentWidget(widget)
         scroll_area = QScrollArea()
         scroll_area.setWidget( self.content_widget )
+        scroll_area.setWidgetResizable(True)
         h2.addWidget( scroll_area )
 
         pass
@@ -261,3 +260,7 @@ class MainWindow( QDialog ):
         self.button_group.setActive(button)
         
         self.content_widget.setCurrentWidget(self.button_to_widget[button])
+    
+    def onClicked_BtnRefresh(self):
+        button = self.button_group.getCurrent()
+        self.button_to_widget[button].refresh([])
