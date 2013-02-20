@@ -19,23 +19,29 @@ ICON = 'Icon'
 THEME_CONFIG = 'conf.ini'
 MainWindow_QSS = '''
 QDialog {
-background-color:%s;
-background-image:url(%s);
-background-repeat:no-repeat;
-padding: 5px
+    background-color:%s;
+    background-image:url(%s);
+    background-repeat:no-repeat;
+    padding: 5px
 }
 QToolButton {
-width:32 px; height:32 px;
-border-style: outset;
-border-radius: 5px;
+    width:32 px; height:32 px;
+    border-style: outset;
+    border-radius: 5px;
 }
 QToolButton:hover {
-background-color:%s
+    background-color:%s
 }
 QLabel#account {
-color: white;
-font-size: 16px;
-font-weight: bold;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+QGroupBox {
+    margin-top: 0px;
+    padding-top: 0px;
+    border-style: solid;
+    border-width: 1px;
 }
 '''
 
@@ -84,6 +90,8 @@ class MainWindow( QDialog ):
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
+        
+        self.button_to_widget[self.home].refresh([])
     
     def initTab(self):
         '''
