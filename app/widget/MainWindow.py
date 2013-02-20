@@ -11,6 +11,7 @@ from app import constant
 from app import misc
 from widget import Theme
 from widget import IconButton
+from widget.ContentWidget import *
 
 INFO = 'Info'
 SKIN = 'Skin'
@@ -18,23 +19,29 @@ ICON = 'Icon'
 THEME_CONFIG = 'conf.ini'
 MainWindow_QSS = '''
 QDialog {
-background-color:%s;
-background-image:url(%s);
-background-repeat:no-repeat;
-padding: 5px
+    background-color:%s;
+    background-image:url(%s);
+    background-repeat:no-repeat;
+    padding: 5px
 }
 QToolButton {
-width:32 px; height:32 px;
-border-style: outset;
-border-radius: 5px;
+    width:32 px; height:32 px;
+    border-style: outset;
+    border-radius: 5px;
 }
 QToolButton:hover {
-background-color:%s
+    background-color:%s
 }
 QLabel#account {
-color: white;
-font-size: 16px;
-font-weight: bold;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+QGroupBox {
+    margin-top: 0px;
+    padding-top: 0px;
+    border-style: solid;
+    border-width: 1px;
 }
 '''
 
@@ -82,7 +89,50 @@ class MainWindow( QDialog ):
                             )
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
-        pass
+        self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
+        
+        self.button_to_widget[self.home].refresh([])
+    
+    def initTab(self):
+        '''
+        Initiate content tab for home, at, comment, private, profile, search
+        @return: A dict of button to widget of QScrollArea
+        '''
+        rtn = {}
+        
+        rtn[self.home] = HomeWidget.HomeWidget()
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel('at'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.at] = widget
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel('comment'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.comment] = widget
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel('private'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.private] = widget
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel('profile'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.profile] = widget
+        
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel('search'))
+        widget = QWidget()
+        widget.setLayout(layout)
+        rtn[self.search] = widget
+        
+        return rtn
 
     def setupUI( self ):
         '''
@@ -151,12 +201,17 @@ class MainWindow( QDialog ):
         v21.addWidget( self.search )
         v21.addStretch()
 
-        # # Scroll area
-        self.content_layout = QVBoxLayout()
-        widget = QWidget()
-        widget.setLayout( self.content_layout )
+        ## Scroll area
+        self.button_to_widget = self.initTab()
+        widget = self.button_to_widget[self.home]
+        self.content_widget = QStackedWidget()
+        #self.content_widget.setStyleSheet('border-style:solid;border-width:5px')
+        for k,v in self.button_to_widget.items():
+            self.content_widget.addWidget(v)
+        self.content_widget.setCurrentWidget(widget)
         scroll_area = QScrollArea()
-        scroll_area.setWidget( widget )
+        scroll_area.setWidget( self.content_widget )
+        scroll_area.setWidgetResizable(True)
         h2.addWidget( scroll_area )
 
         pass
@@ -211,3 +266,9 @@ class MainWindow( QDialog ):
     def onClicked_BtnGroup(self):
         button = self.sender()
         self.button_group.setActive(button)
+        
+        self.content_widget.setCurrentWidget(self.button_to_widget[button])
+    
+    def onClicked_BtnRefresh(self):
+        button = self.button_group.getCurrent()
+        self.button_to_widget[button].refresh([])
