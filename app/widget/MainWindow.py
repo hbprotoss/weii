@@ -102,32 +102,28 @@ class MainWindow( QDialog ):
         
         rtn[self.home] = HomeWidget.HomeWidget()
         
-        layout = QVBoxLayout()
-        layout.addWidget(QLabel('at'))
-        widget = QWidget()
-        widget.setLayout(layout)
-        rtn[self.at] = widget
+        rtn[self.at] = HomeWidget.HomeWidget()
         
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('comment'))
+        layout.addWidget(QPushButton('comment'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.comment] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('private'))
+        layout.addWidget(QPushButton('private'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.private] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('profile'))
+        layout.addWidget(QPushButton('profile'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.profile] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('search'))
+        layout.addWidget(QPushButton('search'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.search] = widget
@@ -267,7 +263,11 @@ class MainWindow( QDialog ):
         button = self.sender()
         self.button_group.setActive(button)
         
+        # Automatically switch size depending on the content of the page
+        # @see: http://doc.qt.digia.com/qq/qq06-qwidgetstack.html
+        self.content_widget.currentWidget().setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.content_widget.setCurrentWidget(self.button_to_widget[button])
+        self.content_widget.currentWidget().setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
