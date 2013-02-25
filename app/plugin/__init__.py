@@ -48,7 +48,7 @@ class AbstractPlugin():
         self.data = data
         self.opener = urllib.request.FancyURLopener(proxy)
         
-    def __getData(self, url, data=None):
+    def getData(self, url, data=None):
         '''
         **********************************************************************
         * ATTENTION! This is the only way plugin interacts with the Internet.*
@@ -59,11 +59,12 @@ class AbstractPlugin():
         If data is None, use GET method. Otherwise POST.
         @param url: string.
         @param data: string.
+        @return: bytes.
         '''
         f = self.opener.open(url, data)
         return f.read()
     
-    def getTweet(id):
+    def getTweet(self, id):
         '''
         Get single tweet
         @param id: string. ID of tweet
@@ -71,7 +72,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getTimeline(id='', count=20, page=1, feature=0):
+    def getTimeline(self, id='', count=20, page=1, feature=0):
         '''
         Get user timeline
         @param id: string. User ID. '' Means current user who has logged in.
@@ -82,7 +83,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getComment(id, count=50, page=1):
+    def getComment(self, id, count=50, page=1):
         '''
         Get comments of tweet specified by id
         @param id: string. Tweet ID
@@ -92,7 +93,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getCommentToMe(count=50, page=1):
+    def getCommentToMe(self, count=50, page=1):
         '''
         @param count: int. Comments per page
         @param page: int. Page number
@@ -100,7 +101,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getCommentByMy(count=50, page=1):
+    def getCommentByMy(self, count=50, page=1):
         '''
         @param count: int. Comments per page
         @param page: int. Page number
@@ -108,7 +109,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getMentionedTweet(count=20, page=1):
+    def getMentionedTweet(self, count=20, page=1):
         '''
         @param count: int. Comments per page
         @param page: int. Page number
@@ -116,7 +117,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getMentiondComment(count=20, page=1):
+    def getMentiondComment(self, count=20, page=1):
         '''
         @param count: int. Comments per page
         @param page: int. Page number
@@ -124,7 +125,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getPrivate(count=20, page=1):
+    def getPrivate(self, count=20, page=1):
         '''
         @param count: int. Comments per page
         @param page: int. Page number
@@ -132,7 +133,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getPrivateConversation(id, count=20, page=1):
+    def getPrivateConversation(self, id, count=20, page=1):
         '''
         Get private conversation with user specified by id
         @param id: string. User ID
@@ -142,7 +143,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getUserInfo(id='', screen_name=''):
+    def getUserInfo(self, id='', screen_name=''):
         '''
         You must supply one and only one parameter between id and screen_name.
         If both supplied, we choose id.
@@ -152,7 +153,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getFriends(id=0, screen_name='', count=50, page=1):
+    def getFriends(self, id=0, screen_name='', count=50, page=1):
         '''
         Get friends list of user specified by id.
         You must supply one and only one parameter between id and screen_name.
@@ -165,7 +166,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getFollowers(id=0, screen_name='', count=50, page=1):
+    def getFollowers(self, id=0, screen_name='', count=50, page=1):
         '''
         Get followers list of user specified by id.
         You must supply one and only one parameter between id and screen_name.
@@ -178,7 +179,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def searchUser(q, count=10):
+    def searchUser(self, q, count=10):
         '''
         @param q: string. Key words. (After URLEncoding)
         @param count: int. Number of users returned
@@ -186,13 +187,13 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getEmotions():
+    def getEmotions(self):
         '''
         @return: Emotion object. See documentation
         '''
         raise NotImplementedError
     
-    def sendTweet(text, pic=None):
+    def sendTweet(self, text, pic=None):
         '''
         @param text: string. Origin tweet text. URLs aren't shortened. No URLEncoding.
         @param pic: string. URI of picture to be attached. If None, then ignored.
@@ -200,7 +201,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def sendRetweet(id, text):
+    def sendRetweet(self, id, text):
         '''
         @param id: string. ID of tweet to be retweeted.
         @param text: string. Text of retweet. Origin text. URLs aren't shortened. No URLEncoding.
@@ -208,14 +209,14 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def deleteTweet(id):
+    def deleteTweet(self, id):
         '''
         @param id: string. ID of tweet to be deleted.
         @return: Tweet object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def sendComment(id, text):
+    def sendComment(self, id, text):
         '''
         @param id: string. ID of tweet to be commented.
         @param text: string. Text of comment. Origin text. URLs aren't shortened. No URLEncoding.
@@ -223,7 +224,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def sendRecomment(id, cid, text):
+    def sendRecomment(self, id, cid, text):
         '''
         Comment a comment
         @param id: string. ID of tweet to be commented
@@ -233,14 +234,14 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def deleteComment(id):
+    def deleteComment(self, id):
         '''
         @param id: string. ID of comment to be deleted
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def sendPrivate(id, text):
+    def sendPrivate(self, id, text):
         '''
         Send private message
         @param id: string. ID of user
@@ -249,14 +250,14 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def deletePrivate(id):
+    def deletePrivate(self, id):
         '''
         @param id: string. ID of private message to be deleted.
         @return: Private message object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def follow(id='', screen_name=''):
+    def follow(self, id='', screen_name=''):
         '''
         You must supply one and only one parameter between id and screen_name.
         If both supplied, we choose id.
@@ -266,7 +267,7 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def unfollow(id='', screen_name=''):
+    def unfollow(self, id='', screen_name=''):
         '''
         You must supply one and only one parameter between id and screen_name.
         If both supplied, we choose id.
@@ -276,14 +277,14 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def isExpired():
+    def isExpired(self):
         '''
         Return if the service(i.e. access_token) is expired.
         @return: True: Expired. False: Not Expired
         '''
         raise NotImplementedError
     
-    def refresh():
+    def refresh(self):
         '''
         Refresh service status
         @return: None

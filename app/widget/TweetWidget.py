@@ -4,9 +4,14 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 class Text(QLabel):
-    def __init__(self, parent=None):
-        super(Text, self).__init__(parent)
+    def __init__(self, text, parent=None):
+        super(Text, self).__init__(text, parent)
         self.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.TextSelectableByMouse)
+        
+class TweetText(Text):
+    def __init__(self, text, parent=None):
+        super(TweetText, self).__init__(text, parent)
+        self.setWordWrap(True)
 
 class TweetWidget(QWidget):
     '''
@@ -51,7 +56,7 @@ class TweetWidget(QWidget):
         ## user, source, service
         h1 = QHBoxLayout()
         v2.addLayout(h1)
-        label_user = Text('@' + self.tweet['user']['screen_name'])
+        label_user = Text('@' + str(self.tweet['user']['screen_name']))
         #label_source = QLabel(self.tweet['source'])
         label_service_icon = QLabel()
         label_service_icon.setPixmap(self.service_icon)
@@ -61,12 +66,12 @@ class TweetWidget(QWidget):
         h1.addWidget(label_service_icon)
         
         ## tweet content
-        label_tweet = Text(self.tweet['text'])
+        label_tweet = TweetText(self.tweet['text'])
         v2.addWidget(label_tweet)
         
         ## retweet if exists
-        if('retweet_status' in self.tweet):
-            retweet = self.tweet['retweet_status']
+        if('retweeted_status' in self.tweet):
+            retweet = self.tweet['retweeted_status']
             
             groupbox = QGroupBox()
             #groupbox.setContentsMargins(0, 5, 5, 5)
@@ -83,7 +88,7 @@ class TweetWidget(QWidget):
             #h3.addWidget(label_retweet_source)
             h3.addStretch()
             
-            label_retweet = Text(retweet['text'])
+            label_retweet = TweetText(retweet['text'])
             v3.addWidget(label_retweet)
             
             if(self.pictures):
@@ -91,7 +96,7 @@ class TweetWidget(QWidget):
                 
             h4 = QHBoxLayout()
             v3.addLayout(h4)
-            label_retweet_time = QLabel(retweet['create_at'])
+            label_retweet_time = QLabel(retweet['created_at'])
             label_retweet_repost = QLabel('转发(%s)' % str(retweet['reposts_count']))
             label_retweet_comment = QLabel('评论(%s)' % str(retweet['comments_count']))
             h4.addWidget(label_retweet_time)
@@ -107,7 +112,7 @@ class TweetWidget(QWidget):
         ## time, repost, comment
         h2 = QHBoxLayout()
         v2.addLayout(h2)
-        label_tweet_time = QLabel(self.tweet['create_at'])
+        label_tweet_time = QLabel(self.tweet['created_at'])
         label_tweet_repost = QLabel('转发(%s)' % str(self.tweet['reposts_count']))
         label_tweet_comment = QLabel('评论(%s)' % str(self.tweet['comments_count']))
         h2.addWidget(label_tweet_time)

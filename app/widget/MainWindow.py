@@ -9,6 +9,7 @@ from PyQt4.QtGui import *
 
 from app import constant
 from app import misc
+from app import plugin
 from widget import Theme
 from widget import IconButton
 from widget.ContentWidget import *
@@ -91,8 +92,21 @@ class MainWindow( QDialog ):
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
         
-        self.button_to_widget[self.home].refresh([])
+        self.account_list = self.initAccount()
+        self.button_to_widget[self.home].refresh(self.account_list)
     
+    def initAccount(self):
+        '''
+        Initiate all accounts stored in database
+        @return: List of Account objects
+        '''
+        plugins = plugin.plugins
+        sina = misc.Account()
+        sina.plugin = plugins['sina'].Plugin(
+            '1778908794', 'hbprotoss', '2.0018H5wBeasXMD00288e252cov2YBC', None, {})
+        sina.service_icon = QPixmap(sina.plugin.service_icon)
+        
+        return [sina]
     def initTab(self):
         '''
         Initiate content tab for home, at, comment, private, profile, search
@@ -271,4 +285,4 @@ class MainWindow( QDialog ):
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
-        self.button_to_widget[button].refresh([])
+        self.button_to_widget[button].refresh(self.account_list)

@@ -21,25 +21,32 @@ class HomeWidget(AbstractWidget.AbstractWidget):
         self.avater = QPixmap(constant.DEFAULT_AVATER)
         
     def refresh(self, account_list):
-        #self.insertWidget(0, QLabel('Homewidget ' + time.asctime()))
-        for i in range(10):
-            tweet = {
-                'user': {'screen_name': 'dummy'},
-                'source': 'source',
-                'text': 'tweet ' + str(i),
-                'create_at': '1989-6-4',
-                'reposts_count': 0,
-                'comments_count': 0
-            }
-            if(random.randrange(0, 2)):
-                tweet['retweet_status'] = {
-                    'user': {'screen_name': 'dummy'},
-                    'source': 'source',
-                    'text': 'retweet ' + str(i),
-                    'create_at': '1989-6-4',
-                    'reposts_count': 0,
-                    'comments_count': 0
-                }
-            self.insertWidget(0, TweetWidget(None, tweet, self.service_icon, self.avater.scaled(40, 40), None))
-            #self.insertWidget(0, QLabel(str(i)))
-        pass
+        for account in account_list:
+            timeline = account.plugin.getTimeline()
+            for tweet in timeline:
+                self.addWidget(TweetWidget(
+                    account, tweet, account.service_icon, self.avater.scaled(40, 40), None))
+            
+#    def refresh(self, account_list):
+#        #self.insertWidget(0, QLabel('Homewidget ' + time.asctime()))
+#        for i in range(10):
+#            tweet = {
+#                'user': {'screen_name': '网络安全俱乐部'},
+#                'source': 'source',
+#                'text': '转发微博',
+#                'created_at': '1989-06-04 00:00:00',
+#                'reposts_count': 0,
+#                'comments_count': 0
+#            }
+#            if(random.randrange(0, 2)):
+#                tweet['retweeted_status'] = {
+#                    'user': {'screen_name': 'FreebuF黑客与极客'},
+#                    'source': 'source',
+#                    'text': '【树莓派（Raspberry Pi）渗透测试系统—PwnPi v3.0发布】PwnPi是为树莓派（Raspberry Pi）开发的渗透测试发行版。它基于Linux操作系统，最新的3.0版本预装了超过200个网络安全工具可以很好的帮助渗透测试人员进相关工作。详情点击http://t.cn/zY0nbxs',
+#                    'created_at': '1989-06-04 00:00:00',
+#                    'reposts_count': 0,
+#                    'comments_count': 0
+#                }
+#            self.addWidget(TweetWidget(None, tweet, self.service_icon, self.avater.scaled(40, 40), None))
+#            #self.insertWidget(0, QLabel(str(i)))
+#        pass
