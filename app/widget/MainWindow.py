@@ -9,6 +9,7 @@ from PyQt4.QtGui import *
 
 from app import constant
 from app import misc
+from app import plugin
 from widget import Theme
 from widget import IconButton
 from widget.ContentWidget import *
@@ -91,8 +92,21 @@ class MainWindow( QDialog ):
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
         
-        self.button_to_widget[self.home].refresh([])
+        self.account_list = self.initAccount()
+        self.button_to_widget[self.home].refresh(self.account_list)
     
+    def initAccount(self):
+        '''
+        Initiate all accounts stored in database
+        @return: List of Account objects
+        '''
+        plugins = plugin.plugins
+        sina = misc.Account()
+        sina.plugin = plugins['sina'].Plugin(
+            '1778908794', 'hbprotoss', '2.0018H5wBeasXMD00288e252cov2YBC', None, {})
+        sina.service_icon = QPixmap(sina.plugin.service_icon)
+        
+        return [sina]
     def initTab(self):
         '''
         Initiate content tab for home, at, comment, private, profile, search
@@ -102,32 +116,28 @@ class MainWindow( QDialog ):
         
         rtn[self.home] = HomeWidget.HomeWidget()
         
-        layout = QVBoxLayout()
-        layout.addWidget(QLabel('at'))
-        widget = QWidget()
-        widget.setLayout(layout)
-        rtn[self.at] = widget
+        rtn[self.at] = HomeWidget.HomeWidget()
         
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('comment'))
+        layout.addWidget(QPushButton('comment'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.comment] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('private'))
+        layout.addWidget(QPushButton('private'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.private] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('profile'))
+        layout.addWidget(QPushButton('profile'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.profile] = widget
         
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('search'))
+        layout.addWidget(QPushButton('search'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.search] = widget
@@ -267,8 +277,12 @@ class MainWindow( QDialog ):
         button = self.sender()
         self.button_group.setActive(button)
         
+        # Automatically switch size depending on the content of the page
+        # @see: http://doc.qt.digia.com/qq/qq06-qwidgetstack.html
+        self.content_widget.currentWidget().setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.content_widget.setCurrentWidget(self.button_to_widget[button])
+        self.content_widget.currentWidget().setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
-        self.button_to_widget[button].refresh([])
+        self.button_to_widget[button].refresh(self.account_list)

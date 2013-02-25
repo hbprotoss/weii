@@ -10,10 +10,10 @@ class AbstractWidget(QWidget):
     
     def __init__(self, parent=None):
         super(QWidget, self).__init__(parent)
-        self._layout = QVBoxLayout()
-        self._layout.setMargin(0)
-        self._layout.addStretch()
-        self.setLayout(self._layout)
+        self.__layout = QVBoxLayout()
+        self.__layout.setMargin(0)
+        self.__layout.addStretch()
+        self.setLayout(self.__layout)
         #self.refresh([])
         
     def insertWidget(self, pos, widget):
@@ -21,7 +21,13 @@ class AbstractWidget(QWidget):
         @param pos: Insert at pos
         @param widget: Widget to be added
         '''
-        self._layout.insertWidget(pos, widget)
+        self.__layout.insertWidget(pos, widget)
+        
+    def addWidget(self, widget):
+        '''
+        @param widget: Widget to be added
+        '''
+        self.__layout.addWidget(widget)
     
     def refresh(self, account_list):
         '''
