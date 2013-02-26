@@ -10,11 +10,13 @@ class AbstractWidget(QWidget):
     
     def __init__(self, parent=None):
         super(QWidget, self).__init__(parent)
+        frame_layout = QVBoxLayout()
+        frame_layout.setMargin(0)
         self.__layout = QVBoxLayout()
         self.__layout.setMargin(0)
-        self.__layout.addStretch()
-        self.setLayout(self.__layout)
-        #self.refresh([])
+        frame_layout.addLayout(self.__layout)
+        frame_layout.addStretch()
+        self.setLayout(frame_layout)
         
     def insertWidget(self, pos, widget):
         '''

@@ -28,7 +28,11 @@ class Plugin(AbstractPlugin):
             pass
         else:
             url = 'https://api.weibo.com/2/statuses/home_timeline.json?%s'
-            params = urllib.parse.urlencode({'access_token':self.access_token})
+            params = urllib.parse.urlencode({
+                'access_token': self.access_token,
+                'count': count,
+                'page': page
+            })
             rtn_from_server = self.getData(url % params).decode('utf-8')
             rtn = json.loads(rtn_from_server)['statuses']
             
