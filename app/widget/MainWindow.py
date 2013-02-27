@@ -69,6 +69,15 @@ class ButtonGroup:
             
     def getCurrent(self):
         return self.current_button
+    
+class ScrollArea(QScrollArea):
+    def resizeEvent(self, ev):
+        if(self.verticalScrollBar().isVisible()):
+            scrollbar_width = self.verticalScrollBar().width() + 5  # 5 for additional space
+        else:
+            scrollbar_width = 2 # 2 for additional space
+        self.widget().setFixedWidth(self.width() - scrollbar_width)
+        super(ScrollArea, self).resizeEvent(ev)
 
 class MainWindow( QDialog ):
     '''
@@ -86,14 +95,13 @@ class MainWindow( QDialog ):
         self.home.setStyleSheet( 'background-color: %s;' % self.theme.skin['icon-chosen'] )
         btns = [self.home, self.at, self.comment, self.private, self.profile, self.search]
         self.button_group = ButtonGroup( btns,
-                            lambda button: button.setStyleSheet('background-color: %s;' % self.theme.skin['icon-chosen'])
-                            )
+            lambda button: button.setStyleSheet('background-color: %s;' % self.theme.skin['icon-chosen'])
+            )
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
         
         self.account_list = self.initAccount()
-        self.button_to_widget[self.home].refresh(self.account_list)
     
     def initAccount(self):
         '''
@@ -114,9 +122,9 @@ class MainWindow( QDialog ):
         '''
         rtn = {}
         
-        rtn[self.home] = HomeWidget.HomeWidget()
+        rtn[self.home] = HomeWidget.HomeWidget(self)
         
-        rtn[self.at] = HomeWidget.HomeWidget()
+        rtn[self.at] = HomeWidget.HomeWidget(self)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('comment'))
@@ -157,7 +165,7 @@ class MainWindow( QDialog ):
         vbox.addLayout( h1 )
 
         # # Left, avater
-        self.avater = QLabel()
+        self.avater = QLabel(self)
         h1.addWidget( self.avater )
         self.avater.setMinimumSize( 64, 64 )
         self.avater.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
@@ -168,7 +176,7 @@ class MainWindow( QDialog ):
         h1.addLayout( v11 )
 
         # ## Upper, account
-        self.account = QLabel()
+        self.account = QLabel(self)
         self.account.setObjectName( 'account' )
         self.account.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred ) )
         self.account.setCursor( Qt.PointingHandCursor )
@@ -178,17 +186,17 @@ class MainWindow( QDialog ):
         h111 = QHBoxLayout()
         v11.addLayout( h111 )
 
-        self.fans = QLabel()
+        self.fans = QLabel(self)
         h111.addWidget( self.fans )
-        self.following = QLabel()
+        self.following = QLabel(self)
         h111.addWidget( self.following )
-        self.tweets = QLabel()
+        self.tweets = QLabel(self)
         h111.addWidget( self.tweets )
         h111.addStretch()
 
-        self.send = IconButton.IconButton()
+        self.send = IconButton.IconButton(self)
         h111.addWidget( self.send )
-        self.refresh = IconButton.IconButton()
+        self.refresh = IconButton.IconButton(self)
         h111.addWidget( self.refresh )
 
         # Lower
@@ -197,17 +205,17 @@ class MainWindow( QDialog ):
 
         v21 = QVBoxLayout()
         h2.addLayout( v21 )
-        self.home = IconButton.IconButton()
+        self.home = IconButton.IconButton(self)
         v21.addWidget( self.home )
-        self.at = IconButton.IconButton()
+        self.at = IconButton.IconButton(self)
         v21.addWidget( self.at )
-        self.comment = IconButton.IconButton()
+        self.comment = IconButton.IconButton(self)
         v21.addWidget( self.comment )
-        self.private = IconButton.IconButton()
+        self.private = IconButton.IconButton(self)
         v21.addWidget( self.private )
-        self.profile = IconButton.IconButton()
+        self.profile = IconButton.IconButton(self)
         v21.addWidget( self.profile )
-        self.search = IconButton.IconButton()
+        self.search = IconButton.IconButton(self)
         v21.addWidget( self.search )
         v21.addStretch()
 
@@ -219,12 +227,10 @@ class MainWindow( QDialog ):
         for k,v in self.button_to_widget.items():
             self.content_widget.addWidget(v)
         self.content_widget.setCurrentWidget(widget)
-        scroll_area = QScrollArea()
+        scroll_area = ScrollArea()
         scroll_area.setWidget( self.content_widget )
         scroll_area.setWidgetResizable(True)
         h2.addWidget( scroll_area )
-
-        pass
 
     def loadTheme( self, theme_name = 'default' ):
         '''
@@ -272,6 +278,9 @@ class MainWindow( QDialog ):
         self.fans.setText( '粉丝(%s)' % str( fans ) )
         self.following.setText( '关注(%s)' % str( following ) )
         self.tweets.setText( '微博(%s)' % str( tweets ) )
+        
+    def showEvent(self, event):
+        self.button_to_widget[self.home].refresh(self.account_list)
         
     def onClicked_BtnGroup(self):
         button = self.sender()
