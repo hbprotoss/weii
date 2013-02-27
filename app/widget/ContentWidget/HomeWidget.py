@@ -37,3 +37,6 @@ class HomeWidget(AbstractWidget.AbstractWidget):
             self.addWidget(TweetWidget(None, tweet, self.service_icon, self.avater.scaled(40, 40), None, self))
             #self.insertWidget(0, QLabel(str(i)))
         pass
+    
+#    def refresh(self, account_list):
+#        self.addWidget(TweetWidget(None, next(self.tweets), self.service_icon, self.avater.scaled(40, 40), None, self))

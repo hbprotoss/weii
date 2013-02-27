@@ -72,12 +72,12 @@ class ButtonGroup:
     
 class ScrollArea(QScrollArea):
     def resizeEvent(self, ev):
-        super(ScrollArea, self).resizeEvent(ev)
         if(self.verticalScrollBar().isVisible()):
             scrollbar_width = self.verticalScrollBar().width() + 5  # 5 for additional space
         else:
-            scrollbar_width = 0
+            scrollbar_width = 2 # 2 for additional space
         self.widget().setFixedWidth(self.width() - scrollbar_width)
+        super(ScrollArea, self).resizeEvent(ev)
 
 class MainWindow( QDialog ):
     '''

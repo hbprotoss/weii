@@ -3,9 +3,13 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+from app import analyse_tweet
+
 class Text(QLabel):
     def __init__(self, text, parent=None):
-        super(Text, self).__init__(text, parent)
+        rich_text = analyse_tweet.analyse(text)
+        super(Text, self).__init__(rich_text, parent)
+        #super(Text, self).__init__(text, parent)
         self.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.TextSelectableByMouse)
         
 class TweetText(Text):
@@ -35,8 +39,7 @@ class TweetWidget(QWidget):
         self.pictures = pictures
         
         self.setupUI()
-        #self.setMaximumWidth(self.parent().width())
-        #self.setSizePolicy(QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred))
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding))
         
     def setupUI(self):
         hLayout = QHBoxLayout()

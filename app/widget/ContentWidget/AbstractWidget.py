@@ -14,6 +14,7 @@ class AbstractWidget(QWidget):
         frame_layout.setMargin(0)
         self.__layout = QVBoxLayout()
         self.__layout.setMargin(0)
+        self.__layout.setAlignment(Qt.AlignTop)
         frame_layout.addLayout(self.__layout)
         frame_layout.addStretch()
         self.setLayout(frame_layout)
