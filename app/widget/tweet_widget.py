@@ -21,21 +21,20 @@ class TweetWidget(QWidget):
     Widget for each tweet
     '''
     
-    def __init__(self, account, tweet, service_icon, avater, pictures, parent=None):
+    def __init__(self, account, tweet, avater, thumbnail, parent=None):
         '''
+        @param account: misc.Account object
         @param tweet: dict of tweet. See doc/插件接口设计.pdf: 单条微博
-        @param service_icon: QPixmap containing service icon
         @param avater: QPixmap of user avater
-        @param pictures: List of QPixmap, including small, middle and original picture
+        @param thumbnail: QPixmap of thumbnail related to tweet
         @return: None
         '''
         super(TweetWidget, self).__init__(parent)
         
         self.account = account
         self.tweet = tweet
-        self.service_icon = service_icon
         self.avater = avater
-        self.pictures = pictures
+        self.thumbnail = thumbnail
         
         self.setupUI()
         self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding))
@@ -69,7 +68,7 @@ class TweetWidget(QWidget):
         label_user = Text('@' + str(self.tweet['user']['screen_name']), self)
         #label_source = QLabel(self.tweet['source'])
         label_service_icon = QLabel(self)
-        label_service_icon.setPixmap(self.service_icon)
+        label_service_icon.setPixmap(self.account.service_icon)
         h1.addWidget(label_user)
         #h1.addWidget(label_source)
         h1.addStretch()
@@ -101,8 +100,8 @@ class TweetWidget(QWidget):
             label_retweet = TweetText(retweet['text'], self)
             v3.addWidget(label_retweet)
             
-            if(self.pictures):
-                v3.addWidget(self.pictures[0])
+            if(self.thumbnail):
+                v3.addWidget(self.thumbnail)
                 
             h4 = QHBoxLayout()
             v3.addLayout(h4)
@@ -114,8 +113,8 @@ class TweetWidget(QWidget):
             h4.addWidget(label_retweet_repost)
             h4.addWidget(label_retweet_comment)
         ## No retweet and has picture
-        elif(self.pictures):
-            v2.addWidget(self.pictures[0])
+        elif(self.thumbnail):
+            v2.addWidget(self.thumbnail)
         
         #v2.addStretch()
         

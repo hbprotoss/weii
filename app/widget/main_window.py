@@ -18,7 +18,33 @@ INFO = 'Info'
 SKIN = 'Skin'
 ICON = 'Icon'
 THEME_CONFIG = 'conf.ini'
-MainWindow_QSS = constant.MainWindow_QSS
+MainWindow_QSS = '''
+QDialog {
+    background-color:%s;
+    background-image:url(%s);
+    background-repeat:no-repeat;
+    padding: 5px
+}
+QToolButton {
+    width:32 px; height:32 px;
+    border-style: outset;
+    border-radius: 5px;
+}
+QToolButton:hover {
+    background-color:%s
+}
+QLabel#account {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+QGroupBox {
+    margin-top: 0px;
+    padding-top: 0px;
+    border-style: solid;
+    border-width: 1px;
+}
+'''
 
 class ButtonGroup:
     '''
@@ -68,7 +94,7 @@ class MainWindow( QDialog ):
         self.home.setStyleSheet( 'background-color: %s;' % self.theme.skin['icon-chosen'] )
         btns = [self.home, self.at, self.comment, self.private, self.profile, self.search]
         self.button_group = ButtonGroup( btns,
-            lambda button: button.setStyleSheet('background-color: %s;' % self.widget.theme.skin['icon-chosen'])
+            lambda button: button.setStyleSheet('background-color: %s;' % self.theme.skin['icon-chosen'])
             )
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
@@ -200,10 +226,10 @@ class MainWindow( QDialog ):
         for k,v in self.button_to_widget.items():
             self.content_widget.addWidget(v)
         self.content_widget.setCurrentWidget(widget)
-        scroll_area = ScrollArea()
-        scroll_area.setWidget( self.content_widget )
-        scroll_area.setWidgetResizable(True)
-        h2.addWidget( scroll_area )
+        self.scroll_area = ScrollArea()
+        self.scroll_area.setWidget( self.content_widget )
+        self.scroll_area.setWidgetResizable(True)
+        h2.addWidget( self.scroll_area )
 
     def loadTheme( self, theme_name = 'default' ):
         '''
