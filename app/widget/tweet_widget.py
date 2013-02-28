@@ -9,7 +9,6 @@ class Text(QLabel):
     def __init__(self, text, parent=None):
         rich_text = analyse_tweet.analyse(text)
         super(Text, self).__init__(rich_text, parent)
-        #super(Text, self).__init__(text, parent)
         self.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.TextSelectableByMouse)
         
 class TweetText(Text):
@@ -40,6 +39,12 @@ class TweetWidget(QWidget):
         
         self.setupUI()
         self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding))
+        
+    def renderUI(self, theme):
+        '''
+        @param theme: Theme.Theme object
+        @return: None
+        '''
         
     def setupUI(self):
         hLayout = QHBoxLayout()
@@ -124,3 +129,11 @@ class TweetWidget(QWidget):
         h2.addStretch()
         h2.addWidget(label_tweet_repost)
         h2.addWidget(label_tweet_comment)
+        
+#    def paintEvent(self, ev):
+#        qp = QPainter()
+#        qp.begin(self)
+#        rect = self.geometry()
+#        qp.drawLine(QPoint(rect.left(), rect.bottom()), QPoint(rect.right(), rect.bottom()))
+#        qp.end()
+#        return super(TweetWidget, self).paintEvent(ev)

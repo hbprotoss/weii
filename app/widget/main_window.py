@@ -10,41 +10,15 @@ from PyQt4.QtGui import *
 from app import constant
 from app import misc
 from app import plugin
-from widget import Theme
-from widget import IconButton
+import widget.theme
+from widget import icon_button
 from widget.ContentWidget import *
 
 INFO = 'Info'
 SKIN = 'Skin'
 ICON = 'Icon'
 THEME_CONFIG = 'conf.ini'
-MainWindow_QSS = '''
-QDialog {
-    background-color:%s;
-    background-image:url(%s);
-    background-repeat:no-repeat;
-    padding: 5px
-}
-QToolButton {
-    width:32 px; height:32 px;
-    border-style: outset;
-    border-radius: 5px;
-}
-QToolButton:hover {
-    background-color:%s
-}
-QLabel#account {
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-}
-QGroupBox {
-    margin-top: 0px;
-    padding-top: 0px;
-    border-style: solid;
-    border-width: 1px;
-}
-'''
+MainWindow_QSS = constant.MainWindow_QSS
 
 class ButtonGroup:
     '''
@@ -77,7 +51,6 @@ class ScrollArea(QScrollArea):
         else:
             scrollbar_width = 2 # 2 for additional space
         self.widget().setFixedWidth(self.width() - scrollbar_width)
-        super(ScrollArea, self).resizeEvent(ev)
 
 class MainWindow( QDialog ):
     '''
@@ -95,7 +68,7 @@ class MainWindow( QDialog ):
         self.home.setStyleSheet( 'background-color: %s;' % self.theme.skin['icon-chosen'] )
         btns = [self.home, self.at, self.comment, self.private, self.profile, self.search]
         self.button_group = ButtonGroup( btns,
-            lambda button: button.setStyleSheet('background-color: %s;' % self.theme.skin['icon-chosen'])
+            lambda button: button.setStyleSheet('background-color: %s;' % self.widget.theme.skin['icon-chosen'])
             )
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
@@ -122,9 +95,9 @@ class MainWindow( QDialog ):
         '''
         rtn = {}
         
-        rtn[self.home] = HomeWidget.HomeWidget(self)
+        rtn[self.home] = home_widget.HomeWidget(self)
         
-        rtn[self.at] = HomeWidget.HomeWidget(self)
+        rtn[self.at] = home_widget.HomeWidget(self)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('comment'))
@@ -194,9 +167,9 @@ class MainWindow( QDialog ):
         h111.addWidget( self.tweets )
         h111.addStretch()
 
-        self.send = IconButton.IconButton(self)
+        self.send = icon_button.IconButton(self)
         h111.addWidget( self.send )
-        self.refresh = IconButton.IconButton(self)
+        self.refresh = icon_button.IconButton(self)
         h111.addWidget( self.refresh )
 
         # Lower
@@ -205,17 +178,17 @@ class MainWindow( QDialog ):
 
         v21 = QVBoxLayout()
         h2.addLayout( v21 )
-        self.home = IconButton.IconButton(self)
+        self.home = icon_button.IconButton(self)
         v21.addWidget( self.home )
-        self.at = IconButton.IconButton(self)
+        self.at = icon_button.IconButton(self)
         v21.addWidget( self.at )
-        self.comment = IconButton.IconButton(self)
+        self.comment = icon_button.IconButton(self)
         v21.addWidget( self.comment )
-        self.private = IconButton.IconButton(self)
+        self.private = icon_button.IconButton(self)
         v21.addWidget( self.private )
-        self.profile = IconButton.IconButton(self)
+        self.profile = icon_button.IconButton(self)
         v21.addWidget( self.profile )
-        self.search = IconButton.IconButton(self)
+        self.search = icon_button.IconButton(self)
         v21.addWidget( self.search )
         v21.addStretch()
 
@@ -235,14 +208,14 @@ class MainWindow( QDialog ):
     def loadTheme( self, theme_name = 'default' ):
         '''
         @param theme_name: The name of theme
-        @return: Theme.Theme object
+        @return: widget.theme.Theme object
         '''
         THEME_ROOT = os.path.join( constant.APP_ROOT, 'theme', theme_name )
         ICON_ROOT = os.path.join( THEME_ROOT, 'icon' )
         conf = misc.ConfParser()
         conf.read( os.path.join( THEME_ROOT, THEME_CONFIG ) )
 
-        theme = Theme.Theme()
+        theme = widget.theme.Theme()
         theme.info = dict( conf.items( INFO ) )
         theme.skin = dict( conf.items( SKIN ) )
         theme.skin['background-image'] = os.path.join( THEME_ROOT, theme.skin['background-image'] )
@@ -254,7 +227,7 @@ class MainWindow( QDialog ):
     def renderUI( self, theme ):
         '''
         Render UI with specified theme
-        @param theme: Theme.Theme object
+        @param theme: widget.theme.Theme object
         '''
         self.home.loadIcon( theme.icon['home'] )
         self.at.loadIcon( theme.icon['at'] )

@@ -6,12 +6,12 @@ import json
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from widget.ContentWidget import AbstractWidget
-from widget.TweetWidget import TweetWidget
+from widget.ContentWidget import abstract_widget
+from widget.tweet_widget import TweetWidget
 from app import constant
 
 
-class HomeWidget(AbstractWidget.AbstractWidget):
+class HomeWidget(abstract_widget.AbstractWidget):
     '''
     Home tab
     '''
@@ -34,7 +34,8 @@ class HomeWidget(AbstractWidget.AbstractWidget):
     def refresh(self, account_list):
         tweets = json.load(open('json'))['statuses']
         for tweet in tweets:
-            self.addWidget(TweetWidget(None, tweet, self.service_icon, self.avater.scaled(40, 40), None, self))
+            widget = TweetWidget(None, tweet, self.service_icon, self.avater.scaled(40, 40), None, self)
+            self.addWidget(widget)
             #self.insertWidget(0, QLabel(str(i)))
         pass
     
