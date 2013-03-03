@@ -10,6 +10,7 @@ from PyQt4.QtGui import *
 from app import constant
 from app import misc
 from app import plugin
+from app import resource_manager
 import widget.theme
 from widget import icon_button
 from widget.ContentWidget import *
@@ -86,11 +87,12 @@ class MainWindow( QDialog ):
     def __init__( self, parent = None ):
         super( MainWindow, self ).__init__( parent )
 
+        self.account_list = self.initAccount()
         self.setMinimumSize( 400, 600 )
         self.setupUI()
         self.theme = self.loadTheme( 'default' )
         self.renderUI( self.theme )
-        self.renderUserInfo( QPixmap( constant.DEFAULT_AVATER ), '全部账户', 0, 0, 0 )
+        self.renderUserInfo( self.account_list[0] )
         self.home.setStyleSheet( 'background-color: %s;' % self.theme.skin['icon-chosen'] )
         btns = [self.home, self.at, self.comment, self.private, self.profile, self.search]
         self.button_group = ButtonGroup( btns,
@@ -100,7 +102,6 @@ class MainWindow( QDialog ):
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
         
-        self.account_list = self.initAccount()
     
     def initAccount(self):
         '''
@@ -108,10 +109,14 @@ class MainWindow( QDialog ):
         @return: List of Account objects
         '''
         plugins = plugin.plugins
+        username = 'hbprotoss'
         sina = misc.Account()
         sina.plugin = plugins['sina'].Plugin(
-            '1778908794', 'hbprotoss', '2.0018H5wBeasXMD00288e252cov2YBC', None, {})
+            '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, {})
         sina.service_icon = QPixmap(sina.plugin.service_icon)
+        sina.avater_manager = resource_manager.ResourceManager(username, 'avater')
+        sina.emotion_manager = resource_manager.ResourceManager(username, 'emotion')
+        sina.picture_manager = resource_manager.ResourceManager(username, 'piture')
         
         return [sina]
     
@@ -167,7 +172,7 @@ class MainWindow( QDialog ):
         # # Left, avater
         self.avater = QLabel(self)
         h1.addWidget( self.avater )
-        self.avater.setMinimumSize( 64, 64 )
+        self.avater.setMinimumSize( constant.AVATER_SIZE, constant.AVATER_SIZE )
         self.avater.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
         self.avater.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
 
@@ -272,12 +277,14 @@ class MainWindow( QDialog ):
                         ) )
         pass
 
-    def renderUserInfo( self, avater, account_name, fans, following, tweets ):
-        self.avater.setPixmap( avater )
-        self.account.setText( str( account_name ) )
-        self.fans.setText( '粉丝(%s)' % str( fans ) )
-        self.following.setText( '关注(%s)' % str( following ) )
-        self.tweets.setText( '微博(%s)' % str( tweets ) )
+    def renderUserInfo( self, account ):
+        user_info = account.plugin.getUserInfo(account.plugin.id)
+        avater = account.avater_manager.get(user_info['avatar_large'])
+        self.avater.setPixmap( QPixmap.fromImage(avater).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
+        self.account.setText( str( user_info['screen_name'] ) )
+        self.fans.setText( '粉丝(%s)' % str( user_info['followers_count'] ) )
+        self.following.setText( '关注(%s)' % str( user_info['friends_count'] ) )
+        self.tweets.setText( '微博(%s)' % str( user_info['statuses_count'] ) )
         
     def showEvent(self, event):
         self.button_to_widget[self.home].refresh(self.account_list)

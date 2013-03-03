@@ -43,3 +43,18 @@ class Plugin(AbstractPlugin):
                     t = time.strptime(tweet['retweeted_status']['created_at'], self.time_format)
                     tweet['retweeted_status']['created_at'] = time.strftime(self.new_time_format, t)
         return rtn
+    
+    def getUserInfo(self, id='', screen_name=''):
+        params = dict([('access_token', self.access_token)])
+        if id:
+            params['uid'] = id
+        elif screen_name:
+            params['screen_name'] = screen_name
+        else:
+            params['uid'] = self.id
+            
+        url = 'https://api.weibo.com/2/users/show.json?%s'
+        rtn_from_server = self.getData(url % urllib.parse.urlencode(params)).decode('utf-8')
+        rtn = json.loads(rtn_from_server)
+        
+        return rtn
