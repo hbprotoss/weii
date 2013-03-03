@@ -35,7 +35,7 @@ class weiNetworkError(Exception):pass
 
 
 class AbstractPlugin():
-    def __init__(self, id, username, access_token, data, proxy):
+    def __init__(self, id, username, access_token, data, proxy={}):
         '''
         @param id: string. User id.
         @param username: string.

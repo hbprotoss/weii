@@ -114,6 +114,7 @@ class MainWindow( QDialog ):
         sina.service_icon = QPixmap(sina.plugin.service_icon)
         
         return [sina]
+    
     def initTab(self):
         '''
         Initiate content tab for home, at, comment, private, profile, search
