@@ -38,6 +38,13 @@ class DownloadTask(QThread):
             for tweet in tweet_list:
                 avater = account.avater_manager.get(tweet['user']['avatar_large'])
                 avater_list.append(avater)
+                
+                if 'thumbnail_pic' in tweet:
+                    picture = account.picture_manager.get(tweet['thumbnail_pic'])
+                else:
+                    picture = None
+                picture_list.append(picture)
+                
             data_list.append(
                 TweetData(account, tweet_list, avater_list, picture_list)
             )
@@ -67,12 +74,16 @@ class HomeWidget(abstract_widget.AbstractWidget):
             length = len(tweet_data.tweet_list)
             i = 0
             while(i < length):
+                avater = QPixmap.fromImage(tweet_data.avater_list[i])
+                avater = avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE, transformMode=Qt.SmoothTransformation)
+                
+                if tweet_data.picture_list[i]:
+                    picture = QPixmap.fromImage(tweet_data.picture_list[i])
+                else:
+                    picture = None
+                    
                 self.addWidget(
-                    TweetWidget(tweet_data.account,
-                        tweet_data.tweet_list[i],
-                        QPixmap.fromImage(tweet_data.avater_list[i]).scaled(40, 40, transformMode=Qt.SmoothTransformation),
-                        None,
-                        self)
+                    TweetWidget(tweet_data.account, tweet_data.tweet_list[i], avater, picture, self)
                 )
                 i += 1
         
@@ -86,9 +97,9 @@ class HomeWidget(abstract_widget.AbstractWidget):
 #        self.clearWidget()
 #        tweets = json.load(open('json'))['statuses']
 #        for tweet in tweets:
-#            widget = TweetWidget(account_list[0], tweet, self.avater.scaled(40, 40), None, self)
+#            widget = TweetWidget(account_list[0], tweet, self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self)
 #            self.addWidget(widget)
 #        pass
     
 #    def refresh(self, account_list):
-#        self.addWidget(TweetWidget(None, next(self.tweets), self.avater.scaled(40, 40), None, self))
+#        self.addWidget(TweetWidget(None, next(self.tweets), self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self))

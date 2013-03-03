@@ -101,7 +101,9 @@ class TweetWidget(QWidget):
             v3.addWidget(label_retweet)
             
             if(self.thumbnail):
-                v3.addWidget(self.thumbnail)
+                label_thumbnail = QLabel()
+                label_thumbnail.setPixmap(self.thumbnail)
+                v3.addWidget(label_thumbnail)
                 
             h4 = QHBoxLayout()
             v3.addLayout(h4)
@@ -114,7 +116,9 @@ class TweetWidget(QWidget):
             h4.addWidget(label_retweet_comment)
         ## No retweet and has picture
         elif(self.thumbnail):
-            v2.addWidget(self.thumbnail)
+            label_thumbnail = QLabel()
+            label_thumbnail.setPixmap(self.thumbnail)
+            v2.addWidget(label_thumbnail)
         
         #v2.addStretch()
         
