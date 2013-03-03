@@ -8,8 +8,8 @@ def getLogger(name):
     
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
-    ch.terminator = ''
-    formatter = logging.Formatter('%(name)s - %(levelname)s: %(message)s')
+    #ch.terminator = ''
+    formatter = logging.Formatter('%(levelname)s - %(name)s: %(message)s')
     ch.setFormatter(formatter)
     
     log.addHandler(ch)

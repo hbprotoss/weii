@@ -19,6 +19,16 @@ class AbstractWidget(QWidget):
         frame_layout.addStretch()
         self.setLayout(frame_layout)
         
+    def clearWidget(self):
+        while(True):
+            child = self.__layout.itemAt(0)
+            if child:
+                child.widget().hide()
+                self.__layout.removeWidget(child.widget())
+                del child
+            else:
+                break
+        
     def insertWidget(self, pos, widget):
         '''
         @param pos: Insert at pos

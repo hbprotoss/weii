@@ -12,3 +12,8 @@ class Account:
     
     # QPixmap object
     service_icon = None
+    
+    # Resource manager
+    emotion_manager = None
+    avater_manager = None
+    picture_manager = None

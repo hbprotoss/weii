@@ -5,6 +5,8 @@ import os
 import logging
 import urllib.request
 
+from app import logger
+
 ##################################################################################
 # Exceptions which can be raised
 class weiSizeError(Exception):pass
@@ -33,7 +35,7 @@ class weiNetworkError(Exception):pass
 
 
 class AbstractPlugin():
-    def __init__(self, id, username, access_token, data, proxy):
+    def __init__(self, id, username, access_token, data, proxy={}):
         '''
         @param id: string. User id.
         @param username: string.
@@ -290,21 +292,23 @@ class AbstractPlugin():
         @return: None
         '''
         raise NotImplementedError
-
-def loadPlugins():
-    logging.basicConfig(level=logging.INFO)
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     
-    logging.info('Loading plugins')
-    files = [file.split('.')[0]
-             for file in os.listdir(BASE_DIR)
-             if (not file.startswith('__'))]
-    plugins = {file:importlib.import_module('plugin.' + file)
-               for file in files}
-    logging.info('Loading plugins done')
-    for name,plugin in plugins.items():
-        print(name, plugin)
+plugins = None
+if __name__ == 'app.plugin':
+    log = logger.getLogger(__name__)
+    def loadPlugins():
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        
+        log.info('Loading plugins')
+        files = [file.split('.')[0]
+                 for file in os.listdir(BASE_DIR)
+                 if (not file.startswith('__'))]
+        plugins = {file:importlib.import_module('plugin.' + file)
+                   for file in files}
+        log.info('Loading plugins done')
+        for name,plugin in plugins.items():
+            print(name, plugin)
+        
+        return plugins
     
-    return plugins
-
-plugins = loadPlugins()
+    plugins = loadPlugins()

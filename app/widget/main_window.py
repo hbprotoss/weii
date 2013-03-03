@@ -10,8 +10,9 @@ from PyQt4.QtGui import *
 from app import constant
 from app import misc
 from app import plugin
-from widget import Theme
-from widget import IconButton
+from app import resource_manager
+import widget.theme
+from widget import icon_button
 from widget.ContentWidget import *
 
 INFO = 'Info'
@@ -77,7 +78,6 @@ class ScrollArea(QScrollArea):
         else:
             scrollbar_width = 2 # 2 for additional space
         self.widget().setFixedWidth(self.width() - scrollbar_width)
-        super(ScrollArea, self).resizeEvent(ev)
 
 class MainWindow( QDialog ):
     '''
@@ -87,11 +87,12 @@ class MainWindow( QDialog ):
     def __init__( self, parent = None ):
         super( MainWindow, self ).__init__( parent )
 
+        self.account_list = self.initAccount()
         self.setMinimumSize( 400, 600 )
         self.setupUI()
         self.theme = self.loadTheme( 'default' )
         self.renderUI( self.theme )
-        self.renderUserInfo( QPixmap( constant.DEFAULT_AVATER ), '全部账户', 0, 0, 0 )
+        self.renderUserInfo( self.account_list[0] )
         self.home.setStyleSheet( 'background-color: %s;' % self.theme.skin['icon-chosen'] )
         btns = [self.home, self.at, self.comment, self.private, self.profile, self.search]
         self.button_group = ButtonGroup( btns,
@@ -101,7 +102,6 @@ class MainWindow( QDialog ):
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
         
-        self.account_list = self.initAccount()
     
     def initAccount(self):
         '''
@@ -109,12 +109,17 @@ class MainWindow( QDialog ):
         @return: List of Account objects
         '''
         plugins = plugin.plugins
+        username = 'hbprotoss'
         sina = misc.Account()
         sina.plugin = plugins['sina'].Plugin(
-            '1778908794', 'hbprotoss', '2.0018H5wBeasXMD00288e252cov2YBC', None, {})
+            '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, {})
         sina.service_icon = QPixmap(sina.plugin.service_icon)
+        sina.avater_manager = resource_manager.ResourceManager(username, 'avater')
+        sina.emotion_manager = resource_manager.ResourceManager(username, 'emotion')
+        sina.picture_manager = resource_manager.ResourceManager(username, 'piture')
         
         return [sina]
+    
     def initTab(self):
         '''
         Initiate content tab for home, at, comment, private, profile, search
@@ -122,9 +127,9 @@ class MainWindow( QDialog ):
         '''
         rtn = {}
         
-        rtn[self.home] = HomeWidget.HomeWidget(self)
+        rtn[self.home] = home_widget.HomeWidget(self)
         
-        rtn[self.at] = HomeWidget.HomeWidget(self)
+        rtn[self.at] = home_widget.HomeWidget(self)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('comment'))
@@ -167,7 +172,7 @@ class MainWindow( QDialog ):
         # # Left, avater
         self.avater = QLabel(self)
         h1.addWidget( self.avater )
-        self.avater.setMinimumSize( 64, 64 )
+        self.avater.setMinimumSize( constant.AVATER_SIZE, constant.AVATER_SIZE )
         self.avater.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
         self.avater.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
 
@@ -194,9 +199,9 @@ class MainWindow( QDialog ):
         h111.addWidget( self.tweets )
         h111.addStretch()
 
-        self.send = IconButton.IconButton(self)
+        self.send = icon_button.IconButton(self)
         h111.addWidget( self.send )
-        self.refresh = IconButton.IconButton(self)
+        self.refresh = icon_button.IconButton(self)
         h111.addWidget( self.refresh )
 
         # Lower
@@ -205,17 +210,17 @@ class MainWindow( QDialog ):
 
         v21 = QVBoxLayout()
         h2.addLayout( v21 )
-        self.home = IconButton.IconButton(self)
+        self.home = icon_button.IconButton(self)
         v21.addWidget( self.home )
-        self.at = IconButton.IconButton(self)
+        self.at = icon_button.IconButton(self)
         v21.addWidget( self.at )
-        self.comment = IconButton.IconButton(self)
+        self.comment = icon_button.IconButton(self)
         v21.addWidget( self.comment )
-        self.private = IconButton.IconButton(self)
+        self.private = icon_button.IconButton(self)
         v21.addWidget( self.private )
-        self.profile = IconButton.IconButton(self)
+        self.profile = icon_button.IconButton(self)
         v21.addWidget( self.profile )
-        self.search = IconButton.IconButton(self)
+        self.search = icon_button.IconButton(self)
         v21.addWidget( self.search )
         v21.addStretch()
 
@@ -227,22 +232,22 @@ class MainWindow( QDialog ):
         for k,v in self.button_to_widget.items():
             self.content_widget.addWidget(v)
         self.content_widget.setCurrentWidget(widget)
-        scroll_area = ScrollArea()
-        scroll_area.setWidget( self.content_widget )
-        scroll_area.setWidgetResizable(True)
-        h2.addWidget( scroll_area )
+        self.scroll_area = ScrollArea()
+        self.scroll_area.setWidget( self.content_widget )
+        self.scroll_area.setWidgetResizable(True)
+        h2.addWidget( self.scroll_area )
 
     def loadTheme( self, theme_name = 'default' ):
         '''
         @param theme_name: The name of theme
-        @return: Theme.Theme object
+        @return: widget.theme.Theme object
         '''
         THEME_ROOT = os.path.join( constant.APP_ROOT, 'theme', theme_name )
         ICON_ROOT = os.path.join( THEME_ROOT, 'icon' )
         conf = misc.ConfParser()
         conf.read( os.path.join( THEME_ROOT, THEME_CONFIG ) )
 
-        theme = Theme.Theme()
+        theme = widget.theme.Theme()
         theme.info = dict( conf.items( INFO ) )
         theme.skin = dict( conf.items( SKIN ) )
         theme.skin['background-image'] = os.path.join( THEME_ROOT, theme.skin['background-image'] )
@@ -254,7 +259,7 @@ class MainWindow( QDialog ):
     def renderUI( self, theme ):
         '''
         Render UI with specified theme
-        @param theme: Theme.Theme object
+        @param theme: widget.theme.Theme object
         '''
         self.home.loadIcon( theme.icon['home'] )
         self.at.loadIcon( theme.icon['at'] )
@@ -272,12 +277,14 @@ class MainWindow( QDialog ):
                         ) )
         pass
 
-    def renderUserInfo( self, avater, account_name, fans, following, tweets ):
-        self.avater.setPixmap( avater )
-        self.account.setText( str( account_name ) )
-        self.fans.setText( '粉丝(%s)' % str( fans ) )
-        self.following.setText( '关注(%s)' % str( following ) )
-        self.tweets.setText( '微博(%s)' % str( tweets ) )
+    def renderUserInfo( self, account ):
+        user_info = account.plugin.getUserInfo(account.plugin.id)
+        avater = account.avater_manager.get(user_info['avatar_large'])
+        self.avater.setPixmap( QPixmap.fromImage(avater).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
+        self.account.setText( str( user_info['screen_name'] ) )
+        self.fans.setText( '粉丝(%s)' % str( user_info['followers_count'] ) )
+        self.following.setText( '关注(%s)' % str( user_info['friends_count'] ) )
+        self.tweets.setText( '微博(%s)' % str( user_info['statuses_count'] ) )
         
     def showEvent(self, event):
         self.button_to_widget[self.home].refresh(self.account_list)
