@@ -58,3 +58,26 @@ class Plugin(AbstractPlugin):
         rtn = json.loads(rtn_from_server)
         
         return rtn
+    
+    def getEmotions(self):
+        params = dict([('access_token', self.access_token)])
+        url = 'https://api.weibo.com/2/emotions.json?%s'
+        rtn_from_server = self.getData(url % urllib.parse.urlencode(params)).decode('utf-8')
+        json_res = json.loads(rtn_from_server)
+        
+        rtn = {}
+        for emotion in json_res:
+            category = emotion['category']
+            if category == '':
+                category = '默认'
+                
+            if category not in rtn:
+                rtn[category] = []
+            rtn[category].append({'name':emotion['value'], 'url':emotion['url']})
+            pass
+        #print(rtn.keys())
+        
+        return rtn
+    
+    def getEmotionExpression(self):
+        return ('[', ']')

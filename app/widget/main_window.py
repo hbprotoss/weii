@@ -4,6 +4,7 @@
 import sys
 import os
 import configparser
+import imghdr
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -108,15 +109,16 @@ class MainWindow( QDialog ):
         Initiate all accounts stored in database
         @return: List of Account objects
         '''
+        # debug
         plugins = plugin.plugins
         username = 'hbprotoss'
-        sina = misc.Account()
-        sina.plugin = plugins['sina'].Plugin(
-            '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, {})
-        sina.service_icon = QPixmap(sina.plugin.service_icon)
-        sina.avater_manager = resource_manager.ResourceManager(username, 'avater')
-        sina.emotion_manager = resource_manager.ResourceManager(username, 'emotion')
-        sina.picture_manager = resource_manager.ResourceManager(username, 'piture')
+        sina = misc.Account(
+            plugins['sina'].Plugin(
+                '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, {}),
+            resource_manager.ResourceManager(username, 'avater'),
+            resource_manager.ResourceManager(username, 'emotion'),
+            resource_manager.ResourceManager(username, 'piture')
+        )
         
         return [sina]
     
@@ -280,7 +282,7 @@ class MainWindow( QDialog ):
     def renderUserInfo( self, account ):
         user_info = account.plugin.getUserInfo(account.plugin.id)
         avater = account.avater_manager.get(user_info['avatar_large'])
-        self.avater.setPixmap( QPixmap.fromImage(avater).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
+        self.avater.setPixmap( QPixmap(avater, imghdr.what(avater)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
         self.account.setText( str( user_info['screen_name'] ) )
         self.fans.setText( '粉丝(%s)' % str( user_info['followers_count'] ) )
         self.following.setText( '关注(%s)' % str( user_info['friends_count'] ) )

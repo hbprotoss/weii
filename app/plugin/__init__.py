@@ -293,6 +293,13 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
+    def getEmotionExpression(self):
+        '''
+        Get regex of emotion escape sequence
+        @return: tuple. (prefix, suffix)
+        '''
+        raise NotImplementedError
+    
 plugins = None
 if __name__ == 'app.plugin':
     log = logger.getLogger(__name__)
