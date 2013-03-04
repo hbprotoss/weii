@@ -41,6 +41,8 @@ class DownloadTask(QThread):
                 
                 if 'thumbnail_pic' in tweet:
                     picture = account.picture_manager.get(tweet['thumbnail_pic'])
+                elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
+                    picture = account.picture_manager.get(tweet['retweeted_status']['thumbnail_pic'])
                 else:
                     picture = None
                 picture_list.append(picture)

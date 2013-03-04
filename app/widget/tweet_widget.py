@@ -15,6 +15,11 @@ class TweetText(Text):
     def __init__(self, text, parent=None):
         super(TweetText, self).__init__(text, parent)
         self.setWordWrap(True)
+        
+    def resizeEvent(self, ev):
+        #print(ev.oldSize().height(), ev.size().height(), self.heightForWidth(ev.oldSize().width()))
+        #super(TweetText, self).resizeEvent(ev)
+        self.setMaximumHeight(self.heightForWidth(ev.size().width()))
 
 class TweetWidget(QWidget):
     '''
@@ -37,7 +42,7 @@ class TweetWidget(QWidget):
         self.thumbnail = thumbnail
         
         self.setupUI()
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding))
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
         
     def renderUI(self, theme):
         '''
