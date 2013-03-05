@@ -92,19 +92,19 @@ class HomeWidget(abstract_widget.AbstractWidget):
                 )
                 i += 1
         
-    def refresh(self, account_list):
-        if not self.download_task.isRunning():
-            self.download_task.setAccountList(account_list)
-            log.debug('Starting thread')
-            self.download_task.start()
-            
 #    def refresh(self, account_list):
-#        self.clearWidget()
-#        tweets = json.load(open('json'))['statuses']
-#        for tweet in tweets:
-#            widget = TweetWidget(account_list[0], tweet, self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self)
-#            self.addWidget(widget)
-#        pass
+#        if not self.download_task.isRunning():
+#            self.download_task.setAccountList(account_list)
+#            log.debug('Starting thread')
+#            self.download_task.start()
+            
+    def refresh(self, account_list):
+        self.clearWidget()
+        tweets = json.load(open('json'))['statuses']
+        for tweet in tweets:
+            widget = TweetWidget(account_list[0], tweet, self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self)
+            self.addWidget(widget)
+        pass
     
 #    def refresh(self, account_list):
 #        self.addWidget(TweetWidget(None, next(self.tweets), self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self))

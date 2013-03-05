@@ -76,9 +76,12 @@ class TweetWidget(QWidget):
             if src[i] == self.account.emotion_exp.suffix:
                 return i + 1
             i += 1
-        return i
+        return i + 1
         
     def formatLink(self, src):
+        if len(src) == 0:
+            return src
+        
         if src[0] == '@':
             rtn = '<a style="text-decoration:none" href="user:%s">%s</a>' % (src[1:], src)
         elif src[0] == 'h':
@@ -125,7 +128,8 @@ class TweetWidget(QWidget):
                     target.append((i, end))
                     i = end
                     pass
-                i += 1
+                else:
+                    i += 1
         except IndexError:
             pass
         
