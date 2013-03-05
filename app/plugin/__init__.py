@@ -189,12 +189,6 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getEmotions(self):
-        '''
-        @return: Emotion object. See documentation
-        '''
-        raise NotImplementedError
-    
     def sendTweet(self, text, pic=None):
         '''
         @param text: string. Origin tweet text. URLs aren't shortened. No URLEncoding.
@@ -290,6 +284,20 @@ class AbstractPlugin():
         '''
         Refresh service status
         @return: None
+        '''
+        raise NotImplementedError
+    
+    def getEmotions(self):
+        '''
+        @return: Emotion object. See documentation
+        '''
+        raise NotImplementedError
+
+    @staticmethod
+    def getEmotionExpression():
+        '''
+        Get regex of emotion escape sequence
+        @return: tuple. (prefix, suffix)
         '''
         raise NotImplementedError
     

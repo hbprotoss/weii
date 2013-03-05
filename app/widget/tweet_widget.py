@@ -3,18 +3,29 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from app import analyse_tweet
+at_terminator = set(''' ~!@#$%^&*()+`={}|[]\;':",./<>?~！￥×（）、；：‘’“”《》？，。''')
+url_legal = set('''!#$&'()*+,/:;=?@-._~'''
+                + ''.join([chr(c) for c in range(ord('0'), ord('9')+1)])
+                + ''.join([chr(c) for c in range(ord('a'), ord('z')+1)])
+                + ''.join([chr(c) for c in range(ord('A'), ord('Z')+1)]))
 
 class Text(QLabel):
     def __init__(self, text, parent=None):
-        rich_text = analyse_tweet.analyse(text)
-        super(Text, self).__init__(rich_text, parent)
+        super(Text, self).__init__(text, parent)
         self.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.TextSelectableByMouse)
         
 class TweetText(Text):
+    '''
+    Widget holding tweet body
+    '''
     def __init__(self, text, parent=None):
         super(TweetText, self).__init__(text, parent)
         self.setWordWrap(True)
+        
+    def resizeEvent(self, ev):
+        #print(ev.oldSize().height(), ev.size().height(), self.heightForWidth(ev.oldSize().width()))
+        #super(TweetText, self).resizeEvent(ev)
+        self.setMaximumHeight(self.heightForWidth(ev.size().width()))
 
 class TweetWidget(QWidget):
     '''
@@ -37,7 +48,113 @@ class TweetWidget(QWidget):
         self.thumbnail = thumbnail
         
         self.setupUI()
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding))
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
+        
+
+    def findAtEnding(self, src, start):
+        i = start
+        length = len(src)
+        while(i < length):
+            if src[i] in at_terminator:
+                return i
+            i += 1
+        return i
+    
+    def findUrlEnding(self, src, start):
+        i = start
+        length = len(src)
+        while(i < length):
+            if src[i] not in url_legal:
+                return i
+            i += 1
+        return i
+    
+    def findEmotionEnding(self, src, start):
+        i = start
+        length = len(src)
+        while(i < length):
+            if src[i] == self.account.emotion_exp.suffix:
+                return i + 1
+            i += 1
+        return i
+        
+    def formatLink(self, src):
+        if src[0] == '@':
+            rtn = '<a style="text-decoration:none" href="user:%s">%s</a>' % (src[1:], src)
+        elif src[0] == 'h':
+            rtn = '<a style="text-decoration:none" href="%s">%s</a>' % (src, src)
+        elif src[0] == self.account.emotion_exp.prefix:
+            try:
+                emotion_path = self.account.emotion_manager.get(
+                    self.account.emotion_dict[src]
+                )
+                rtn = '<img src="%s" />' % emotion_path
+            except KeyError:
+                # Maybe emotion can't be found. src is normal text.
+                rtn = src
+        else:
+            rtn = src
+        return rtn
+    
+    def analyse(self, src):
+        length = len(src)
+        i = 0
+        target = []
+        try:
+            while(i < length):
+                # At
+                if src[i] == '@':
+                    end = self.findAtEnding(src, i+1)
+                    target.append((i, end))
+                    i = end
+                # URL
+                elif (src[i] == 'h' and src[i+1] == 't' and src[i+2] == 't' and src[i+3] == 'p'):
+                    # http
+                    if(src[i+4] == 's' and src[i+5] == ':' and src[i+6] == '/' and src[i+7] == '/'):
+                        end = self.findUrlEnding(src, i+8)
+                        target.append((i, end))
+                        i = end
+                    # https
+                    elif(src[i+4] == ':' and src[i+5] == '/' and src[i+6] == '/'):
+                        end = self.findUrlEnding(src, i+7)
+                        target.append((i, end))
+                        i = end
+                # emotion
+                elif src[i] == self.account.emotion_exp.prefix:
+                    end = self.findEmotionEnding(src, i+1)
+                    target.append((i, end))
+                    i = end
+                    pass
+                i += 1
+        except IndexError:
+            pass
+        
+        if(len(target) == 0):
+            target.append((0, len(target)+1))
+        
+    #    for item in target:
+    #        print(src[item[0] : item[1]])
+            
+        seg_list = []
+        try:
+            for index,item in enumerate(target):
+                seg = src[item[0] : item[1]]
+                seg = self.formatLink(seg)
+                seg_list.append(seg)
+                
+                seg = src[ item[1] : target[index+1][0] ]
+                seg = self.formatLink(seg)
+                seg_list.append(seg)
+            pass
+        except IndexError:
+            seg_list.append(src[ item[1] : ])
+            pass
+        
+        rtn = ''.join(seg_list)
+        if not (target[0][0] == 0):
+            rtn = src[:target[0][0]] + rtn 
+        return rtn
+
         
     def renderUI(self, theme):
         '''
@@ -65,7 +182,9 @@ class TweetWidget(QWidget):
         ## user, source, service
         h1 = QHBoxLayout()
         v2.addLayout(h1)
-        label_user = Text('@' + str(self.tweet['user']['screen_name']), self)
+        label_user = Text(
+            self.analyse('@' + str(self.tweet['user']['screen_name'])), self
+        )
         #label_source = QLabel(self.tweet['source'])
         label_service_icon = QLabel(self)
         label_service_icon.setPixmap(self.account.service_icon)
@@ -75,7 +194,9 @@ class TweetWidget(QWidget):
         h1.addWidget(label_service_icon)
         
         ## tweet content
-        label_tweet = TweetText(self.tweet['text'], self)
+        label_tweet = TweetText(
+            self.analyse(self.tweet['text']), self
+        )
         v2.addWidget(label_tweet)
         
         ## retweet if exists
@@ -91,13 +212,17 @@ class TweetWidget(QWidget):
             
             h3 = QHBoxLayout()
             v3.addLayout(h3)
-            label_retweet_user = Text('@' + retweet['user']['screen_name'], self)
+            label_retweet_user = Text(
+                self.analyse('@' + retweet['user']['screen_name']), self
+            )
             #label_retweet_source = QLabel(retweet['source'])
             h3.addWidget(label_retweet_user)
             #h3.addWidget(label_retweet_source)
             h3.addStretch()
             
-            label_retweet = TweetText(retweet['text'], self)
+            label_retweet = TweetText(
+                self.analyse(retweet['text']), self
+            )
             v3.addWidget(label_retweet)
             
             if(self.thumbnail):

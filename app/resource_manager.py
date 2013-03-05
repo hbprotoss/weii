@@ -3,9 +3,6 @@
 import os
 import hashlib
 import urllib.request
-import imghdr
-
-from PyQt4.QtGui import *
 
 from app import constant
 from app import logger
@@ -18,8 +15,8 @@ class ResourceManager:
     Get resources through memory, disk, Internet in turn.
     '''
     
-    def __init__(self, username, resource_name, proxy={}):
-        self.path = os.path.join(constant.DATA_ROOT, username, resource_name)
+    def __init__(self, path, proxy={}):
+        self.path = path
         try:
             os.makedirs(self.path)
         except:
@@ -39,20 +36,20 @@ class ResourceManager:
         
         # Resource in memory
         if url_hash in self.resource:
-            log.debug('Found in memory')
+            #log.debug('Found in memory')
             return self.resource[url_hash]
         
         # Resource in disk
         abs_path = os.path.join(self.path, url_hash)
         if os.path.exists(abs_path):
-            log.debug('Found in disk')
-            res = QImage(abs_path, imghdr.what(abs_path))
-            self.resource[url_hash] = res
-            return res
+            #log.debug('Found in disk')
+            #res = QImage(abs_path, imghdr.what(abs_path))
+            self.resource[url_hash] = abs_path
+            return abs_path
         
         # Resource from Internet
         log.debug('Found from Internet')
         self.opener.retrieve(url, abs_path)
-        res = QImage(abs_path, imghdr.what(abs_path))
-        self.resource[url_hash] = res
-        return res
+        #res = QImage(abs_path, imghdr.what(abs_path))
+        self.resource[url_hash] = abs_path
+        return abs_path

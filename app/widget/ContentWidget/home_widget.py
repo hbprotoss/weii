@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import json
+import imghdr
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -41,6 +42,8 @@ class DownloadTask(QThread):
                 
                 if 'thumbnail_pic' in tweet:
                     picture = account.picture_manager.get(tweet['thumbnail_pic'])
+                elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
+                    picture = account.picture_manager.get(tweet['retweeted_status']['thumbnail_pic'])
                 else:
                     picture = None
                 picture_list.append(picture)
@@ -74,11 +77,13 @@ class HomeWidget(abstract_widget.AbstractWidget):
             length = len(tweet_data.tweet_list)
             i = 0
             while(i < length):
-                avater = QPixmap.fromImage(tweet_data.avater_list[i])
+                file = tweet_data.avater_list[i]
+                avater = QPixmap(file, imghdr.what(file))
                 avater = avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE, transformMode=Qt.SmoothTransformation)
                 
-                if tweet_data.picture_list[i]:
-                    picture = QPixmap.fromImage(tweet_data.picture_list[i])
+                file = tweet_data.picture_list[i]
+                if file:
+                    picture = QPixmap(file, imghdr.what(file))
                 else:
                     picture = None
                     
