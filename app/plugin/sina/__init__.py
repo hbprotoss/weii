@@ -79,5 +79,6 @@ class Plugin(AbstractPlugin):
         
         return rtn
     
-    def getEmotionExpression(self):
+    @staticmethod
+    def getEmotionExpression():
         return ('[', ']')

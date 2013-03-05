@@ -115,9 +115,9 @@ class MainWindow( QDialog ):
         sina = misc.Account(
             plugins['sina'].Plugin(
                 '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, {}),
-            resource_manager.ResourceManager(username, 'avater'),
-            resource_manager.ResourceManager(username, 'emotion'),
-            resource_manager.ResourceManager(username, 'piture')
+            resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'avater')),
+            resource_manager.ResourceManager(os.path.join(plugins['sina'].BASE_DIR, 'emotion')),
+            resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'piture'))
         )
         
         return [sina]

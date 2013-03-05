@@ -15,8 +15,8 @@ class ResourceManager:
     Get resources through memory, disk, Internet in turn.
     '''
     
-    def __init__(self, username, resource_name, proxy={}):
-        self.path = os.path.join(constant.DATA_ROOT, username, resource_name)
+    def __init__(self, path, proxy={}):
+        self.path = path
         try:
             os.makedirs(self.path)
         except:
