@@ -72,9 +72,16 @@ class TweetWidget(QWidget):
     def findEmotionEnding(self, src, start):
         i = start
         length = len(src)
+        prefix_amount = 1       # In case of recursively having emotion expression.
         while(i < length):
-            if src[i] == self.account.emotion_exp.suffix:
-                return i + 1
+            if src[i] == self.account.emotion_exp.prefix:
+                prefix_amount += 1
+            elif src[i] == self.account.emotion_exp.suffix:
+                if prefix_amount == 1:
+                    return i + 1
+                else:
+                    prefix_amount -= 1
+
             i += 1
         return i + 1
         
@@ -93,8 +100,12 @@ class TweetWidget(QWidget):
                 )
                 rtn = '<img src="%s" />' % emotion_path
             except KeyError:
-                # Maybe emotion can't be found. src is normal text.
-                rtn = src
+                # FIXME: [[xx], [xx] won't be analysed as emotion
+                # Maybe emotion can't be found. Analyse the text between prefix and suffix.
+                end = len(src) - 1 if src[len(src)-1] == self.account.emotion_exp.suffix else len(src)
+                rtn = self.analyse(src[1 : end])
+                end_chr = self.account.emotion_exp.suffix if src[len(src)-1] == self.account.emotion_exp.suffix else ''
+                rtn = ''.join((src[0], rtn, end_chr))
         else:
             rtn = src
         return rtn
