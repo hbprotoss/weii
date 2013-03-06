@@ -90,11 +90,14 @@ class MainWindow( QDialog ):
 
         self.account_list = self.initAccount()
         self.setMinimumSize( 400, 600 )
-        self.setupUI()
         self.theme = self.loadTheme( 'default' )
+        self.setupUI()
         self.renderUI( self.theme )
         self.renderUserInfo( self.account_list[0] )
+        
+        # Show home by default
         self.home.setStyleSheet( 'background-color: %s;' % self.theme.skin['icon-chosen'] )
+        
         btns = [self.home, self.at, self.comment, self.private, self.profile, self.search]
         self.button_group = ButtonGroup( btns,
             lambda button: button.setStyleSheet('background-color: %s;' % self.theme.skin['icon-chosen'])
@@ -130,9 +133,9 @@ class MainWindow( QDialog ):
         '''
         rtn = {}
         
-        rtn[self.home] = home_widget.HomeWidget(self)
+        rtn[self.home] = home_widget.HomeWidget(self.theme, self)
         
-        rtn[self.at] = home_widget.HomeWidget(self)
+        rtn[self.at] = home_widget.HomeWidget(self.theme, self)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('comment'))
@@ -254,6 +257,7 @@ class MainWindow( QDialog ):
         theme.info = dict( conf.items( INFO ) )
         theme.skin = dict( conf.items( SKIN ) )
         theme.skin['background-image'] = os.path.join( THEME_ROOT, theme.skin['background-image'] )
+        theme.skin['loading-image'] = os.path.join( THEME_ROOT, theme.skin['loading-image'] )
         theme.icon = {k:os.path.join( ICON_ROOT, v ) for k, v in conf.items( ICON )}
         theme.path = THEME_ROOT
 

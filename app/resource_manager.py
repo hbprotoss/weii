@@ -32,6 +32,8 @@ class ResourceManager:
         Get resource specified by url.
         @param url: string.
         '''
+        # TODO: Add asynchronous method
+        
         url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()
         
         # Resource in memory

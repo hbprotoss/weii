@@ -41,11 +41,13 @@ class DownloadTask(QThread):
                 avater_list.append(avater)
                 
                 if 'thumbnail_pic' in tweet:
-                    picture = account.picture_manager.get(tweet['thumbnail_pic'])
+                    #picture = account.picture_manager.get(tweet['thumbnail_pic'])
+                    picture = True
                 elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
-                    picture = account.picture_manager.get(tweet['retweeted_status']['thumbnail_pic'])
+                    #picture = account.picture_manager.get(tweet['retweeted_status']['thumbnail_pic'])
+                    picture = True
                 else:
-                    picture = None
+                    picture = False
                 picture_list.append(picture)
                 
             data_list.append(
@@ -60,11 +62,10 @@ class HomeWidget(abstract_widget.AbstractWidget):
     Home tab
     '''
     
-    def __init__(self, parent=None):
-        super(HomeWidget, self).__init__(parent)
+    def __init__(self, theme, parent=None):
+        super(HomeWidget, self).__init__(theme, parent)
         self.download_task = DownloadTask()
-        self.service_icon = QPixmap(constant.TEST_SERVICE)
-        self.avater = QPixmap(constant.DEFAULT_AVATER)
+        self.loading_image = QMovie(theme.skin['loading-image'])
         
         self.connect(self.download_task, SIGNAL(SIGNAL_FINISH), self.updateUI)
         
@@ -81,9 +82,9 @@ class HomeWidget(abstract_widget.AbstractWidget):
                 avater = QPixmap(file, imghdr.what(file))
                 avater = avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE, transformMode=Qt.SmoothTransformation)
                 
-                file = tweet_data.picture_list[i]
-                if file:
-                    picture = QPixmap(file, imghdr.what(file))
+                has_picture = tweet_data.picture_list[i]
+                if has_picture:
+                    picture = self.loading_image
                 else:
                     picture = None
                     
@@ -92,19 +93,19 @@ class HomeWidget(abstract_widget.AbstractWidget):
                 )
                 i += 1
         
-#    def refresh(self, account_list):
-#        if not self.download_task.isRunning():
-#            self.download_task.setAccountList(account_list)
-#            log.debug('Starting thread')
-#            self.download_task.start()
-            
     def refresh(self, account_list):
-        self.clearWidget()
-        tweets = json.load(open('json'))['statuses']
-        for tweet in tweets:
-            widget = TweetWidget(account_list[0], tweet, self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self)
-            self.addWidget(widget)
-        pass
+        if not self.download_task.isRunning():
+            self.download_task.setAccountList(account_list)
+            log.debug('Starting thread')
+            self.download_task.start()
+            
+#    def refresh(self, account_list):
+#        self.clearWidget()
+#        tweets = json.load(open('json'))['statuses']
+#        for tweet in tweets:
+#            widget = TweetWidget(account_list[0], tweet, self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self)
+#            self.addWidget(widget)
+#        pass
     
 #    def refresh(self, account_list):
 #        self.addWidget(TweetWidget(None, next(self.tweets), self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self))

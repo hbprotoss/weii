@@ -37,7 +37,7 @@ class TweetWidget(QWidget):
         @param account: misc.Account object
         @param tweet: dict of tweet. See doc/插件接口设计.pdf: 单条微博
         @param avater: QPixmap of user avater
-        @param thumbnail: QPixmap of thumbnail related to tweet
+        @param thumbnail: QMovie showing that the thumbnail is still loading from Internet
         @return: None
         '''
         super(TweetWidget, self).__init__(parent)
@@ -242,7 +242,8 @@ class TweetWidget(QWidget):
             
             if(self.thumbnail):
                 label_thumbnail = QLabel()
-                label_thumbnail.setPixmap(self.thumbnail)
+                label_thumbnail.setMovie(self.thumbnail)
+                self.thumbnail.start()
                 v3.addWidget(label_thumbnail)
                 
             h4 = QHBoxLayout()
@@ -257,10 +258,9 @@ class TweetWidget(QWidget):
         ## No retweet and has picture
         elif(self.thumbnail):
             label_thumbnail = QLabel()
-            label_thumbnail.setPixmap(self.thumbnail)
+            label_thumbnail.setMovie(self.thumbnail)
+            self.thumbnail.start()
             v2.addWidget(label_thumbnail)
-        
-        #v2.addStretch()
         
         ## time, repost, comment
         h2 = QHBoxLayout()
@@ -273,6 +273,7 @@ class TweetWidget(QWidget):
         h2.addWidget(label_tweet_repost)
         h2.addWidget(label_tweet_comment)
         
+        v2.addStretch()
 #    def paintEvent(self, ev):
 #        qp = QPainter()
 #        qp.begin(self)

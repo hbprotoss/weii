@@ -8,8 +8,10 @@ class AbstractWidget(QWidget):
     Abstract widget for holding content
     '''
     
-    def __init__(self, parent=None):
-        super(QWidget, self).__init__(parent)
+    def __init__(self, theme, parent=None):
+        super(AbstractWidget, self).__init__(parent)
+        self.theme= theme
+        
         frame_layout = QVBoxLayout()
         frame_layout.setMargin(0)
         self.__layout = QVBoxLayout()
