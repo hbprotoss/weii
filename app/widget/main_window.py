@@ -117,9 +117,9 @@ class MainWindow( QDialog ):
         username = 'hbprotoss'
         sina = misc.Account(
             plugins['sina'].Plugin(
-                '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None,
-                {'http':'http://127.0.0.1:10001', 'https':'http://127.0.0.1:10001'}),
-            resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'avater')),
+                '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, {}),
+                #{'http':'http://127.0.0.1:10001', 'https':'http://127.0.0.1:10001'}),
+            resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'avatar')),
             resource_manager.ResourceManager(os.path.join(plugins['sina'].BASE_DIR, 'emotion')),
             resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'piture'))
         )
@@ -171,16 +171,16 @@ class MainWindow( QDialog ):
         vbox.setContentsMargins( 5, 5, 5, 5 )
         self.setLayout( vbox )
 
-        # Upper, starting with avater
+        # Upper, starting with avatar
         h1 = QHBoxLayout()
         vbox.addLayout( h1 )
 
-        # # Left, avater
-        self.avater = QLabel(self)
-        h1.addWidget( self.avater )
-        self.avater.setMinimumSize( constant.AVATER_SIZE, constant.AVATER_SIZE )
-        self.avater.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-        self.avater.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
+        # # Left, avatar
+        self.avatar = QLabel(self)
+        h1.addWidget( self.avatar )
+        self.avatar.setMinimumSize( constant.AVATER_SIZE, constant.AVATER_SIZE )
+        self.avatar.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+        self.avatar.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
 
         # # Right
         v11 = QVBoxLayout()
@@ -286,8 +286,8 @@ class MainWindow( QDialog ):
 
     def renderUserInfo( self, account ):
         user_info = account.plugin.getUserInfo(account.plugin.id)
-        avater = account.avater_manager.get(user_info['avatar_large'])
-        self.avater.setPixmap( QPixmap(avater, imghdr.what(avater)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
+        avatar = account.avatar_manager.get(user_info['avatar_large'])
+        self.avatar.setPixmap( QPixmap(avatar, imghdr.what(avatar)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
         self.account.setText( str( user_info['screen_name'] ) )
         self.fans.setText( '粉丝(%s)' % str( user_info['followers_count'] ) )
         self.following.setText( '关注(%s)' % str( user_info['friends_count'] ) )

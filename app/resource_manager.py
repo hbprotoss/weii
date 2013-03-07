@@ -31,6 +31,7 @@ class ResourceManager:
         '''
         Get resource specified by url.
         @param url: string.
+        @return: string. Absolute file path of resource.
         '''
         # TODO: Add asynchronous method
         
