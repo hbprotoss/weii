@@ -28,27 +28,13 @@ class DownloadTask(QThread):
         self.account_list = account_list
         
     def run(self):
-        data_list = []
-        
+        rtn = []
         for account in self.account_list:
             tweet_list = account.plugin.getTimeline()
-            picture_list = []
-            
-            for tweet in tweet_list:
-                if 'thumbnail_pic' in tweet:
-                    picture = True
-                elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
-                    picture = True
-                else:
-                    picture = False
-                picture_list.append(picture)
-                
-            data_list.append(
-                TweetData(account, tweet_list, picture_list)
-            )
+            rtn.append((account, tweet_list))
             
         log.debug('Download finished')
-        self.emit(SIGNAL(SIGNAL_FINISH), data_list)
+        self.emit(SIGNAL(SIGNAL_FINISH), rtn)
 
 class HomeWidget(abstract_widget.AbstractWidget):
     '''
@@ -70,38 +56,30 @@ class HomeWidget(abstract_widget.AbstractWidget):
         # debug
         self.tweets = (tweet for tweet in json.load(open('json'))['statuses']) 
         
-    def updateUI(self, data_list):
+    def updateUI(self, data):
         log.debug('updateUI')
-        for tweet_data in data_list:
-            length = len(tweet_data.tweet_list)
-            i = 0
-            while(i < length):
+        for account,tweet_list in data:
+            for tweet in tweet_list:
                 avatar = self.small_loading_image
-                
-                has_picture = tweet_data.picture_list[i]
-                if has_picture:
-                    picture = self.loading_image
-                else:
-                    picture = None
+                picture = self.loading_image
                     
                 self.addWidget(
-                    TweetWidget(tweet_data.account, tweet_data.tweet_list[i], avatar, picture, self)
+                    TweetWidget(account, tweet, avatar, picture, self)
                 )
-                i += 1
         
-    def refresh(self, account_list):
-        if not self.download_task.isRunning():
-            self.download_task.setAccountList(account_list)
-            log.debug('Starting thread')
-            self.download_task.start()
-            
 #    def refresh(self, account_list):
-#        self.clearWidget()
-#        tweets = json.load(open('json'))['statuses']
-#        for tweet in tweets:
-#            widget = TweetWidget(account_list[0], tweet, self.small_loading_image, self.loading_image, self)
-#            self.addWidget(widget)
-#        pass
+#        if not self.download_task.isRunning():
+#            self.download_task.setAccountList(account_list)
+#            log.debug('Starting thread')
+#            self.download_task.start()
+            
+    def refresh(self, account_list):
+        self.clearWidget()
+        tweets = json.load(open('json'))['statuses']
+        for tweet in tweets:
+            widget = TweetWidget(account_list[0], tweet, self.small_loading_image, self.loading_image, self)
+            self.addWidget(widget)
+        pass
     
 #    def refresh(self, account_list):
 #        self.addWidget(TweetWidget(None, next(self.tweets), self.avatar.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self))

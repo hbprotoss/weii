@@ -93,7 +93,7 @@ class TweetWidget(QWidget):
         g_thread_pool.start(avatar_task)
         
         # Start downloading thumbnail if exists
-        if self.thumbnail:
+        try:
             if 'thumbnail_pic' in tweet:
                 url = tweet['thumbnail_pic']
             elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
@@ -101,6 +101,9 @@ class TweetWidget(QWidget):
             thumbnail_task = PictureTask(url, self.account.picture_manager, self.label_thumbnail)
             self.connect(thumbnail_task.emitter, SIGNAL(SIGNAL_FINISH), self.updateUI)
             g_thread_pool.start(thumbnail_task)
+        except UnboundLocalError:
+            # No picture
+            pass
         
 
     def findAtEnding(self, src, start):
@@ -294,7 +297,7 @@ class TweetWidget(QWidget):
             )
             v3.addWidget(label_retweet)
             
-            if(self.thumbnail):
+            if('thumbnail_pic' in retweet):
                 self.label_thumbnail = QLabel()
                 self.label_thumbnail.setMovie(self.thumbnail)
                 #self.thumbnail.start()
@@ -310,7 +313,7 @@ class TweetWidget(QWidget):
             h4.addWidget(label_retweet_repost)
             h4.addWidget(label_retweet_comment)
         ## No retweet and has picture
-        elif(self.thumbnail):
+        elif('thumbnail_pic' in self.tweet):
             self.label_thumbnail = QLabel()
             self.label_thumbnail.setMovie(self.thumbnail)
             #self.thumbnail.start()
