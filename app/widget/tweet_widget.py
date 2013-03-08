@@ -35,7 +35,7 @@ class TweetText(Text):
         #super(TweetText, self).resizeEvent(ev)
         self.setMaximumHeight(self.heightForWidth(ev.size().width()))
 
-class PictureTask(QRunnable):
+class PictureTask(QThread):
     '''
     Task to download picture
     '''
@@ -46,18 +46,18 @@ class PictureTask(QRunnable):
         self.manager = manager
         self.widget = widget
         self.size = size
-        self.emitter = QObject()
         
     def run(self):
         try:
             pic_path = self.manager.get(self.url)
-            self.emitter.emit(SIGNAL(SIGNAL_FINISH), self.widget, pic_path, self.size)
+            self.emit(SIGNAL(SIGNAL_FINISH), self.widget, pic_path, self.size)
         except Exception as e:
             print(e)
 
+# TODO: Implement a thread pool
 # Global instance of thread pool
-g_thread_pool = QThreadPool.globalInstance()
-g_thread_pool.setMaxThreadCount(6)
+#g_thread_pool = QThreadPool.globalInstance()
+#g_thread_pool.setMaxThreadCount(6)
 #g_thread_pool.setExpiryTimeout(-1)              # Threads never expire
 
 class TweetWidget(QWidget):
@@ -86,11 +86,11 @@ class TweetWidget(QWidget):
         # Start downloading avatar
         # FIXME: TypeError: updateUI() takes exactly 2 arguments (1 given)
         avatar_url = tweet['user']['avatar_large']
-        avatar_task = PictureTask(avatar_url, self.account.avatar_manager, self.label_avatar,
+        self.avatar_task = PictureTask(avatar_url, self.account.avatar_manager, self.label_avatar,
             QSize(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE)
         )
-        self.connect(avatar_task.emitter, SIGNAL(SIGNAL_FINISH), self.updateUI)
-        g_thread_pool.start(avatar_task)
+        self.connect(self.avatar_task, SIGNAL(SIGNAL_FINISH), self.updateUI)
+        self.avatar_task.start()
         
         # Start downloading thumbnail if exists
         try:
@@ -98,9 +98,9 @@ class TweetWidget(QWidget):
                 url = tweet['thumbnail_pic']
             elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
                 url = tweet['retweeted_status']['thumbnail_pic']
-            thumbnail_task = PictureTask(url, self.account.picture_manager, self.label_thumbnail)
-            self.connect(thumbnail_task.emitter, SIGNAL(SIGNAL_FINISH), self.updateUI)
-            g_thread_pool.start(thumbnail_task)
+            self.thumbnail_task = PictureTask(url, self.account.picture_manager, self.label_thumbnail)
+            self.connect(self.thumbnail_task, SIGNAL(SIGNAL_FINISH), self.updateUI)
+            self.thumbnail_task.start()
         except UnboundLocalError:
             # No picture
             pass

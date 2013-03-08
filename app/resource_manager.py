@@ -33,7 +33,6 @@ class ResourceManager:
         @param url: string.
         @return: string. Absolute file path of resource.
         '''
-        # TODO: Add asynchronous method
         
         url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()
         
