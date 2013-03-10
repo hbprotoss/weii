@@ -106,6 +106,7 @@ class MainWindow( QDialog ):
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
         
+        self.connect(self.scroll_area.verticalScrollBar(), SIGNAL('valueChanged(int)'), self.onValueChanged_ScrollBar)
     
     def initAccount(self):
         '''
@@ -309,3 +310,8 @@ class MainWindow( QDialog ):
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
         self.button_to_widget[button].refresh(self.account_list)
+        
+    def onValueChanged_ScrollBar(self, value):
+        if value > self.scroll_area.verticalScrollBar().maximum() * 0.9:
+            button = self.button_group.getCurrent()
+            self.button_to_widget[button].appendNew(self.account_list)

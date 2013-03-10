@@ -16,17 +16,23 @@ class AbstractWidget(QWidget):
         frame_layout.setMargin(0)
         self.__layout = QVBoxLayout()
         self.__layout.setMargin(0)
-        self.__layout.setAlignment(Qt.AlignTop)
+        self.__layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
         frame_layout.addLayout(self.__layout)
         frame_layout.addStretch()
         self.setLayout(frame_layout)
         
-    def clearWidget(self):
+    def count(self):
+        return self.__layout.count()
+        
+    def clearWidget(self, widget):
+        widget.hide()
+        self.__layout.removeWidget(widget)
+        
+    def clearAllWidgets(self):
         while(True):
             child = self.__layout.itemAt(0)
             if child:
-                child.widget().hide()
-                self.__layout.removeWidget(child.widget())
+                self.clearWidget(child.widget())
                 del child
             else:
                 break

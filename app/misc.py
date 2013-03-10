@@ -36,7 +36,10 @@ class Account:
         self.emotion_dict = self.getEmotionDict(self.emotion_list)
             
         self.emotion_exp = EmotionExp._make(self.plugin.getEmotionExpression())
-        pass
+        
+        # for append new tweet
+        self.last_tweet_id = None
+        self.last_tweet_time = None
         
     def getEmotionDict(self, emotion_list):
         rtn = {}
