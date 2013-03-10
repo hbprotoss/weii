@@ -74,13 +74,14 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getTimeline(self, id='', count=20, page=1, feature=0):
+    def getTimeline(self, id=None, since=None, count=20, page=1):
         '''
         Get user timeline
-        @param id: string. User ID. '' Means current user who has logged in.
+        @param id: string. User ID. None means current user who has logged in.
+        @param since: tuple. Starting point(tweet_id, time). None means get newest info.
+                      Return tweets after this point.
         @param count: int. Tweets per page
         @param page: int. Page number
-        @param feature: int. Tweets type. See documentation. (This parameter can be ignored)
         @return: List of tweet objects. See documentation
         '''
         raise NotImplementedError
