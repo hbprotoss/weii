@@ -79,6 +79,7 @@ class TweetWidget(QWidget):
         self.tweet = tweet
         self.avatar = avatar
         self.thumbnail = thumbnail
+        self.pic_url = ''
         
         self.setupUI()
         self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
@@ -298,6 +299,7 @@ class TweetWidget(QWidget):
             v3.addWidget(label_retweet)
             
             if('thumbnail_pic' in retweet):
+                self.pic_url = retweet['original_pic']
                 self.label_thumbnail = QLabel()
                 self.label_thumbnail.setMovie(self.thumbnail)
                 #self.thumbnail.start()
@@ -314,6 +316,7 @@ class TweetWidget(QWidget):
             h4.addWidget(label_retweet_comment)
         ## No retweet and has picture
         elif('thumbnail_pic' in self.tweet):
+            self.pic_url = self.tweet['original_pic']
             self.label_thumbnail = QLabel()
             self.label_thumbnail.setMovie(self.thumbnail)
             #self.thumbnail.start()
