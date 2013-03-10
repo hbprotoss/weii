@@ -9,102 +9,126 @@ from widget.ContentWidget import abstract_widget
 from widget.tweet_widget import TweetWidget
 from app import constant
 from app import logger
+from IPython.core.page import page
 
 log = logger.getLogger(__name__)
 SIGNAL_FINISH = 'downloadFinish'
 
 class TweetData():
-    def __init__(self, account, tweet_list, avater_list, picture_list):
+    def __init__(self, account, tweet_list, picture_list):
         self.account = account
         self.tweet_list = tweet_list
-        self.avater_list = avater_list
         self.picture_list = picture_list
 
 class DownloadTask(QThread):
     def __init__(self):
         #super(DownloadTask, self).__init__(self)
         QThread.__init__(self)
+        self.page = 1
+        self.count = 20
         
     def setAccountList(self, account_list):
         self.account_list = account_list
+    
+    def setParams(self, page=1, count=20):
+        self.page = page
+        self.count = count
         
     def run(self):
-        data_list = []
-        
+        rtn = []
         for account in self.account_list:
-            tweet_list = account.plugin.getTimeline()
-            avater_list = []
-            picture_list = []
-            
-            for tweet in tweet_list:
-                avater = account.avater_manager.get(tweet['user']['avatar_large'])
-                avater_list.append(avater)
-                
-                if 'thumbnail_pic' in tweet:
-                    picture = account.picture_manager.get(tweet['thumbnail_pic'])
-                elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
-                    picture = account.picture_manager.get(tweet['retweeted_status']['thumbnail_pic'])
-                else:
-                    picture = None
-                picture_list.append(picture)
-                
-            data_list.append(
-                TweetData(account, tweet_list, avater_list, picture_list)
+            tweet_list = account.plugin.getTimeline(max_point=(account.last_tweet_id, account.last_tweet_time),
+                page=self.page, count=self.count
             )
+            rtn.append((account, tweet_list))
             
         log.debug('Download finished')
-        self.emit(SIGNAL(SIGNAL_FINISH), data_list)
+        self.emit(SIGNAL(SIGNAL_FINISH), rtn)
 
 class HomeWidget(abstract_widget.AbstractWidget):
     '''
     Home tab
     '''
     
-    def __init__(self, parent=None):
-        super(HomeWidget, self).__init__(parent)
+    def __init__(self, theme, parent=None):
+        super(HomeWidget, self).__init__(theme, parent)
+        self.theme = theme
         self.download_task = DownloadTask()
-        self.service_icon = QPixmap(constant.TEST_SERVICE)
-        self.avater = QPixmap(constant.DEFAULT_AVATER)
+        self.loading_image = QMovie(theme.skin['loading-image'])
+        self.loading_image.start()
+        
+        self.small_loading_image = QMovie(theme.skin['loading-image'])
+        self.small_loading_image.setScaledSize(QSize(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE))
+        self.small_loading_image.start()
+        
+        image = QMovie(theme.skin['loading-image'])
+        image.setScaledSize(QSize(32, 32))
+        image.start()
+        self.refreshing_image = QLabel()
+        self.refreshing_image.setMovie(image)
+        self.refreshing_image.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+#        self.refreshing_image.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+#        self.refreshing_image.setFixedSize(32, 32)
+
+        self.currentPage = 1
         
         self.connect(self.download_task, SIGNAL(SIGNAL_FINISH), self.updateUI)
         
         # debug
-        self.tweets = (tweet for tweet in json.load(open('json'))['statuses']) 
+        #self.tweets = (tweet for tweet in json.load(open('json'))['statuses'])
         
-    def updateUI(self, data_list):
+    def updateUI(self, data):
         log.debug('updateUI')
-        for tweet_data in data_list:
-            length = len(tweet_data.tweet_list)
-            i = 0
-            while(i < length):
-                file = tweet_data.avater_list[i]
-                avater = QPixmap(file, imghdr.what(file))
-                avater = avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE, transformMode=Qt.SmoothTransformation)
+        self.clearWidget(self.refreshing_image)
+        for account,tweet_list in data:
+            # If it is refreshing, update max_point of account
+            if self.count() == 1:
+                account.last_tweet_id = tweet_list[0]['id']
+                account.last_tweet_time = tweet_list[0]['created_at']
                 
-                file = tweet_data.picture_list[i]
-                if file:
-                    picture = QPixmap(file, imghdr.what(file))
-                else:
-                    picture = None
+            for tweet in tweet_list:
+                avatar = self.small_loading_image
+                picture = self.loading_image
                     
                 self.addWidget(
-                    TweetWidget(tweet_data.account, tweet_data.tweet_list[i], avater, picture, self)
+                    TweetWidget(account, tweet, avatar, picture, self)
                 )
-                i += 1
+        
+    def appendNew(self, account_list):
+        if not self.download_task.isRunning():
+            self.refreshing_image.show()
+            self.insertWidget(-1, self.refreshing_image)
+            
+            self.download_task.setParams(self.currentPage)
+            self.currentPage += 1
+            self.download_task.setAccountList(account_list)
+            log.debug('Starting thread')
+            self.download_task.start()
         
     def refresh(self, account_list):
         if not self.download_task.isRunning():
+            for account in account_list:
+                account.last_tweet_id = 0
+                account.last_tweet_time = 0
+                
+            self.clearAllWidgets()
+            self.refreshing_image.show()
+            self.insertWidget(0, self.refreshing_image)
+            
+            self.download_task.setParams(1)
+            self.currentPage = 2
             self.download_task.setAccountList(account_list)
             log.debug('Starting thread')
             self.download_task.start()
             
 #    def refresh(self, account_list):
-#        self.clearWidget()
+#        account_list[0].last_tweet_id = account_list[0].last_tweet_time = 0
+#        self.clearAllWidgets()
 #        tweets = json.load(open('json'))['statuses']
 #        for tweet in tweets:
-#            widget = TweetWidget(account_list[0], tweet, self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self)
+#            widget = TweetWidget(account_list[0], tweet, self.small_loading_image, self.loading_image, self)
 #            self.addWidget(widget)
 #        pass
     
 #    def refresh(self, account_list):
-#        self.addWidget(TweetWidget(None, next(self.tweets), self.avater.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self))
+#        self.addWidget(TweetWidget(None, next(self.tweets), self.avatar.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self))

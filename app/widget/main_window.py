@@ -90,11 +90,14 @@ class MainWindow( QDialog ):
 
         self.account_list = self.initAccount()
         self.setMinimumSize( 400, 600 )
-        self.setupUI()
         self.theme = self.loadTheme( 'default' )
+        self.setupUI()
         self.renderUI( self.theme )
         self.renderUserInfo( self.account_list[0] )
+        
+        # Show home by default
         self.home.setStyleSheet( 'background-color: %s;' % self.theme.skin['icon-chosen'] )
+        
         btns = [self.home, self.at, self.comment, self.private, self.profile, self.search]
         self.button_group = ButtonGroup( btns,
             lambda button: button.setStyleSheet('background-color: %s;' % self.theme.skin['icon-chosen'])
@@ -103,6 +106,7 @@ class MainWindow( QDialog ):
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
         
+        self.connect(self.scroll_area.verticalScrollBar(), SIGNAL('valueChanged(int)'), self.onValueChanged_ScrollBar)
     
     def initAccount(self):
         '''
@@ -115,7 +119,8 @@ class MainWindow( QDialog ):
         sina = misc.Account(
             plugins['sina'].Plugin(
                 '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, {}),
-            resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'avater')),
+                #{'http':'http://127.0.0.1:10001', 'https':'http://127.0.0.1:10001'}),
+            resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'avatar')),
             resource_manager.ResourceManager(os.path.join(plugins['sina'].BASE_DIR, 'emotion')),
             resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'piture'))
         )
@@ -129,9 +134,9 @@ class MainWindow( QDialog ):
         '''
         rtn = {}
         
-        rtn[self.home] = home_widget.HomeWidget(self)
+        rtn[self.home] = home_widget.HomeWidget(self.theme, self)
         
-        rtn[self.at] = home_widget.HomeWidget(self)
+        rtn[self.at] = home_widget.HomeWidget(self.theme, self)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('comment'))
@@ -167,16 +172,16 @@ class MainWindow( QDialog ):
         vbox.setContentsMargins( 5, 5, 5, 5 )
         self.setLayout( vbox )
 
-        # Upper, starting with avater
+        # Upper, starting with avatar
         h1 = QHBoxLayout()
         vbox.addLayout( h1 )
 
-        # # Left, avater
-        self.avater = QLabel(self)
-        h1.addWidget( self.avater )
-        self.avater.setMinimumSize( constant.AVATER_SIZE, constant.AVATER_SIZE )
-        self.avater.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-        self.avater.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
+        # # Left, avatar
+        self.avatar = QLabel(self)
+        h1.addWidget( self.avatar )
+        self.avatar.setMinimumSize( constant.AVATER_SIZE, constant.AVATER_SIZE )
+        self.avatar.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+        self.avatar.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
 
         # # Right
         v11 = QVBoxLayout()
@@ -253,6 +258,7 @@ class MainWindow( QDialog ):
         theme.info = dict( conf.items( INFO ) )
         theme.skin = dict( conf.items( SKIN ) )
         theme.skin['background-image'] = os.path.join( THEME_ROOT, theme.skin['background-image'] )
+        theme.skin['loading-image'] = os.path.join( THEME_ROOT, theme.skin['loading-image'] )
         theme.icon = {k:os.path.join( ICON_ROOT, v ) for k, v in conf.items( ICON )}
         theme.path = THEME_ROOT
 
@@ -281,8 +287,8 @@ class MainWindow( QDialog ):
 
     def renderUserInfo( self, account ):
         user_info = account.plugin.getUserInfo(account.plugin.id)
-        avater = account.avater_manager.get(user_info['avatar_large'])
-        self.avater.setPixmap( QPixmap(avater, imghdr.what(avater)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
+        avatar = account.avatar_manager.get(user_info['avatar_large'])
+        self.avatar.setPixmap( QPixmap(avatar, imghdr.what(avatar)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
         self.account.setText( str( user_info['screen_name'] ) )
         self.fans.setText( '粉丝(%s)' % str( user_info['followers_count'] ) )
         self.following.setText( '关注(%s)' % str( user_info['friends_count'] ) )
@@ -304,3 +310,8 @@ class MainWindow( QDialog ):
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
         self.button_to_widget[button].refresh(self.account_list)
+        
+    def onValueChanged_ScrollBar(self, value):
+        if value > self.scroll_area.verticalScrollBar().maximum() * 0.9:
+            button = self.button_group.getCurrent()
+            self.button_to_widget[button].appendNew(self.account_list)

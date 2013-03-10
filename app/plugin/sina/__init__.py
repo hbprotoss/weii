@@ -22,7 +22,7 @@ class Plugin(AbstractPlugin):
         self.time_format = '%a %b %d %H:%M:%S +0800 %Y'
         self.new_time_format = '%Y-%m-%d %H:%M:%S'
         
-    def getTimeline(self, id='', count=20, page=1, feature=0):
+    def getTimeline(self, id=None, max_point=None, count=20, page=1):
         rtn = None
         if(id):
             pass
@@ -31,7 +31,8 @@ class Plugin(AbstractPlugin):
             params = urllib.parse.urlencode({
                 'access_token': self.access_token,
                 'count': count,
-                'page': page
+                'page': page,
+                'max_id': str(max_point[0]) if max_point else '0'
             })
             rtn_from_server = self.getData(url % params).decode('utf-8')
             rtn = json.loads(rtn_from_server)['statuses']

@@ -31,7 +31,9 @@ class ResourceManager:
         '''
         Get resource specified by url.
         @param url: string.
+        @return: string. Absolute file path of resource.
         '''
+        
         url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()
         
         # Resource in memory
