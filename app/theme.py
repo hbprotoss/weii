@@ -29,6 +29,7 @@ def __loadTheme( theme_name = 'default' ):
     theme.params[SKIN] = dict( conf.items( SKIN ) )
     theme.params[SKIN]['background-image'] = os.path.join( THEME_ROOT, theme.params[SKIN]['background-image'] )
     theme.params[SKIN]['loading-image'] = os.path.join( THEME_ROOT, theme.params[SKIN]['loading-image'] )
+    theme.params[SKIN]['zoom-in-cursor'] = os.path.join(THEME_ROOT, theme.params[SKIN]['zoom-in-cursor'])
     theme.params[ICON] = {k:os.path.join( ICON_ROOT, v ) for k, v in conf.items( ICON )}
     theme.path = THEME_ROOT
 

@@ -4,7 +4,7 @@ import imghdr
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from app import constant
+from app import constant, theme
 from app import logger
 
 log = logger.getLogger(__name__)
@@ -82,6 +82,7 @@ class TweetWidget(QWidget):
         self.pic_url = ''
         
         self.setupUI()
+        self.renderUI()
         self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
         
         # Start downloading avatar
@@ -231,6 +232,7 @@ class TweetWidget(QWidget):
         if(size):
             pic = pic.scaled(size, transformMode=Qt.SmoothTransformation)
         widget.setPixmap(pic)
+        widget.setFixedSize(pic.size())
         
     def setThumbnail(self, path):
         self.label_thumbnail.setPixmap(QPixmap(path, imghdr.what(path)))
@@ -273,6 +275,7 @@ class TweetWidget(QWidget):
         v2.addWidget(label_tweet)
         
         ## retweet if exists
+        self.label_thumbnail = None
         if('retweeted_status' in self.tweet):
             retweet = self.tweet['retweeted_status']
             
@@ -302,7 +305,6 @@ class TweetWidget(QWidget):
                 self.pic_url = retweet['original_pic']
                 self.label_thumbnail = QLabel()
                 self.label_thumbnail.setMovie(self.thumbnail)
-                #self.thumbnail.start()
                 v3.addWidget(self.label_thumbnail)
                 
             h4 = QHBoxLayout()
@@ -321,6 +323,10 @@ class TweetWidget(QWidget):
             self.label_thumbnail.setMovie(self.thumbnail)
             #self.thumbnail.start()
             v2.addWidget(self.label_thumbnail)
+            
+        if self.label_thumbnail:
+            size = self.label_thumbnail.movie().currentPixmap().size()
+            self.label_thumbnail.setFixedSize(size)
         
         ## time, repost, comment
         h2 = QHBoxLayout()
@@ -334,10 +340,8 @@ class TweetWidget(QWidget):
         h2.addWidget(label_tweet_comment)
         
         v2.addStretch()
-#    def paintEvent(self, ev):
-#        qp = QPainter()
-#        qp.begin(self)
-#        rect = self.geometry()
-#        qp.drawLine(QPoint(rect.left(), rect.bottom()), QPoint(rect.right(), rect.bottom()))
-#        qp.end()
-#        return super(TweetWidget, self).paintEvent(ev)
+        
+    def renderUI(self):
+        self.label_avatar.setCursor(QCursor(Qt.PointingHandCursor))
+        if self.label_thumbnail:
+            self.label_thumbnail.setCursor(QCursor(QPixmap(theme.getParameter('Skin', 'zoom-in-cursor'))))
