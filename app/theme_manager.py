@@ -14,6 +14,8 @@ class Theme():
     params = {}
     path = ''
     
+    
+# Internal
 def __loadTheme( theme_name = 'default' ):
     '''
     @param theme_name: The name of theme
@@ -35,6 +37,10 @@ def __loadTheme( theme_name = 'default' ):
 
     return theme
 
+__g_theme = __loadTheme()
+
+
+# Exports
 def setCurrentTheme(theme_name):
     global __g_theme
     __g_theme = __loadTheme(theme_name)
@@ -48,4 +54,3 @@ def getParameter(section, key):
 def getPath():
     return __g_theme.path
     
-__g_theme = __loadTheme()

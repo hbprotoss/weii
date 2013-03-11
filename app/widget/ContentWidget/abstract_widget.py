@@ -68,7 +68,7 @@ class AbstractWidget(QWidget):
         '''
         self.__layout.addWidget(widget)
     
-    def refresh(self, account_list):
+    def refresh(self):
         '''
         Refresh self with data from account list
         @param account_list: List of account objects(Plugin)

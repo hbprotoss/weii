@@ -54,7 +54,6 @@ class PictureTask(QThread):
         except Exception as e:
             print(e)
 
-# TODO: Implement a thread pool
 # Global instance of thread pool
 #g_thread_pool = QThreadPool.globalInstance()
 #g_thread_pool.setMaxThreadCount(6)
@@ -108,6 +107,7 @@ class TweetWidget(QWidget):
             pass
         
     def mouseReleaseEvent(self, ev):
+        # FIXME: Not the label_thumbnail
         QMessageBox.information(None, 'test', self.pic_url)
         super(TweetWidget, self).mouseReleaseEvent(ev)
 
@@ -270,7 +270,7 @@ class TweetWidget(QWidget):
         )
         #label_source = QLabel(self.tweet['source'])
         label_service_icon = QLabel(self)
-        label_service_icon.setPixmap(self.account.service_icon)
+        label_service_icon.setPixmap(QPixmap.fromImage(self.account.service_icon))
         h1.addWidget(label_user)
         #h1.addWidget(label_source)
         h1.addStretch()

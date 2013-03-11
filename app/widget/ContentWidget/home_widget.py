@@ -9,6 +9,7 @@ from widget.ContentWidget import abstract_widget
 from widget.tweet_widget import TweetWidget
 from app import constant
 from app import logger
+from app import account_manager
 
 log = logger.getLogger(__name__)
 SIGNAL_FINISH = 'downloadFinish'
@@ -76,8 +77,10 @@ class HomeWidget(abstract_widget.AbstractWidget):
                     TweetWidget(account, tweet, avatar, picture, self)
                 )
         
-    def appendNew(self, account_list):
+    def appendNew(self):
         if not self.download_task.isRunning():
+            account_list = account_manager.getCurrentAccount()
+            
             self.refreshing_image.show()
             self.insertWidget(-1, self.refreshing_image)
             
@@ -87,8 +90,10 @@ class HomeWidget(abstract_widget.AbstractWidget):
             log.debug('Starting thread')
             self.download_task.start()
         
-    def refresh(self, account_list):
+    def refresh(self):
         if not self.download_task.isRunning():
+            account_list = account_manager.getCurrentAccount()
+            
             for account in account_list:
                 account.last_tweet_id = 0
                 account.last_tweet_time = 0

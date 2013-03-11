@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
 # coding=utf-8
 
-import sys
-import os
-import configparser
 import imghdr
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from app import constant
-from app import misc
-from app import plugin
-from app import resource_manager
 from app import theme_manager
+from app import account_manager
 from app.widget import icon_button
 from app.widget.ContentWidget import *
 
@@ -84,11 +79,10 @@ class MainWindow( QDialog ):
     def __init__( self, parent = None ):
         super( MainWindow, self ).__init__( parent )
 
-        self.account_list = self.initAccount()
         self.setMinimumSize( 400, 600 )
         self.setupUI()
         self.renderUI()
-        self.renderUserInfo( self.account_list[0] )
+        self.renderUserInfo( account_manager.getCurrentAccount() )
         
         # Show home by default
         self.home.setStyleSheet( 'background-color: %s;' % theme_manager.getParameter('Skin', 'icon-chosen') )
@@ -104,25 +98,6 @@ class MainWindow( QDialog ):
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
         
         self.connect(self.scroll_area.verticalScrollBar(), SIGNAL('valueChanged(int)'), self.onValueChanged_ScrollBar)
-    
-    def initAccount(self):
-        '''
-        Initiate all accounts stored in database
-        @return: List of Account objects
-        '''
-        # debug
-        plugins = plugin.plugins
-        username = 'hbprotoss'
-        sina = misc.Account(
-            plugins['sina'].Plugin(
-                '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, {}),
-                #{'http':'http://127.0.0.1:10001', 'https':'http://127.0.0.1:10001'}),
-            resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'avatar')),
-            resource_manager.ResourceManager(os.path.join(plugins['sina'].BASE_DIR, 'emotion')),
-            resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'piture'))
-        )
-        
-        return [sina]
     
     def initTab(self):
         '''
@@ -262,17 +237,22 @@ class MainWindow( QDialog ):
                         )
         )
 
-    def renderUserInfo( self, account ):
-        user_info = account.plugin.getUserInfo(account.plugin.id)
-        avatar = account.avatar_manager.get(user_info['avatar_large'])
-        self.avatar.setPixmap( QPixmap(avatar, imghdr.what(avatar)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
-        self.account.setText( str( user_info['screen_name'] ) )
-        self.fans.setText( '粉丝(%s)' % str( user_info['followers_count'] ) )
-        self.following.setText( '关注(%s)' % str( user_info['friends_count'] ) )
-        self.tweets.setText( '微博(%s)' % str( user_info['statuses_count'] ) )
+    def renderUserInfo( self, account_list ):
+        if len(account_list) == 1:
+            account = account_list[0]
+            user_info = account.plugin.getUserInfo(account.plugin.id)
+            avatar = account.avatar_manager.get(user_info['avatar_large'])
+            self.avatar.setPixmap( QPixmap(avatar, imghdr.what(avatar)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
+            self.account.setText( str( user_info['screen_name'] ) )
+            self.fans.setText( '粉丝(%s)' % str( user_info['followers_count'] ) )
+            self.following.setText( '关注(%s)' % str( user_info['friends_count'] ) )
+            self.tweets.setText( '微博(%s)' % str( user_info['statuses_count'] ) )
+        else:
+            # TODO: render user info with 'all_accounts'
+            pass
         
     def showEvent(self, event):
-        self.button_to_widget[self.home].refresh(self.account_list)
+        self.button_to_widget[self.home].refresh()
         
     def onClicked_BtnGroup(self):
         button = self.sender()
@@ -286,9 +266,9 @@ class MainWindow( QDialog ):
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
-        self.button_to_widget[button].refresh(self.account_list)
+        self.button_to_widget[button].refresh()
         
     def onValueChanged_ScrollBar(self, value):
         if value > self.scroll_area.verticalScrollBar().maximum() * 0.9:
             button = self.button_group.getCurrent()
-            self.button_to_widget[button].appendNew(self.account_list)
+            self.button_to_widget[button].appendNew()
