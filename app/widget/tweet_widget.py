@@ -4,7 +4,7 @@ import imghdr
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from app import constant, theme
+from app import constant, theme_manager
 from app import logger
 
 log = logger.getLogger(__name__)
@@ -107,6 +107,9 @@ class TweetWidget(QWidget):
             # No picture
             pass
         
+    def mouseReleaseEvent(self, ev):
+        QMessageBox.information(None, 'test', self.pic_url)
+        super(TweetWidget, self).mouseReleaseEvent(ev)
 
     def findAtEnding(self, src, start):
         i = start
@@ -227,7 +230,12 @@ class TweetWidget(QWidget):
             rtn = src[:target[0][0]] + rtn 
         return rtn
 
-    def updateUI(self, widget, path, size):
+    def updateUI(self, widget, path, size=None):
+        '''
+        @param widget: QLabel. Widget to be updated
+        @param path: string. Image path
+        @param size: QSize. Actual size to be painted on the widget
+        '''
         pic = QPixmap(path, imghdr.what(path))
         if(size):
             pic = pic.scaled(size, transformMode=Qt.SmoothTransformation)
@@ -344,4 +352,4 @@ class TweetWidget(QWidget):
     def renderUI(self):
         self.label_avatar.setCursor(QCursor(Qt.PointingHandCursor))
         if self.label_thumbnail:
-            self.label_thumbnail.setCursor(QCursor(QPixmap(theme.getParameter('Skin', 'zoom-in-cursor'))))
+            self.label_thumbnail.setCursor(QCursor(QPixmap(theme_manager.getParameter('Skin', 'zoom-in-cursor'))))

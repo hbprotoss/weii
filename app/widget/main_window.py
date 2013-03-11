@@ -12,7 +12,7 @@ from app import constant
 from app import misc
 from app import plugin
 from app import resource_manager
-from app import theme
+from app import theme_manager
 from app.widget import icon_button
 from app.widget.ContentWidget import *
 
@@ -91,12 +91,12 @@ class MainWindow( QDialog ):
         self.renderUserInfo( self.account_list[0] )
         
         # Show home by default
-        self.home.setStyleSheet( 'background-color: %s;' % theme.getParameter('Skin', 'icon-chosen') )
+        self.home.setStyleSheet( 'background-color: %s;' % theme_manager.getParameter('Skin', 'icon-chosen') )
         
         btns = [self.home, self.at, self.comment, self.private, self.profile, self.search]
         self.button_group = ButtonGroup( btns,
             lambda button: button.setStyleSheet('background-color: %s;' %
-                    theme.getParameter('Skin', 'icon-chosen')
+                    theme_manager.getParameter('Skin', 'icon-chosen')
                     )
             )
         for btn in btns:
@@ -243,22 +243,22 @@ class MainWindow( QDialog ):
 
     def renderUI( self ):
         '''
-        Render UI with specified theme
-        @param theme: widget.theme.Theme object
+        Render UI with specified theme_manager
+        @param theme_manager: widget.theme_manager.Theme object
         '''
-        self.home.loadIcon( theme.getParameter('Icon', 'home') )
-        self.at.loadIcon( theme.getParameter('Icon', 'at'))
-        self.comment.loadIcon( theme.getParameter('Icon', 'comment'))
-        self.private.loadIcon( theme.getParameter('Icon', 'private'))
-        self.profile.loadIcon( theme.getParameter('Icon', 'profile'))
-        self.search.loadIcon( theme.getParameter('Icon', 'search'))
-        self.send.loadIcon( theme.getParameter('Icon', 'send'))
-        self.refresh.loadIcon( theme.getParameter('Icon', 'refresh'))
+        self.home.loadIcon( theme_manager.getParameter('Icon', 'home') )
+        self.at.loadIcon( theme_manager.getParameter('Icon', 'at'))
+        self.comment.loadIcon( theme_manager.getParameter('Icon', 'comment'))
+        self.private.loadIcon( theme_manager.getParameter('Icon', 'private'))
+        self.profile.loadIcon( theme_manager.getParameter('Icon', 'profile'))
+        self.search.loadIcon( theme_manager.getParameter('Icon', 'search'))
+        self.send.loadIcon( theme_manager.getParameter('Icon', 'send'))
+        self.refresh.loadIcon( theme_manager.getParameter('Icon', 'refresh'))
 
         self.setStyleSheet( MainWindow_QSS % ( 
-                        theme.getParameter('Skin', 'background-color'),
-                        theme.getParameter('Skin', 'background-image'),
-                        theme.getParameter('Skin', 'icon-hover')
+                        theme_manager.getParameter('Skin', 'background-color'),
+                        theme_manager.getParameter('Skin', 'background-image'),
+                        theme_manager.getParameter('Skin', 'icon-hover')
                         )
         )
 
