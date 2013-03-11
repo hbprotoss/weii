@@ -12,14 +12,10 @@ from app import constant
 from app import misc
 from app import plugin
 from app import resource_manager
-import widget.theme
-from widget import icon_button
-from widget.ContentWidget import *
+from app import theme
+from app.widget import icon_button
+from app.widget.ContentWidget import *
 
-INFO = 'Info'
-SKIN = 'Skin'
-ICON = 'Icon'
-THEME_CONFIG = 'conf.ini'
 MainWindow_QSS = '''
 QDialog {
     background-color:%s;
@@ -90,17 +86,18 @@ class MainWindow( QDialog ):
 
         self.account_list = self.initAccount()
         self.setMinimumSize( 400, 600 )
-        self.theme = self.loadTheme( 'default' )
         self.setupUI()
-        self.renderUI( self.theme )
+        self.renderUI()
         self.renderUserInfo( self.account_list[0] )
         
         # Show home by default
-        self.home.setStyleSheet( 'background-color: %s;' % self.theme.skin['icon-chosen'] )
+        self.home.setStyleSheet( 'background-color: %s;' % theme.getParameter('Skin', 'icon-chosen') )
         
         btns = [self.home, self.at, self.comment, self.private, self.profile, self.search]
         self.button_group = ButtonGroup( btns,
-            lambda button: button.setStyleSheet('background-color: %s;' % self.theme.skin['icon-chosen'])
+            lambda button: button.setStyleSheet('background-color: %s;' %
+                    theme.getParameter('Skin', 'icon-chosen')
+                    )
             )
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
@@ -134,9 +131,9 @@ class MainWindow( QDialog ):
         '''
         rtn = {}
         
-        rtn[self.home] = home_widget.HomeWidget(self.theme, self)
+        rtn[self.home] = home_widget.HomeWidget(self)
         
-        rtn[self.at] = home_widget.HomeWidget(self.theme, self)
+        rtn[self.at] = home_widget.HomeWidget(self)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('comment'))
@@ -244,46 +241,26 @@ class MainWindow( QDialog ):
         self.scroll_area.setWidgetResizable(True)
         h2.addWidget( self.scroll_area )
 
-    def loadTheme( self, theme_name = 'default' ):
-        '''
-        @param theme_name: The name of theme
-        @return: widget.theme.Theme object
-        '''
-        THEME_ROOT = os.path.join( constant.APP_ROOT, 'theme', theme_name )
-        ICON_ROOT = os.path.join( THEME_ROOT, 'icon' )
-        conf = misc.ConfParser()
-        conf.read( os.path.join( THEME_ROOT, THEME_CONFIG ) )
-
-        theme = widget.theme.Theme()
-        theme.info = dict( conf.items( INFO ) )
-        theme.skin = dict( conf.items( SKIN ) )
-        theme.skin['background-image'] = os.path.join( THEME_ROOT, theme.skin['background-image'] )
-        theme.skin['loading-image'] = os.path.join( THEME_ROOT, theme.skin['loading-image'] )
-        theme.icon = {k:os.path.join( ICON_ROOT, v ) for k, v in conf.items( ICON )}
-        theme.path = THEME_ROOT
-
-        return theme
-
-    def renderUI( self, theme ):
+    def renderUI( self ):
         '''
         Render UI with specified theme
         @param theme: widget.theme.Theme object
         '''
-        self.home.loadIcon( theme.icon['home'] )
-        self.at.loadIcon( theme.icon['at'] )
-        self.comment.loadIcon( theme.icon['comment'] )
-        self.private.loadIcon( theme.icon['private'] )
-        self.profile.loadIcon( theme.icon['profile'] )
-        self.search.loadIcon( theme.icon['search'] )
-        self.send.loadIcon( theme.icon['send'] )
-        self.refresh.loadIcon( theme.icon['refresh'] )
+        self.home.loadIcon( theme.getParameter('Icon', 'home') )
+        self.at.loadIcon( theme.getParameter('Icon', 'at'))
+        self.comment.loadIcon( theme.getParameter('Icon', 'comment'))
+        self.private.loadIcon( theme.getParameter('Icon', 'private'))
+        self.profile.loadIcon( theme.getParameter('Icon', 'profile'))
+        self.search.loadIcon( theme.getParameter('Icon', 'search'))
+        self.send.loadIcon( theme.getParameter('Icon', 'send'))
+        self.refresh.loadIcon( theme.getParameter('Icon', 'refresh'))
 
         self.setStyleSheet( MainWindow_QSS % ( 
-                        theme.skin['background-color'],
-                        theme.skin['background-image'],
-                        theme.skin['icon-hover']
-                        ) )
-        pass
+                        theme.getParameter('Skin', 'background-color'),
+                        theme.getParameter('Skin', 'background-image'),
+                        theme.getParameter('Skin', 'icon-hover')
+                        )
+        )
 
     def renderUserInfo( self, account ):
         user_info = account.plugin.getUserInfo(account.plugin.id)

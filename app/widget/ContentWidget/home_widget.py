@@ -9,7 +9,6 @@ from widget.ContentWidget import abstract_widget
 from widget.tweet_widget import TweetWidget
 from app import constant
 from app import logger
-from IPython.core.page import page
 
 log = logger.getLogger(__name__)
 SIGNAL_FINISH = 'downloadFinish'
@@ -50,26 +49,9 @@ class HomeWidget(abstract_widget.AbstractWidget):
     Home tab
     '''
     
-    def __init__(self, theme, parent=None):
-        super(HomeWidget, self).__init__(theme, parent)
-        self.theme = theme
+    def __init__(self, parent=None):
+        super(HomeWidget, self).__init__(parent)
         self.download_task = DownloadTask()
-        self.loading_image = QMovie(theme.skin['loading-image'])
-        self.loading_image.start()
-        
-        self.small_loading_image = QMovie(theme.skin['loading-image'])
-        self.small_loading_image.setScaledSize(QSize(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE))
-        self.small_loading_image.start()
-        
-        image = QMovie(theme.skin['loading-image'])
-        image.setScaledSize(QSize(32, 32))
-        image.start()
-        self.refreshing_image = QLabel()
-        self.refreshing_image.setMovie(image)
-        self.refreshing_image.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-#        self.refreshing_image.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-#        self.refreshing_image.setFixedSize(32, 32)
-
         self.currentPage = 1
         
         self.connect(self.download_task, SIGNAL(SIGNAL_FINISH), self.updateUI)

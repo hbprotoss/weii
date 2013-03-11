@@ -50,7 +50,7 @@ class ResourceManager:
             return abs_path
         
         # Resource from Internet
-        log.debug('Found from Internet')
+        #log.debug('Found from Internet')
         self.opener.retrieve(url, abs_path)
         #res = QImage(abs_path, imghdr.what(abs_path))
         self.resource[url_hash] = abs_path
