@@ -2,15 +2,33 @@
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from app import constant
+from app import theme_manager
 
 class AbstractWidget(QWidget):
     '''
     Abstract widget for holding content
     '''
     
-    def __init__(self, theme, parent=None):
+    def __init__(self, parent=None):
         super(AbstractWidget, self).__init__(parent)
-        self.theme= theme
+        self.theme_manager= theme_manager.getCurrentTheme()
+        
+        self.loading_image = QMovie(theme_manager.getParameter('Skin', 'loading-image'))
+        self.loading_image.start()
+        
+        self.small_loading_image = QMovie(theme_manager.getParameter('Skin', 'loading-image'))
+        self.small_loading_image.setScaledSize(QSize(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE))
+        self.small_loading_image.start()
+        
+        image = QMovie(theme_manager.getParameter('Skin', 'loading-image'))
+        image.setScaledSize(QSize(32, 32))
+        image.start()
+        self.refreshing_image = QLabel()
+        self.refreshing_image.setMovie(image)
+        self.refreshing_image.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+#        self.refreshing_image.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+#        self.refreshing_image.setFixedSize(32, 32)
         
         frame_layout = QVBoxLayout()
         frame_layout.setMargin(0)
@@ -50,7 +68,7 @@ class AbstractWidget(QWidget):
         '''
         self.__layout.addWidget(widget)
     
-    def refresh(self, account_list):
+    def refresh(self):
         '''
         Refresh self with data from account list
         @param account_list: List of account objects(Plugin)
