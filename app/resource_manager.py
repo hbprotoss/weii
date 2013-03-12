@@ -4,7 +4,6 @@ import os
 import hashlib
 import urllib.request
 
-from app import constant
 from app import logger
 
 log = logger.getLogger(__name__)
@@ -27,7 +26,7 @@ class ResourceManager:
     def setProxy(self, proxy):
         self.opener = urllib.request.FancyURLopener(proxy)
         
-    def get(self, url):
+    def get(self, url, report_hook=None):
         '''
         Get resource specified by url.
         @param url: string.
@@ -51,7 +50,7 @@ class ResourceManager:
         
         # Resource from Internet
         #log.debug('Found from Internet')
-        self.opener.retrieve(url, abs_path)
+        self.opener.retrieve(url, abs_path, report_hook)
         #res = QImage(abs_path, imghdr.what(abs_path))
         self.resource[url_hash] = abs_path
         return abs_path

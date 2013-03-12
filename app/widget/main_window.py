@@ -12,7 +12,7 @@ from app.widget import icon_button
 from app.widget.ContentWidget import *
 
 MainWindow_QSS = '''
-QDialog {
+MainWindow {
     background-color:%s;
     background-image:url(%s);
     background-repeat:no-repeat;

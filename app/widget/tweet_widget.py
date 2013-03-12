@@ -6,6 +6,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from app import constant, theme_manager
 from app import logger
+from app.widget import picture_viewer
 
 log = logger.getLogger(__name__)
 
@@ -15,7 +16,8 @@ url_legal = set('''!#$&'()*+,/:;=?@-._~'''
                 + ''.join([chr(c) for c in range(ord('a'), ord('z')+1)])
                 + ''.join([chr(c) for c in range(ord('A'), ord('Z')+1)]))
 
-SIGNAL_FINISH = 'downloadFinished'
+SIGNAL_FINISH = SIGNAL('downloadFinished')
+SIGNAL_CLICKED = SIGNAL('clicked')
 
 class Text(QLabel):
     def __init__(self, text, parent=None):
@@ -34,6 +36,17 @@ class TweetText(Text):
         #print(ev.oldSize().height(), ev.size().height(), self.heightForWidth(ev.oldSize().width()))
         #super(TweetText, self).resizeEvent(ev)
         self.setMaximumHeight(self.heightForWidth(ev.size().width()))
+        
+class PictureWidget(QLabel):
+    '''
+    Widget holding avatar and thumbnail
+    '''
+    
+    def __init__(self, parent=None):
+        super(PictureWidget, self).__init__(parent)
+        
+    def mouseReleaseEvent(self, ev):
+        self.emit(SIGNAL_CLICKED)
 
 class PictureTask(QThread):
     '''
@@ -50,7 +63,7 @@ class PictureTask(QThread):
     def run(self):
         try:
             pic_path = self.manager.get(self.url)
-            self.emit(SIGNAL(SIGNAL_FINISH), self.widget, pic_path, self.size)
+            self.emit(SIGNAL_FINISH, self.widget, pic_path, self.size)
         except Exception as e:
             print(e)
 
@@ -84,13 +97,16 @@ class TweetWidget(QWidget):
         self.renderUI()
         self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
         
+        if self.label_thumbnail:
+            self.connect(self.label_thumbnail, SIGNAL_CLICKED, self.onClicked_Thumbnail)
+        
         # Start downloading avatar
         # FIXME: TypeError: updateUI() takes exactly 2 arguments (1 given)
         avatar_url = tweet['user']['avatar_large']
         self.avatar_task = PictureTask(avatar_url, self.account.avatar_manager, self.label_avatar,
             QSize(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE)
         )
-        self.connect(self.avatar_task, SIGNAL(SIGNAL_FINISH), self.updateUI)
+        self.connect(self.avatar_task, SIGNAL_FINISH, self.updateUI)
         self.avatar_task.start()
         
         # Start downloading thumbnail if exists
@@ -100,16 +116,17 @@ class TweetWidget(QWidget):
             elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
                 url = tweet['retweeted_status']['thumbnail_pic']
             self.thumbnail_task = PictureTask(url, self.account.picture_manager, self.label_thumbnail)
-            self.connect(self.thumbnail_task, SIGNAL(SIGNAL_FINISH), self.updateUI)
+            self.connect(self.thumbnail_task, SIGNAL_FINISH, self.updateUI)
             self.thumbnail_task.start()
         except UnboundLocalError:
             # No picture
             pass
         
-    def mouseReleaseEvent(self, ev):
-        # FIXME: Not the label_thumbnail
-        QMessageBox.information(None, 'test', self.pic_url)
-        super(TweetWidget, self).mouseReleaseEvent(ev)
+    def onClicked_Thumbnail(self):
+        #QMessageBox.information(self, 'test', self.pic_url)
+        pic = picture_viewer.PictureViewer(self.pic_url, self.account.picture_manager, self)
+        pic.setModal(False)
+        pic.show()
 
     def findAtEnding(self, src, start):
         i = start
@@ -253,7 +270,7 @@ class TweetWidget(QWidget):
         # avatar
         v1 = QVBoxLayout()
         hLayout.addLayout(v1)
-        self.label_avatar = QLabel(self)
+        self.label_avatar = PictureWidget(self)
         self.label_avatar.setMovie(self.avatar)
         v1.addWidget(self.label_avatar)
         v1.addStretch()
@@ -288,6 +305,7 @@ class TweetWidget(QWidget):
             retweet = self.tweet['retweeted_status']
             
             groupbox = QGroupBox(self)
+            groupbox.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
             #groupbox.setContentsMargins(0, 5, 5, 5)
             v2.addWidget(groupbox)
             v3 = QVBoxLayout()
@@ -311,7 +329,7 @@ class TweetWidget(QWidget):
             
             if('thumbnail_pic' in retweet):
                 self.pic_url = retweet['original_pic']
-                self.label_thumbnail = QLabel()
+                self.label_thumbnail = PictureWidget()
                 self.label_thumbnail.setMovie(self.thumbnail)
                 v3.addWidget(self.label_thumbnail)
                 
@@ -327,7 +345,7 @@ class TweetWidget(QWidget):
         ## No retweet and has picture
         elif('thumbnail_pic' in self.tweet):
             self.pic_url = self.tweet['original_pic']
-            self.label_thumbnail = QLabel()
+            self.label_thumbnail = PictureWidget()
             self.label_thumbnail.setMovie(self.thumbnail)
             #self.thumbnail.start()
             v2.addWidget(self.label_thumbnail)
