@@ -38,11 +38,25 @@ class Plugin(AbstractPlugin):
             rtn = json.loads(rtn_from_server)['statuses']
             
             for tweet in rtn:
-                t = time.strptime(tweet['created_at'], self.time_format)
-                tweet['created_at'] = time.strftime(self.new_time_format, t)
+                if('deleted' in tweet):
+                    tweet['created_at'] = ''
+                    tweet['reposts_count'] = 0
+                    tweet['comments_count'] = 0
+                    tweet['user'] = {'screen_name':'微博小秘书'}
+                else:
+                    t = time.strptime(tweet['created_at'], self.time_format)
+                    tweet['created_at'] = time.strftime(self.new_time_format, t)
+                
                 if('retweeted_status' in tweet):
-                    t = time.strptime(tweet['retweeted_status']['created_at'], self.time_format)
-                    tweet['retweeted_status']['created_at'] = time.strftime(self.new_time_format, t)
+                    retweet = tweet['retweeted_status']
+                    if('deleted' in retweet):
+                        retweet['created_at'] = ''
+                        retweet['reposts_count'] = 0
+                        retweet['comments_count'] = 0
+                        retweet['user'] = {'screen_name':'微博小秘书'}
+                    else:
+                        t = time.strptime(retweet['created_at'], self.time_format)
+                        retweet['created_at'] = time.strftime(self.new_time_format, t)
         return rtn
     
     def getUserInfo(self, id='', screen_name=''):
