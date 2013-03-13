@@ -59,8 +59,8 @@ def dummyInitAccount():
     username = '_hbprotoss'
     sina = Account(
         plugins['sina'].Plugin(
-            '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, #{}),
-            {'http':'http://127.0.0.1:10001', 'https':'http://127.0.0.1:10001'}),
+            '1778908794', username, '2.0018H5wBeasXMD00288e252cov2YBC', None, {}),
+            #{'http':'http://127.0.0.1:10001', 'https':'http://127.0.0.1:10001'}),
         resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'avatar')),
         resource_manager.ResourceManager(os.path.join(plugins['sina'].BASE_DIR, 'emotion')),
         resource_manager.ResourceManager(os.path.join(constant.DATA_ROOT, username, 'picture'))
