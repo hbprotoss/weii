@@ -98,6 +98,9 @@ class TweetWidget(QWidget):
         self.renderUI()
         self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
         
+        self.connect(self.label_tweet, SIGNAL('linkActivated (const QString&)'), self.onLinkActivated)
+        if self.label_retweet:
+            self.connect(self.label_retweet, SIGNAL('linkActivated (const QString&)'), self.onLinkActivated)
         if self.label_thumbnail:
             self.connect(self.label_thumbnail, SIGNAL_CLICKED, self.onClicked_Thumbnail)
         
@@ -128,6 +131,11 @@ class TweetWidget(QWidget):
         pic = picture_viewer.PictureViewer(self.pic_url, self.account.picture_manager, self)
         pic.setModal(False)
         pic.show()
+        
+    def onLinkActivated(self, link):
+        #log.debug(link)
+        if link.startswith('http'):
+            QDesktopServices.openUrl(QUrl(link))
 
     def findAtEnding(self, src, start):
         i = start
@@ -295,13 +303,14 @@ class TweetWidget(QWidget):
         h1.addWidget(label_service_icon)
         
         ## tweet content
-        label_tweet = TweetText(
+        self.label_tweet = TweetText(
             self.analyse(self.tweet['text']), self
         )
-        v2.addWidget(label_tweet)
+        v2.addWidget(self.label_tweet)
         
         ## retweet if exists
         self.label_thumbnail = None
+        self.label_retweet = None
         if('retweeted_status' in self.tweet):
             retweet = self.tweet['retweeted_status']
             
@@ -323,10 +332,10 @@ class TweetWidget(QWidget):
             #h3.addWidget(label_retweet_source)
             h3.addStretch()
             
-            label_retweet = TweetText(
+            self.label_retweet = TweetText(
                 self.analyse(retweet['text']), self
             )
-            v3.addWidget(label_retweet)
+            v3.addWidget(self.label_retweet)
             
             if('thumbnail_pic' in retweet):
                 self.pic_url = retweet['original_pic']
