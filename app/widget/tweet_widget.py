@@ -46,7 +46,8 @@ class PictureWidget(QLabel):
         super(PictureWidget, self).__init__(parent)
         
     def mouseReleaseEvent(self, ev):
-        self.emit(SIGNAL_CLICKED)
+        if ev.button() == Qt.LeftButton:
+            self.emit(SIGNAL_CLICKED)
 
 class PictureTask(QThread):
     '''

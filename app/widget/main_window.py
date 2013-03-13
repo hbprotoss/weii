@@ -202,6 +202,8 @@ class MainWindow( QDialog ):
         self.search = icon_button.IconButton(self)
         v21.addWidget( self.search )
         v21.addStretch()
+        self.setting = icon_button.IconButton(self)
+        v21.addWidget( self.setting )
 
         ## Scroll area
         self.button_to_widget = self.initTab()
@@ -229,6 +231,7 @@ class MainWindow( QDialog ):
         self.search.loadIcon( theme_manager.getParameter('Icon', 'search'))
         self.send.loadIcon( theme_manager.getParameter('Icon', 'send'))
         self.refresh.loadIcon( theme_manager.getParameter('Icon', 'refresh'))
+        self.setting.loadIcon( theme_manager.getParameter('Icon', 'setting'))
 
         self.setStyleSheet( MainWindow_QSS % ( 
                         theme_manager.getParameter('Skin', 'background-color'),
