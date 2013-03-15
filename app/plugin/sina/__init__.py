@@ -20,7 +20,6 @@ class Plugin(AbstractPlugin):
         self.service_icon = os.path.join(BASE_DIR, 'logo.jpg')
         
         self.time_format = '%a %b %d %H:%M:%S +0800 %Y'
-        self.new_time_format = '%Y-%m-%d %H:%M:%S'
         
     def getTimeline(self, id=None, max_point=None, count=20, page=1):
         rtn = None
