@@ -25,7 +25,6 @@ class Plugin(AbstractPlugin):
         
         self.service = 'twitter'
         self.service_icon = os.path.join(BASE_DIR, 'logo.jpg')
-        self.time_format = '%a %b %d %H:%M:%S +0000 %Y'
         
         res = json.loads(data)
         self.consumer_key = 'qKtlaEopAyp5wUdljmmlBg'
@@ -55,8 +54,6 @@ class Plugin(AbstractPlugin):
         tweet['reposts_count'] = tweet['retweet_count']
         tweet['comments_count'] = 0
         tweet['user']['avatar_large'] = self.__transferAvatar(tweet['user']['profile_image_url'])
-        t = time.strptime(tweet['created_at'], self.time_format)
-        tweet['created_at'] = int(time.mktime(t))
         return tweet
         
     def calcSignature(self, method, url, params=None):

@@ -2,6 +2,7 @@
 
 import sys
 import os
+import time
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -17,6 +18,8 @@ if not os.path.exists(constant.DATA_ROOT):
 
 import widget.main_window
 
+os.environ['TZ'] = 'Asia/Shanghai'
+time.tzset()
 
 app = QApplication(sys.argv)
 instance = widget.main_window.MainWindow()
