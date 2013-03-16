@@ -37,6 +37,7 @@ class DownloadTask(QThread):
     def run(self):
         rtn = []
         for account in self.account_list:
+            log.debug(account.plugin)
             tweet_list = account.plugin.getTimeline(max_point=(account.last_tweet_id, account.last_tweet_time),
                 page=self.page, count=self.count
             )
@@ -63,6 +64,7 @@ class HomeWidget(abstract_widget.AbstractWidget):
     def updateUI(self, data):
         log.debug('updateUI')
         self.clearWidget(self.refreshing_image)
+        whole_list = []
         for account,tweet_list in data:
             # If it is refreshing, update max_point of account
             if self.count() == 1:

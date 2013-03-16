@@ -70,7 +70,6 @@ class AbstractPlugin():
             for k,v in header.items():
                 opener.addheader(k, v)
                 
-        log.debug(opener.addheaders)
         f = opener.open(url, data)
         return f.read()
     

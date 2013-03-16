@@ -28,8 +28,8 @@ class Plugin(AbstractPlugin):
         self.time_format = '%a %b %d %H:%M:%S +0000 %Y'
         
         res = json.loads(data)
-        self.consumer_key = res['consumer_key']
-        self.consumer_secret = res['consumer_secret']
+        self.consumer_key = 'qKtlaEopAyp5wUdljmmlBg'
+        self.consumer_secret = 'CILHlKVjMF6eoMwIrt3L3a2X00vXXunvM1gDaezYGc'
         self.access_token = res['access_token']
         self.access_token_secret = res['access_token_secret']
         self.app_params = {
@@ -47,6 +47,17 @@ class Plugin(AbstractPlugin):
              ', oauth_token="%s"' % self.access_token,
              ', oauth_version="1.0"')
         )
+        
+    def __transferAvatar(self, url):
+        return ''.join(url.split('_normal'))
+    
+    def __transferTweet(self, tweet):
+        tweet['reposts_count'] = tweet['retweet_count']
+        tweet['comments_count'] = 0
+        tweet['user']['avatar_large'] = self.__transferAvatar(tweet['user']['profile_image_url'])
+        t = time.strptime(tweet['created_at'], self.time_format)
+        tweet['created_at'] = int(time.mktime(t))
+        return tweet
         
     def calcSignature(self, method, url, params=None):
         '''
@@ -91,29 +102,58 @@ class Plugin(AbstractPlugin):
         
         return DataStruct._make((signature, d['oauth_nonce'], d['oauth_timestamp']))
     
+    def getHeader(self, method, url, params):
+        data = self.calcSignature(method, url, params)
+        oauth_string = self.oauth_header.format(
+            oauth_signature=urllib.parse.quote_plus(data.oauth_signature),
+            oauth_nonce=data.oauth_nonce,
+            oauth_timestamp=data.oauth_timestamp
+        )
+        return {'Authorization':oauth_string}
+    
     def getTimeline(self, id=None, max_point=None, count=20, page=1):
         rtn = None
         if id:
             pass
         else:
-            url = 'https://api.twitter.com/1.1/statuses/home_timeline.json?%s'
             params = {
                 'count': count,
                 'page': page,
             }
-            if max_point:
+            if max_point and max_point[0] != 0:
                 params['max_id'] = max_point[0]
-            params = urllib.parse.urlencode(params)
+                
+            url = 'https://api.twitter.com/1.1/statuses/home_timeline.json?%s' % urllib.parse.urlencode(params)
             
-            data = self.calcSignature('GET', url % params)
-            oauth_string = self.oauth_header.format(
-                oauth_signature=urllib.parse.quote_plus(data.oauth_signature),
-                oauth_nonce=data.oauth_nonce,
-                oauth_timestamp=data.oauth_timestamp
-            )
-            rtn_from_server = self.getData(url % params, None,
-                {'Authorization':oauth_string,
-                 }
-            )
+            rtn_from_server = self.getData(url, None, self.getHeader('GET', url, params))
             json_res = json.loads(rtn_from_server.decode())
-            print(json_res)
+            
+            for tweet in json_res:
+                self.__transferTweet(tweet)
+                if 'retweeted_status' in tweet:
+                    self.__transferTweet(tweet['retweeted_status'])
+            
+            return json_res
+            
+    def getUserInfo(self, id='', screen_name=''):
+        params = {}
+        if id:
+            params['user_id'] = id
+        elif screen_name:
+            params['screen_name'] = screen_name
+        else:
+            params['user_id'] = self.id
+            
+        url = 'https://api.twitter.com/1.1/users/show.json?%s' % urllib.parse.urlencode(params)
+        rtn_from_server = self.getData(url, None, self.getHeader('GET', url, params))
+        rtn = json.loads(rtn_from_server.decode())
+        rtn['avatar_large'] = self.__transferAvatar(rtn['profile_image_url'])
+        
+        return rtn
+        
+    def getEmotions(self):
+        return {}
+    
+    @staticmethod
+    def getEmotionExpression():
+        return ('', '')

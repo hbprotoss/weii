@@ -44,7 +44,7 @@ class Plugin(AbstractPlugin):
                     tweet['user'] = {'screen_name':'微博小秘书'}
                 else:
                     t = time.strptime(tweet['created_at'], self.time_format)
-                    tweet['created_at'] = time.strftime(self.new_time_format, t)
+                    tweet['created_at'] = int(time.mktime(t))
                 
                 if('retweeted_status' in tweet):
                     retweet = tweet['retweeted_status']
@@ -55,7 +55,7 @@ class Plugin(AbstractPlugin):
                         retweet['user'] = {'screen_name':'微博小秘书'}
                     else:
                         t = time.strptime(retweet['created_at'], self.time_format)
-                        retweet['created_at'] = time.strftime(self.new_time_format, t)
+                        retweet['created_at'] = int(time.mktime(t))
         return rtn
     
     def getUserInfo(self, id='', screen_name=''):

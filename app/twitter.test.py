@@ -4,8 +4,6 @@ import json
 from app.plugin import twitter
 
 d = {
-    'consumer_key':'qKtlaEopAyp5wUdljmmlBg',
-    'consumer_secret':'CILHlKVjMF6eoMwIrt3L3a2X00vXXunvM1gDaezYGc',
     'access_token':'166817375-J0oDWXIHdvjxNIJndR3hFNTMgo9gXloCnFSFc4em',
     'access_token_secret':'WTNaYDJLfOSAVef1vzqdgUQ54gPewyth5gVxFdHY1E'
 }
@@ -16,7 +14,7 @@ d = {
 #    'access_token_secret':'LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE'
 #}
 
-t = twitter.Plugin(0, 'hbprotoss', '', json.dumps(d),
+t = twitter.Plugin('166817375', 'hbprotoss', '', json.dumps(d),
     {'https':'http://127.0.0.1:10001', 'http':'http://127.0.0.1:10001'}
 )
 params = {
@@ -24,4 +22,5 @@ params = {
     'include_entities':'true'
 }
 #print(t.calcSignature('GET', 'https://api.twitter.com/1.1/statuses/home_timeline.json', None))
-t.getTimeline()
+#print(t.getTimeline())
+print(t.getUserInfo())
