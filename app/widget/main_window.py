@@ -251,8 +251,11 @@ class MainWindow( QDialog ):
             self.following.setText( '关注(%s)' % str( user_info['friends_count'] ) )
             self.tweets.setText( '微博(%s)' % str( user_info['statuses_count'] ) )
         else:
-            # TODO: render user info with 'all_accounts'
-            pass
+            self.avatar.setPixmap(QPixmap(constant.DEFAULT_AVATER))
+            self.account.setText('全部账户')
+            self.fans.setText('粉丝(x)')
+            self.following.setText('关注(x)')
+            self.tweets.setText('微博(x)')
         
     def showEvent(self, event):
         self.button_to_widget[self.home].refresh()

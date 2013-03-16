@@ -76,10 +76,18 @@ class PictureViewer(QDialog):
         self.connect(self.task, SIGNAL_FINISH, self.updateUI)
         self.task.start()
         
+    def closeEvent(self, ev):
+        self.task.terminate()
+        self.close()
+        
     def updateProgress(self, percentage):
         self.indicator.setPercentage(percentage)
         
     def updateUI(self, path):
+        '''
+        Replace the progress indicator with downloaded image
+        @param path: string. Downloaded image path
+        '''
         self.indicator.hide()
         self.vbox.removeWidget(self.indicator)
         

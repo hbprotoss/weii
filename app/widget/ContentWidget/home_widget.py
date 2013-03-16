@@ -1,15 +1,15 @@
 # coding=utf-8
 
-import json
-import imghdr
+import time
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from widget.ContentWidget import abstract_widget
 from widget.tweet_widget import TweetWidget
-from app import constant
 from app import logger
 from app import account_manager
+from app import dateutil
+from app.dateutil import parser
 
 log = logger.getLogger(__name__)
 SIGNAL_FINISH = 'downloadFinish'
@@ -37,6 +37,7 @@ class DownloadTask(QThread):
     def run(self):
         rtn = []
         for account in self.account_list:
+            log.debug(account.plugin)
             tweet_list = account.plugin.getTimeline(max_point=(account.last_tweet_id, account.last_tweet_time),
                 page=self.page, count=self.count
             )
@@ -54,6 +55,7 @@ class HomeWidget(abstract_widget.AbstractWidget):
         super(HomeWidget, self).__init__(parent)
         self.download_task = DownloadTask()
         self.currentPage = 1
+        self.time_format = '%a %b %d %H:%M:%S %z %Y'
         
         self.connect(self.download_task, SIGNAL(SIGNAL_FINISH), self.updateUI)
         
@@ -63,6 +65,7 @@ class HomeWidget(abstract_widget.AbstractWidget):
     def updateUI(self, data):
         log.debug('updateUI')
         self.clearWidget(self.refreshing_image)
+        whole_list = []
         for account,tweet_list in data:
             # If it is refreshing, update max_point of account
             if self.count() == 1:
@@ -70,12 +73,26 @@ class HomeWidget(abstract_widget.AbstractWidget):
                 account.last_tweet_time = tweet_list[0]['created_at']
                 
             for tweet in tweet_list:
-                avatar = self.small_loading_image
-                picture = self.loading_image
-                    
-                self.addWidget(
-                    TweetWidget(account, tweet, avatar, picture, self)
-                )
+                dt = parser.parse(tweet['created_at'])
+                res = dt.astimezone(dateutil.tz.tzlocal())
+                tweet['created_at'] = time.mktime(res.timetuple())
+                
+                if 'retweeted_status' in tweet:
+                    retweet = tweet['retweeted_status']
+                    dt = parser.parse(retweet['created_at'])
+                    res = dt.astimezone(dateutil.tz.tzlocal())
+                    retweet['created_at'] = time.mktime(res.timetuple())
+                whole_list.append((account, tweet))
+        
+        whole_list.sort(key=lambda x:x[1]['created_at'], reverse=True)
+                
+        for account, tweet in whole_list:
+            avatar = self.small_loading_image
+            picture = self.loading_image
+                
+            self.addWidget(
+                TweetWidget(account, tweet, avatar, picture, self)
+            )
         
     def appendNew(self):
         if not self.download_task.isRunning():
@@ -91,23 +108,24 @@ class HomeWidget(abstract_widget.AbstractWidget):
             self.download_task.start()
         
     def refresh(self):
-        if not self.download_task.isRunning():
-            account_list = account_manager.getCurrentAccount()
+        if self.download_task.isRunning():
+            self.download_task.terminate()
+        account_list = account_manager.getCurrentAccount()
+        
+        for account in account_list:
+            account.last_tweet_id = 0
+            account.last_tweet_time = 0
             
-            for account in account_list:
-                account.last_tweet_id = 0
-                account.last_tweet_time = 0
-                
-            self.clearAllWidgets()
-            self.refreshing_image.show()
-            self.insertWidget(0, self.refreshing_image)
-            
-            self.download_task.setParams(1)
-            self.currentPage = 2
-            self.download_task.setAccountList(account_list)
-            log.debug('Starting thread')
-            self.download_task.start()
-            
+        self.clearAllWidgets()
+        self.refreshing_image.show()
+        self.insertWidget(0, self.refreshing_image)
+        
+        self.download_task.setParams(1)
+        self.currentPage = 2
+        self.download_task.setAccountList(account_list)
+        log.debug('Starting thread')
+        self.download_task.start()
+        
 #    def refresh(self, account_list):
 #        account_list[0].last_tweet_id = account_list[0].last_tweet_time = 0
 #        self.clearAllWidgets()

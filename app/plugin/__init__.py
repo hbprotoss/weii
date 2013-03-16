@@ -48,9 +48,10 @@ class AbstractPlugin():
         self.username = username
         self.access_token = access_token
         self.data = data
-        self.opener = urllib.request.FancyURLopener(proxy)
+        self.proxy = proxy
+        self.new_time_format = '%Y-%m-%d %H:%M:%S'
         
-    def getData(self, url, data=None):
+    def getData(self, url, data=None, header=None):
         '''
         **********************************************************************
         * ATTENTION! This is the only way plugin interacts with the Internet.*
@@ -61,9 +62,15 @@ class AbstractPlugin():
         If data is None, use GET method. Otherwise POST.
         @param url: string.
         @param data: string.
+        @param header: dict. Header key and value pairs.
         @return: bytes.
         '''
-        f = self.opener.open(url, data)
+        opener = urllib.request.FancyURLopener(self.proxy)
+        if header:
+            for k,v in header.items():
+                opener.addheader(k, v)
+                
+        f = opener.open(url, data)
         return f.read()
     
     def getTweet(self, id):

@@ -13,6 +13,7 @@ class ResourceManager:
     Manager for bandwidth consuming resources.
     Get resources through memory, disk, Internet in turn.
     '''
+    # TODO: improve network module performance
     
     def __init__(self, path, proxy={}):
         self.path = path
