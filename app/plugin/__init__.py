@@ -35,6 +35,7 @@ class weiNetworkError(Exception):pass
 
 
 class AbstractPlugin():
+    # TODO: Topic
     def __init__(self, id, username, access_token, data, proxy={}):
         '''
         @param id: string. User id.

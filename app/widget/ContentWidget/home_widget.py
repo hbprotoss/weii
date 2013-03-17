@@ -95,6 +95,7 @@ class HomeWidget(abstract_widget.AbstractWidget):
             )
         
     def appendNew(self):
+        # FIXME: Duplicate tweet when turn to next page
         if not self.download_task.isRunning():
             account_list = account_manager.getCurrentAccount()
             

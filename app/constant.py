@@ -9,4 +9,4 @@ AVATER_SIZE = 64
 AVATER_IN_TWEET_SIZE = 40
 
 DEFAULT_AVATER = os.path.join(APP_ROOT, 'theme/user_logo_64x64.png')
-TEST_SERVICE = os.path.join(APP_ROOT, '16x16.jpg')
+DATABASE = os.path.join(DATA_ROOT, 'db.sqlite')

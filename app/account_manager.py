@@ -8,6 +8,7 @@ from PyQt4.QtGui import *
 from app import plugin
 from app import resource_manager
 from app import constant
+from app import database_manager
 
 EmotionExp = namedtuple('EmotionExp', ['prefix', 'suffix'])
 ALL_ACCOUNTS = 'all_accounts'
@@ -85,7 +86,17 @@ def initAccount():
     @return: List of Account objects
     '''
     # TODO: Initiate from database
-    return dummyInitAccount()
+    #return dummyInitAccount()
+    plugins = plugin.plugins
+    rtn = []
+    for account in database_manager.getAccountsInfo():
+        acc = Account(
+            plugins[account.service].Plugin(
+                account.id, account.username, account.access_token, account.data, json.loads(account.proxy)
+            )
+        )
+        rtn.append(acc)
+    return rtn
 
 account_list = initAccount()
 # Mapping of username to Account object.
