@@ -9,6 +9,7 @@ from app import constant
 from app import theme_manager
 from app import account_manager
 from app.widget import icon_button
+from app.widget import stacked_widget
 from app.widget.ContentWidget import *
 
 MainWindow_QSS = '''
@@ -97,6 +98,7 @@ class MainWindow( QDialog ):
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
         
+        # Automatically append new tweets when scrolled nearly to bottom
         self.connect(self.scroll_area.verticalScrollBar(), SIGNAL('valueChanged(int)'), self.onValueChanged_ScrollBar)
     
     def initTab(self):
@@ -208,7 +210,7 @@ class MainWindow( QDialog ):
         ## Scroll area
         self.button_to_widget = self.initTab()
         widget = self.button_to_widget[self.home]
-        self.content_widget = QStackedWidget()
+        self.content_widget = stacked_widget.StackedWidget()
         #self.content_widget.setStyleSheet('border-style:solid;border-width:5px')
         for k,v in self.button_to_widget.items():
             self.content_widget.addWidget(v)
@@ -264,11 +266,7 @@ class MainWindow( QDialog ):
         button = self.sender()
         self.button_group.setActive(button)
         
-        # Automatically switch size depending on the content of the page
-        # @see: http://doc.qt.digia.com/qq/qq06-qwidgetstack.html
-        self.content_widget.currentWidget().setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.content_widget.setCurrentWidget(self.button_to_widget[button])
-        self.content_widget.currentWidget().setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
