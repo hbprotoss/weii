@@ -117,6 +117,9 @@ def getCurrentAccount():
 
 def setCurrentAccount(username):
     current_list = all_accounts[username]
+    
+def getAllAccount():
+    return account_list
 
 def addAccount(account):
     all_accounts[account.username] = [account]

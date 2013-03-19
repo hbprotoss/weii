@@ -8,17 +8,24 @@ from app.plugin import *
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+##################################################################################################
+# OAuth data
+KEY = '2933789200'
+SECRET = 'ea6beb430e6fadc8345bde9a8b6bd137'
+redirect_uri = 'https://api.weibo.com/oauth2/default.html'
+authorize_url = 'https://api.weibo.com/oauth2/authorize?client_id=%s&response_type=code&redirect_uri=%s' % (KEY, redirect_uri)
+access_token_url = 'https://api.weibo.com/oauth2/access_token'
+
 class Plugin(AbstractPlugin):
     '''
     Plugin for sina
     '''
     
+    service = 'sina'
+    service_icon = os.path.join(BASE_DIR, 'logo.jpg')
+    
     def __init__(self, id, username, access_token, data, proxy):
         super(Plugin, self).__init__(id, username, access_token, data, proxy)
-        
-        self.service = 'sina'
-        self.service_icon = os.path.join(BASE_DIR, 'logo.jpg')
-        
         
     def getTimeline(self, id=None, max_point=None, count=20, page=1):
         rtn = None
@@ -89,3 +96,27 @@ class Plugin(AbstractPlugin):
     @staticmethod
     def getEmotionExpression():
         return ('[', ']')
+    
+    #############################################################
+    # OAuth interface
+    @staticmethod
+    def getAuthorize():
+        return (authorize_url, None, None)
+    
+    @staticmethod
+    def getAccessToken(params):
+        (url, data) = params
+        code = url.rsplit('=', 1)[-1]
+        data_dict = {
+            'client_id': KEY,
+            'client_secret': SECRET,
+            'grant_type': 'authorization_code',
+            'redirect_uri': redirect_uri,
+            'code': code
+        }
+        return (access_token_url, urllib.parse.urlencode(data_dict), None)
+    
+    @staticmethod
+    def parseData(data):
+        res = json.loads(data)
+        return (res['access_token'], '')

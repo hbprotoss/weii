@@ -310,6 +310,42 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
+    ########################################################
+    # OAuth interface
+    @staticmethod
+    def getAuthorize():
+        '''
+        @return: (url, data, headers)
+            url: OAuth authorize url
+            data: If None, use GET method. If not None, POST data
+            headers: Additional HTTP headers. A dict of key and value
+        '''
+        raise NotImplementedError
+    
+    @staticmethod
+    def getAccessToken(params):
+        '''
+        @param params: (url, data)
+            url: Redirected by authorize url
+            data: Returned data
+        @return: (url, data, headers)
+            url: url to get access token
+            data: If None, use GET method. If not None, POST data
+            headers: Additional HTTP headers. A dict of key and value
+        '''
+        raise NotImplementedError
+    
+    @staticmethod
+    def parseData(data):
+        '''
+        @param data: Data returned by access token url
+        @return: (access_token, data)
+            access_token: string. Access token for OAuth 2.0. It can be empty string if using OAuth 1.x
+            data: string. Custom data in any format to be stored in database. It is the plugin's
+                responsibility to parse the data when plugin object is constructed.
+        '''
+        raise NotImplementedError
+    
 plugins = None
 if __name__ == 'app.plugin':
     log = logger.getLogger(__name__)
@@ -324,7 +360,7 @@ if __name__ == 'app.plugin':
                    for file in files}
         log.info('Loading plugins done')
         for name,plugin in plugins.items():
-            print(name, plugin)
+            log.info('%s %s' % (name, str(plugin)))
         
         return plugins
     

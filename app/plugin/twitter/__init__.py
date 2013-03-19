@@ -20,11 +20,11 @@ class Plugin(AbstractPlugin):
     Plugin for twitter
     '''
     
+    service = 'twitter'
+    service_icon = os.path.join(BASE_DIR, 'logo.jpg')
+        
     def __init__(self, id, username, access_token, data, proxy):
         super(Plugin, self).__init__(id, username, access_token, data, proxy)
-        
-        self.service = 'twitter'
-        self.service_icon = os.path.join(BASE_DIR, 'logo.jpg')
         
         res = json.loads(data)
         self.consumer_key = 'qKtlaEopAyp5wUdljmmlBg'

@@ -10,3 +10,5 @@ AVATER_IN_TWEET_SIZE = 40
 
 DEFAULT_AVATER = os.path.join(APP_ROOT, 'theme/user_logo_64x64.png')
 DATABASE = os.path.join(DATA_ROOT, 'db.sqlite')
+
+GLOBAL_CONFIG = os.path.join(DATA_ROOT, 'conf.ini')
