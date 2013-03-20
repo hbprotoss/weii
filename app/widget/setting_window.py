@@ -86,6 +86,9 @@ class SettingWindow(QDialog):
             addAccount(account)
             
 class WebView(QDialog):
+    '''
+    Display a web page for user to authorize app.
+    '''
     def __init__(self, url, callback_url, parent=None):
         super(WebView, self).__init__(parent)
         self.url = url
@@ -106,7 +109,7 @@ class WebView(QDialog):
         vbox.addWidget(self.web)
         
     def onUrlChange(self, url):
-        log.debug(url.toString())
+        #log.debug(url.toString())
         if url.toString().startswith(self.callback_url):
             self.redirected_url = url
             self.close()
@@ -131,6 +134,8 @@ class AccountOptionWidget(QWidget):
         vbox = QVBoxLayout()
         vbox.setContentsMargins(0, 0, 0, 0)
         self.setLayout(vbox)
+        
+        vbox.addWidget(QLabel('内容提供商列表'))
         
         self.list_widget = QListWidget()
         vbox.addWidget(self.list_widget)
@@ -175,7 +180,6 @@ class AccountOptionWidget(QWidget):
         plugin_class = plugin.plugins[service].Plugin
         url = plugin_class.getAuthorize()
         callback = plugin_class.getCallbackUrl()
-        log.debug(url)
         web = WebView(url, callback)
         web.exec()
         
@@ -186,8 +190,10 @@ class AccountOptionWidget(QWidget):
             opener.addheader(k, v)
         f = opener.open(url, data)
         data = f.read().decode('utf-8')
+        log.debug(data)
         
         # Parse returned data.
         access_token, access_token_secret = plugin_class.parseData(data)
-        account_manager.addAccount(service, '', '', access_token, access_token_secret, config_manager.getParameter('Proxy'))
+        acc = account_manager.addAccount(service, '', '', access_token, access_token_secret, config_manager.getParameter('Proxy'))
+        log('Account(%s, %s) added.' % (acc.plugin.service, acc.plugin.username))
         pass

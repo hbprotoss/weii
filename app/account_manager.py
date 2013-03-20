@@ -128,6 +128,7 @@ def addAccount(service, uid, username, access_token, data='', proxy={}):
     all_accounts[username] = [account]
     
     database_manager.writeSignleAccount(plugin_obj.id, plugin_obj.username, access_token, data, proxy, service)
+    return account
 
 def removeAccount(account):
     del all_accounts[account.plugin.username]

@@ -21,7 +21,7 @@ class DownloadTask(QThread):
         
     def reportHook(self, transferred_blocks, bytes_per_block, total_size):
         percentage = int(transferred_blocks * bytes_per_block / total_size * 100)
-        log.debug('%d%% completed' % percentage)
+        #log.debug('%d%% completed' % percentage)
         self.emit(SIGNAL_PROGRESS, percentage)
         
     def run(self):
