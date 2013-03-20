@@ -29,6 +29,7 @@ class SettingWindow(QDialog):
     '''
     def __init__(self, parent=None):
         super(SettingWindow, self).__init__(parent)
+        self.setWindowTitle('设置')
         
         # QTreeWidgetItem to content widget
         self.item_to_widget = {}
@@ -89,7 +90,7 @@ class WebView(QDialog):
         super(WebView, self).__init__(parent)
         self.url = url
         self.callback_url = callback_url
-        self.redirected_url = ''
+        self.redirected_url = QUrl()
         
         self.setupUI()
         self.connect(self.web, SIGNAL('urlChanged (const QUrl&)'), self.onUrlChange)
@@ -170,6 +171,7 @@ class AccountOptionWidget(QWidget):
             proxy.setPort(int(port))
             QNetworkProxy.setApplicationProxy(proxy)
         
+        # Visit authorize url and get redirected url.
         plugin_class = plugin.plugins[service].Plugin
         url = plugin_class.getAuthorize()
         callback = plugin_class.getCallbackUrl()
@@ -177,6 +179,7 @@ class AccountOptionWidget(QWidget):
         web = WebView(url, callback)
         web.exec()
         
+        # Visit access token url.
         url, data, headers = plugin_class.getAccessToken(web.getRedirectedUrl())
         opener = urllib.request.FancyURLopener(global_proxy)
         for k,v in headers.items():
@@ -184,6 +187,7 @@ class AccountOptionWidget(QWidget):
         f = opener.open(url, data)
         data = f.read().decode('utf-8')
         
+        # Parse returned data.
         access_token, access_token_secret = plugin_class.parseData(data)
-        account_manager.addAccount(service, '', '', access_token, access_token_secret, '{}')
+        account_manager.addAccount(service, '', '', access_token, access_token_secret, config_manager.getParameter('Proxy'))
         pass

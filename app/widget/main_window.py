@@ -10,6 +10,7 @@ from app import theme_manager
 from app import account_manager
 from app.widget import icon_button
 from app.widget import stacked_widget
+from app.widget import setting_window
 from app.widget.ContentWidget import *
 
 MainWindow_QSS = '''
@@ -97,6 +98,7 @@ class MainWindow( QDialog ):
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
+        self.connect(self.setting, SIGNAL('clicked()'), self.onClicked_BtnSetting)
         
         # Automatically append new tweets when scrolled nearly to bottom
         self.connect(self.scroll_area.verticalScrollBar(), SIGNAL('valueChanged(int)'), self.onValueChanged_ScrollBar)
@@ -271,6 +273,10 @@ class MainWindow( QDialog ):
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
         self.button_to_widget[button].refresh()
+        
+    def onClicked_BtnSetting(self):
+        window = setting_window.SettingWindow()
+        window.exec()
         
     def onValueChanged_ScrollBar(self, value):
         if value > self.scroll_area.verticalScrollBar().maximum() * 0.9:

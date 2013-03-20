@@ -7,11 +7,13 @@ import time
 import hmac
 import hashlib
 import collections
-
-from app.plugin import *
 import base64
 
+from app.plugin import *
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONSUMER_KEY = 'qKtlaEopAyp5wUdljmmlBg'
+CONSUMER_SECRET = 'CILHlKVjMF6eoMwIrt3L3a2X00vXXunvM1gDaezYGc'
 
 DataStruct = collections.namedtuple('DataStruct', ['oauth_signature', 'oauth_nonce', 'oauth_timestamp'])
 
@@ -27,18 +29,16 @@ class Plugin(AbstractPlugin):
         super(Plugin, self).__init__(id, username, access_token, data, proxy)
         
         res = json.loads(data)
-        self.consumer_key = 'qKtlaEopAyp5wUdljmmlBg'
-        self.consumer_secret = 'CILHlKVjMF6eoMwIrt3L3a2X00vXXunvM1gDaezYGc'
         self.access_token = res['access_token']
         self.access_token_secret = res['access_token_secret']
         self.app_params = {
-            'oauth_consumer_key':self.consumer_key,
+            'oauth_consumer_key':CONSUMER_KEY,
             'oauth_token':self.access_token,
             'oauth_version':'1.0',
             'oauth_signature_method':'HMAC-SHA1'
         }
         self.oauth_header = ''.join(
-            ('OAuth oauth_consumer_key="%s"' % self.consumer_key,
+            ('OAuth oauth_consumer_key="%s"' % CONSUMER_KEY,
              ', oauth_nonce="{oauth_nonce}"',
              ', oauth_signature="{oauth_signature}"',
              ', oauth_signature_method="HMAC-SHA1"',
@@ -46,6 +46,15 @@ class Plugin(AbstractPlugin):
              ', oauth_token="%s"' % self.access_token,
              ', oauth_version="1.0"')
         )
+        
+        # First initialization
+        if (id == '') and (username == ''):
+            url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
+            rtn_from_server = self.getData(url, None, self.getHeader('GET', url)).decode('utf-8')
+            res = json.loads(rtn_from_server)
+            
+            self.id = res['id_str']
+            self.username = res['name']
         
     def __transferAvatar(self, url):
         return ''.join(url.split('_normal'))
@@ -89,7 +98,7 @@ class Plugin(AbstractPlugin):
              urllib.parse.quote_plus(parameter_string))
         )
         signing_key = ''.join(
-            (urllib.parse.quote(self.consumer_secret),
+            (urllib.parse.quote(CONSUMER_SECRET),
              '&',
              urllib.parse.quote(self.access_token_secret))
         )
@@ -99,12 +108,12 @@ class Plugin(AbstractPlugin):
         
         return DataStruct._make((signature, d['oauth_nonce'], d['oauth_timestamp']))
     
-    def getHeader(self, method, url, params):
+    def getHeader(self, method, url, params=None):
         data = self.calcSignature(method, url, params)
         oauth_string = self.oauth_header.format(
-            oauth_signature=urllib.parse.quote_plus(data.oauth_signature),
-            oauth_nonce=data.oauth_nonce,
-            oauth_timestamp=data.oauth_timestamp
+            oauth_signature = urllib.parse.quote_plus(data.oauth_signature),
+            oauth_nonce = data.oauth_nonce,
+            oauth_timestamp = data.oauth_timestamp
         )
         return {'Authorization':oauth_string}
     
