@@ -197,3 +197,15 @@ class AccountOptionWidget(QWidget):
         acc = account_manager.addAccount(service, '', '', access_token, access_token_secret, config_manager.getParameter('Proxy'))
         log('Account(%s, %s) added.' % (acc.plugin.service, acc.plugin.username))
         pass
+    
+class SingleAccountWidget(QWidget):
+    '''
+    Widget for single account setting
+    '''
+    def __init__(self, parent=None):
+        super(SingleAccountWidget, self).__init__(parent)
+        
+    def setupUI(self):
+        vbox = QVBoxLayout()
+        vbox.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(vbox)

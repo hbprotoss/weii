@@ -68,6 +68,21 @@ class PictureTask(QThread):
             self.emit(SIGNAL_FINISH, self.widget, pic_path, self.size)
         except Exception as e:
             print(e)
+            
+class GroupBox(QGroupBox):
+    def __init__(self, parent=None):
+        super(GroupBox, self).__init__(parent)
+        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.setStyleSheet(
+            '''
+            QGroupBox {
+                margin-top: 0px;
+                padding-top: 0px;
+                border-style: solid;
+                border-width: 1px;
+            }
+            '''
+        )
 
 # Global instance of thread pool
 #g_thread_pool = QThreadPool.globalInstance()
@@ -200,6 +215,7 @@ class TweetWidget(QWidget):
         return rtn
     
     def analyse(self, src):
+        # FIXME: find a way to distinguish character and punctuation
         length = len(src)
         i = 0
         target = []
@@ -319,8 +335,7 @@ class TweetWidget(QWidget):
         if('retweeted_status' in self.tweet):
             retweet = self.tweet['retweeted_status']
             
-            groupbox = QGroupBox(self)
-            groupbox.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+            groupbox = GroupBox(self)
             #groupbox.setContentsMargins(0, 5, 5, 5)
             v2.addWidget(groupbox)
             v3 = QVBoxLayout()

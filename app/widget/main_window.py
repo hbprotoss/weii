@@ -33,12 +33,6 @@ QLabel#account {
     font-size: 16px;
     font-weight: bold;
 }
-QGroupBox {
-    margin-top: 0px;
-    padding-top: 0px;
-    border-style: solid;
-    border-width: 1px;
-}
 '''
 
 class ButtonGroup:
