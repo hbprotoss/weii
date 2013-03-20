@@ -306,9 +306,11 @@ class TweetWidget(QWidget):
         h1.addWidget(label_service_icon)
         
         ## tweet content
+        log.debug('Analysing %s' % self.tweet['text'])
         self.label_tweet = TweetText(
             self.analyse(self.tweet['text']), self
         )
+        log.debug('Done.')
         v2.addWidget(self.label_tweet)
         
         ## retweet if exists

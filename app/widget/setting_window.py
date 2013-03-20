@@ -1,10 +1,20 @@
 # coding=utf-8
 
+import json
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyQt4.QtNetwork import *
+from PyQt4.QtWebKit import *
+
 from app.widget import stacked_widget
 from app import account_manager
+from app import config_manager
 from app import plugin
+from app import logger
+import urllib
+
+log = logger.getLogger(__name__)
 
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self, parent, strings):
@@ -74,6 +84,35 @@ class SettingWindow(QDialog):
         for account in account_manager.getAllAccount():
             addAccount(account)
             
+class WebView(QDialog):
+    def __init__(self, url, callback_url, parent=None):
+        super(WebView, self).__init__(parent)
+        self.url = url
+        self.callback_url = callback_url
+        self.redirected_url = ''
+        
+        self.setupUI()
+        self.connect(self.web, SIGNAL('urlChanged (const QUrl&)'), self.onUrlChange)
+        
+    def setupUI(self):
+        vbox = QVBoxLayout()
+        vbox.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(vbox)
+        
+        self.web = QWebView()
+        self.web.load(QUrl(self.url))
+        self.web.show()
+        vbox.addWidget(self.web)
+        
+    def onUrlChange(self, url):
+        log.debug(url.toString())
+        if url.toString().startswith(self.callback_url):
+            self.redirected_url = url
+            self.close()
+        
+    def getRedirectedUrl(self):
+        return self.redirected_url.toString()
+
 class AccountOptionWidget(QWidget):
     '''
     List how many plugins are available and guide user to create a new account. 
@@ -115,7 +154,36 @@ class AccountOptionWidget(QWidget):
         #QMessageBox.information(self, '', str(self.list_widget.currentRow()))
         item = self.list_widget.currentItem()
         if item:
-            print(item.text())
+            log.debug(item.text())
+            self.addAccount(item.text())
             
     def addAccount(self, service):
+        global_proxy = json.loads(config_manager.getParameter('Proxy'))
+        if len(global_proxy.keys()) != 0:
+            proxy_string = global_proxy['http']
+            (host_name, port) = proxy_string.rsplit(':', 1)
+            host_name = host_name.split('://')[-1]
+            
+            proxy = QNetworkProxy()
+            proxy.setType(QNetworkProxy.HttpProxy)
+            proxy.setHostName(host_name)
+            proxy.setPort(int(port))
+            QNetworkProxy.setApplicationProxy(proxy)
+        
+        plugin_class = plugin.plugins[service].Plugin
+        url = plugin_class.getAuthorize()
+        callback = plugin_class.getCallbackUrl()
+        log.debug(url)
+        web = WebView(url, callback)
+        web.exec()
+        
+        url, data, headers = plugin_class.getAccessToken(web.getRedirectedUrl())
+        opener = urllib.request.FancyURLopener(global_proxy)
+        for k,v in headers.items():
+            opener.addheader(k, v)
+        f = opener.open(url, data)
+        data = f.read().decode('utf-8')
+        
+        access_token, access_token_secret = plugin_class.parseData(data)
+        account_manager.addAccount(service, '', '', access_token, access_token_secret, '{}')
         pass

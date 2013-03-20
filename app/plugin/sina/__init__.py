@@ -5,6 +5,7 @@ import urllib.parse
 import json
 import time
 from app.plugin import *
+from app import config_manager
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -24,8 +25,18 @@ class Plugin(AbstractPlugin):
     service = 'sina'
     service_icon = os.path.join(BASE_DIR, 'logo.jpg')
     
-    def __init__(self, id, username, access_token, data, proxy):
+    def __init__(self, id, username, access_token, data='', proxy={}):
         super(Plugin, self).__init__(id, username, access_token, data, proxy)
+        
+        if (id == '') and (username == ''):
+            url = 'https://api.weibo.com/2/account/get_uid.json?access_token=%s' % access_token
+            self.proxy = json.loads(config_manager.getParameter('Proxy'))
+            
+            rtn_from_server = self.getData(url).decode('utf-8')
+            self.id = json.loads(rtn_from_server)['uid']
+            
+            user_info = self.getUserInfo(self.id)
+            self.username = user_info['screen_name']
         
     def getTimeline(self, id=None, max_point=None, count=20, page=1):
         rtn = None
@@ -100,12 +111,15 @@ class Plugin(AbstractPlugin):
     #############################################################
     # OAuth interface
     @staticmethod
-    def getAuthorize():
-        return (authorize_url, None, None)
+    def getCallbackUrl():
+        return redirect_uri
     
     @staticmethod
-    def getAccessToken(params):
-        (url, data) = params
+    def getAuthorize():
+        return authorize_url
+    
+    @staticmethod
+    def getAccessToken(url):
         code = url.rsplit('=', 1)[-1]
         data_dict = {
             'client_id': KEY,
@@ -114,9 +128,16 @@ class Plugin(AbstractPlugin):
             'redirect_uri': redirect_uri,
             'code': code
         }
-        return (access_token_url, urllib.parse.urlencode(data_dict), None)
+        return (access_token_url, urllib.parse.urlencode(data_dict), {})
     
     @staticmethod
     def parseData(data):
         res = json.loads(data)
         return (res['access_token'], '')
+    
+    @staticmethod
+    def getUidAndUsername(access_token, access_token_secret):
+        url = 'https://api.weibo.com/2/account/get_uid.json?%s' % access_token
+        opener = urllib.request.FancyURLopener(json.loads(config_manager.getParameter('Proxy')))
+        f = opener.open(url)
+        uid = json.loads(f.read().decode('utf-8'))['uid']

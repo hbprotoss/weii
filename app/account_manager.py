@@ -113,7 +113,7 @@ def getCurrentAccount():
     @return: List of current account. If only one account is chosen, the list contains only the current Account
              object. If all accounts are chosen, the list contains all Account objects. 
     '''
-    return current_list
+    return list(current_list)
 
 def setCurrentAccount(username):
     current_list = all_accounts[username]
@@ -121,9 +121,13 @@ def setCurrentAccount(username):
 def getAllAccount():
     return account_list
 
-def addAccount(account):
-    all_accounts[account.username] = [account]
+def addAccount(service, uid, username, access_token, data='', proxy={}):
+    plugin_obj = plugin.plugins[service].Plugin(uid, username, access_token, data, proxy)
+    account = Account(plugin_obj)
     account_list.append(account)
+    all_accounts[username] = [account]
+    
+    database_manager.writeSignleAccount(plugin_obj.id, plugin_obj.username, access_token, data, proxy, service)
 
 def removeAccount(account):
     del all_accounts[account.plugin.username]

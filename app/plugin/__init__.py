@@ -38,6 +38,8 @@ class AbstractPlugin():
     # TODO: Topic
     def __init__(self, id, username, access_token, data, proxy={}):
         '''
+        If both id and username are empty, it means the account is newly added and plugin should
+        retrieve id and username from server with access_token.
         @param id: string. User id.
         @param username: string.
         @param access_token: string.
@@ -313,21 +315,23 @@ class AbstractPlugin():
     ########################################################
     # OAuth interface
     @staticmethod
-    def getAuthorize():
+    def getCallbackUrl():
         '''
-        @return: (url, data, headers)
-            url: OAuth authorize url
-            data: If None, use GET method. If not None, POST data
-            headers: Additional HTTP headers. A dict of key and value
+        @return: Callback url of OAuth
         '''
         raise NotImplementedError
     
     @staticmethod
-    def getAccessToken(params):
+    def getAuthorize():
         '''
-        @param params: (url, data)
-            url: Redirected by authorize url
-            data: Returned data
+        @return: OAuth authorize url
+        '''
+        raise NotImplementedError
+    
+    @staticmethod
+    def getAccessToken(url):
+        '''
+        @param url: Redirected by authorize url
         @return: (url, data, headers)
             url: url to get access token
             data: If None, use GET method. If not None, POST data
