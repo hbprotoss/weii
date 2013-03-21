@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import json
+import atexit
 
 from app import constant
 from app import misc
@@ -16,6 +17,9 @@ def initConfig():
     if not parser.has_section(SECTION):
         parser.add_section(SECTION)
         parser.set(SECTION, 'Proxy', json.dumps({}))
+        
+    # Write back at exit
+    atexit.register(parser.write, open(constant.GLOBAL_CONFIG, 'w'))
 
 initConfig()
     

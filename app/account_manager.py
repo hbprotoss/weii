@@ -4,6 +4,7 @@ import os
 from collections import namedtuple
 import json
 from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 
 from app import plugin
 from app import resource_manager
@@ -109,11 +110,18 @@ account_list = initAccount()
 # Special: all_accounts maps to the whole list.
 all_accounts = {account.plugin.username:[account] for account in account_list}
 all_accounts[ALL_ACCOUNTS] = account_list
-# TODO: Default to all accounts
-#current_list = all_accounts['_hbprotoss']
 current_list = all_accounts[ALL_ACCOUNTS]
 
+# Object to emit signal. Such as SIGNAL_ACCOUNT_ADDED
+signal_emitter = QObject()
+# Signals
+SIGNAL_ACCOUNT_ADDED = SIGNAL('AccountAdded')
+
+###############################################################################
 # Exports
+def getEmitter():
+    return signal_emitter
+
 def getCurrentAccount():
     '''
     @return: List of current account. If only one account is chosen, the list contains only the current Account
@@ -134,6 +142,9 @@ def addAccount(service, uid, username, access_token, data='', proxy={}):
     all_accounts[username] = [account]
     
     database_manager.writeSignleAccount(plugin_obj.id, plugin_obj.username, access_token, data, proxy, service)
+    
+    # Emit signal
+    signal_emitter.emit(SIGNAL_ACCOUNT_ADDED, account)
     return account
 
 def removeAccount(account):

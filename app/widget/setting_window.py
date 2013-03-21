@@ -16,8 +16,6 @@ import urllib
 
 log = logger.getLogger(__name__)
 
-SIGNAL_ACCOUNT_ADDED = SIGNAL('AccountAdded')
-
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self, parent, strings):
         super(TreeWidgetItem, self).__init__(parent, strings)
@@ -92,7 +90,7 @@ class SettingWindow(QDialog):
         self.content_widget.addWidget(widget)
         
         # Receive signal
-        self.connect(widget, SIGNAL_ACCOUNT_ADDED, addAccount)
+        self.connect(account_manager.getEmitter(), account_manager.SIGNAL_ACCOUNT_ADDED, addAccount)
         
         for account in account_manager.getAllAccount():
             addAccount(account)
@@ -178,8 +176,6 @@ class AccountOptionWidget(QWidget):
         if item:
             log.debug(item.text())
             account = self.addAccount(item.text())
-            if account:
-                self.emit(SIGNAL_ACCOUNT_ADDED, account)
             
     def addAccount(self, service):
         '''

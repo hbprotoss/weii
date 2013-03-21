@@ -78,7 +78,7 @@ class MainWindow( QDialog ):
         self.setMinimumSize( 400, 600 )
         self.setupUI()
         self.renderUI()
-        self.renderUserInfo( account_manager.getCurrentAccount() )
+        self.renderUserInfo()
         
         # Show home by default
         self.home.setStyleSheet( 'background-color: %s;' % theme_manager.getParameter('Skin', 'icon-chosen') )
@@ -91,11 +91,17 @@ class MainWindow( QDialog ):
             )
         for btn in btns:
             self.connect(btn, SIGNAL('clicked()'), self.onClicked_BtnGroup)
+            
+        # Refresh button clicked
         self.connect(self.refresh, SIGNAL('clicked()'), self.onClicked_BtnRefresh)
+        # Setting button clicked
         self.connect(self.setting, SIGNAL('clicked()'), self.onClicked_BtnSetting)
-        
         # Automatically append new tweets when scrolled nearly to bottom
         self.connect(self.scroll_area.verticalScrollBar(), SIGNAL('valueChanged(int)'), self.onValueChanged_ScrollBar)
+        # Update account info
+        self.connect(account_manager.getEmitter(), account_manager.SIGNAL_ACCOUNT_ADDED,
+            lambda x:self.renderUserInfo()
+        )
     
     def initTab(self):
         '''
@@ -238,7 +244,8 @@ class MainWindow( QDialog ):
                         )
         )
 
-    def renderUserInfo( self, account_list ):
+    def renderUserInfo(self):
+        account_list = account_manager.getCurrentAccount()
         if len(account_list) == 1:
             account = account_list[0]
             user_info = account.plugin.getUserInfo(account.plugin.id)
