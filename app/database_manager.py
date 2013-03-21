@@ -10,7 +10,20 @@ AccountDataStruct = collections.namedtuple('AccountDataStruct',
     ['id', 'username', 'access_token', 'data', 'proxy', 'service']
 )
 connection = sqlite3.connect(constant.DATABASE)
+c = connection.cursor()
+c.execute('''
+create table if not exists Accounts(
+    id text,
+    username text,
+    access_token text,
+    data text,
+    proxy text, -- json format
+    service text
+)
+''')
+connection.commit()
 
+########################################################################
 # Exports
 def getAccountsInfo():
     cursor = connection.cursor()
