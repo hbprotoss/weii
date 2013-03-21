@@ -53,6 +53,12 @@ class Account:
                 
         return rtn
     
+    def setProxy(self, host, port):
+        # TODO: setProxy
+        proxy = ''.join(('http://', host, ':', port))
+        self.plugin.setProxy(proxy, proxy)
+        pass
+    
 # Internal
 def dummyInitAccount():
     '''

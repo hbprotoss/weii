@@ -15,7 +15,7 @@ log = logger.getLogger(__name__)
 class DownloadTask(QThread):
     def __init__(self, url, manager, parent=None):
         super(DownloadTask, self).__init__(parent)
-        log.debug(url)
+        log.debug('Start downloading %s' % url)
         self.url = url
         self.manager = manager
         

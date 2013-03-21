@@ -16,6 +16,8 @@ import urllib
 
 log = logger.getLogger(__name__)
 
+SIGNAL_ACCOUNT_ADDED = SIGNAL('AccountAdded')
+
 class TreeWidgetItem(QTreeWidgetItem):
     def __init__(self, parent, strings):
         super(TreeWidgetItem, self).__init__(parent, strings)
@@ -39,6 +41,7 @@ class SettingWindow(QDialog):
         
         self.addAccountOption()
         self.expandFirstLayer()
+        self.connect(self.tree_widget, SIGNAL('itemClicked (QTreeWidgetItem *,int)'), self.onItemClicked_Tree)
         
         item = self.tree_widget.topLevelItem(0)
         self.content_widget.setCurrentWidget(self.item_to_widget[item])
@@ -66,6 +69,9 @@ class SettingWindow(QDialog):
     def expandFirstLayer(self):
         for i in range(self.tree_widget.topLevelItemCount()):
             self.tree_widget.setItemExpanded(self.tree_widget.topLevelItem(i), True)
+            
+    def onItemClicked_Tree(self, tree_widget_item, column):
+        self.content_widget.setCurrentWidget(self.item_to_widget[tree_widget_item])
         
     def addAccountOption(self):
         def addAccount(account):
@@ -74,6 +80,9 @@ class SettingWindow(QDialog):
             '''
             item = TreeWidgetItem(self.account_option, [account.plugin.username])
             item.setIcon(0, QIcon(QPixmap.fromImage(account.service_icon)))
+            widget = SingleAccountWidget(account)
+            self.item_to_widget[item] = widget
+            self.content_widget.addWidget(widget)
 
             
         self.account_option = TreeWidgetItem(self.tree_widget, ['账户'])
@@ -81,6 +90,9 @@ class SettingWindow(QDialog):
         widget = AccountOptionWidget()
         self.item_to_widget[self.account_option] = widget
         self.content_widget.addWidget(widget)
+        
+        # Receive signal
+        self.connect(widget, SIGNAL_ACCOUNT_ADDED, addAccount)
         
         for account in account_manager.getAllAccount():
             addAccount(account)
@@ -120,6 +132,10 @@ class WebView(QDialog):
 class AccountOptionWidget(QWidget):
     '''
     List how many plugins are available and guide user to create a new account. 
+    
+    PyQt signal:
+    AccountAdded:
+        @param account: : account_manager.Account object
     '''
     
     def __init__(self, parent=None):
@@ -161,9 +177,14 @@ class AccountOptionWidget(QWidget):
         item = self.list_widget.currentItem()
         if item:
             log.debug(item.text())
-            self.addAccount(item.text())
+            account = self.addAccount(item.text())
+            if account:
+                self.emit(SIGNAL_ACCOUNT_ADDED, account)
             
     def addAccount(self, service):
+        '''
+        @param service: string. Service name
+        '''
         global_proxy = json.loads(config_manager.getParameter('Proxy'))
         if len(global_proxy.keys()) != 0:
             proxy_string = global_proxy['http']
@@ -184,7 +205,11 @@ class AccountOptionWidget(QWidget):
         web.exec()
         
         # Visit access token url.
-        url, data, headers = plugin_class.getAccessToken(web.getRedirectedUrl())
+        redirected_url = web.getRedirectedUrl()
+        if redirected_url == '':
+            return None
+        
+        url, data, headers = plugin_class.getAccessToken(redirected_url)
         opener = urllib.request.FancyURLopener(global_proxy)
         for k,v in headers.items():
             opener.addheader(k, v)
@@ -195,17 +220,74 @@ class AccountOptionWidget(QWidget):
         # Parse returned data.
         access_token, access_token_secret = plugin_class.parseData(data)
         acc = account_manager.addAccount(service, '', '', access_token, access_token_secret, config_manager.getParameter('Proxy'))
-        log('Account(%s, %s) added.' % (acc.plugin.service, acc.plugin.username))
-        pass
+        log.info('Account(%s, %s) added.' % (acc.plugin.service, acc.plugin.username))
+        
+        return acc
     
 class SingleAccountWidget(QWidget):
     '''
     Widget for single account setting
     '''
-    def __init__(self, parent=None):
+    def __init__(self, account, parent=None):
+        '''
+        @param account: account_manager.Account object
+        '''
         super(SingleAccountWidget, self).__init__(parent)
+        self.account = account
+        
+        self.setupUI()
+        self.connect(self.CheckBox_proxy, SIGNAL('stateChanged (int)'), self.onStateChanged_checkbox)
+        
+        # Set proxy initial state
+        if 'https' in self.account.plugin.proxy:
+            self.CheckBox_proxy.setCheckState(Qt.Checked)
+            proxy = self.account.plugin.proxy['https'].split('://')[-1]
+            host, port = proxy.split(':')
+            self.edit_host.setText(host)
+            self.edit_port.setText(port)
+        else:
+            self.CheckBox_proxy.setCheckState(Qt.Unchecked)
+            self.onStateChanged_checkbox(Qt.Unchecked)
         
     def setupUI(self):
         vbox = QVBoxLayout()
         vbox.setContentsMargins(0, 0, 0, 0)
         self.setLayout(vbox)
+        
+        # Proxy setting
+        self.CheckBox_proxy = QCheckBox('设置代理')
+        self.CheckBox_proxy.setCheckState(Qt.Checked)
+        vbox.addWidget(self.CheckBox_proxy)
+        
+        proxy_layout = QHBoxLayout()
+        vbox.addLayout(proxy_layout)
+        label_host = QLabel('服务器:')
+        label_host.setStyleSheet('margin-left: 10px')
+        proxy_layout.addWidget(label_host)
+        self.edit_host = QLineEdit()
+        proxy_layout.addWidget(self.edit_host)
+        label_port = QLabel('端口:')
+        label_port.setStyleSheet('margin-left: 5px')
+        proxy_layout.addWidget(label_port)
+        self.edit_port = QLineEdit()
+        proxy_layout.addWidget(self.edit_port)
+        
+        
+        vbox.addStretch()
+        
+        # Bottom button
+        button_layout = QHBoxLayout()
+        vbox.addLayout(button_layout)
+        self.btn_delete = QPushButton('删除账户')
+        button_layout.addWidget(self.btn_delete)
+        button_layout.addStretch()
+        self.btn_apply = QPushButton('应用')
+        button_layout.addWidget(self.btn_apply)
+        
+    def onStateChanged_checkbox(self, checked):
+        if checked:
+            self.edit_host.setEnabled(True)
+            self.edit_port.setEnabled(True)
+        else:
+            self.edit_host.setEnabled(False)
+            self.edit_port.setEnabled(False)

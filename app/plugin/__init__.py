@@ -54,6 +54,9 @@ class AbstractPlugin():
         self.proxy = proxy
         self.new_time_format = '%Y-%m-%d %H:%M:%S'
         
+    def setProxy(self, http, https):
+        self.proxy = {'http': http, 'https': https}
+        
     def getData(self, url, data=None, header=None):
         '''
         **********************************************************************
