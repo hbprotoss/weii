@@ -39,7 +39,11 @@ class SettingWindow(QDialog):
         
         self.addAccountOption()
         self.expandFirstLayer()
+        
+        # Tree item clicked
         self.connect(self.tree_widget, SIGNAL('itemClicked (QTreeWidgetItem *,int)'), self.onItemClicked_Tree)
+        # Account deleted
+        self.connect(account_manager.getEmitter(), account_manager.SIGNAL_ACCOUNT_DELETED, self.onAccountDelete)
         
         item = self.tree_widget.topLevelItem(0)
         self.content_widget.setCurrentWidget(self.item_to_widget[item])
@@ -70,6 +74,22 @@ class SettingWindow(QDialog):
             
     def onItemClicked_Tree(self, tree_widget_item, column):
         self.content_widget.setCurrentWidget(self.item_to_widget[tree_widget_item])
+        
+    def onAccountDelete(self, account):
+        for i in range(self.account_option.childCount()):
+            item = self.account_option.child(i)
+            dst_account = self.item_to_widget[item].account
+            
+            # Service and id match
+            if (dst_account.plugin.service == account.plugin.service) and \
+                    (dst_account.plugin.id == account.plugin.id):
+                self.tree_widget.setCurrentItem(self.account_option)
+                self.account_option.removeChild(item)
+                self.content_widget.removeWidget(self.item_to_widget[item])
+                del self.item_to_widget[item]
+                del item
+                break
+        pass
         
     def addAccountOption(self):
         def addAccount(account):
@@ -149,7 +169,7 @@ class AccountOptionWidget(QWidget):
         vbox.setContentsMargins(0, 0, 0, 0)
         self.setLayout(vbox)
         
-        vbox.addWidget(QLabel('内容提供商列表'))
+        vbox.addWidget(QLabel('插件列表'))
         
         self.list_widget = QListWidget()
         vbox.addWidget(self.list_widget)
@@ -232,7 +252,10 @@ class SingleAccountWidget(QWidget):
         self.account = account
         
         self.setupUI()
+        # Proxy changed
         self.connect(self.CheckBox_proxy, SIGNAL('stateChanged (int)'), self.onStateChanged_checkbox)
+        # Delete account
+        self.connect(self.btn_delete, SIGNAL('clicked()'), self.onClicked_BtnDelete)
         
         # Set proxy initial state
         if 'https' in self.account.plugin.proxy:
@@ -287,3 +310,6 @@ class SingleAccountWidget(QWidget):
         else:
             self.edit_host.setEnabled(False)
             self.edit_port.setEnabled(False)
+            
+    def onClicked_BtnDelete(self):
+        account_manager.deleteAccount(self.account)

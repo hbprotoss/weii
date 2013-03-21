@@ -112,10 +112,11 @@ all_accounts = {account.plugin.username:[account] for account in account_list}
 all_accounts[ALL_ACCOUNTS] = account_list
 current_list = all_accounts[ALL_ACCOUNTS]
 
-# Object to emit signal. Such as SIGNAL_ACCOUNT_ADDED
+# Object to emit signal such as SIGNAL_ACCOUNT_ADDED
 signal_emitter = QObject()
 # Signals
 SIGNAL_ACCOUNT_ADDED = SIGNAL('AccountAdded')
+SIGNAL_ACCOUNT_DELETED = SIGNAL('AccountDeleted')
 
 ###############################################################################
 # Exports
@@ -139,13 +140,20 @@ def addAccount(service, uid, username, access_token, data='', proxy={}):
     plugin_obj = plugin.plugins[service].Plugin(uid, username, access_token, data, proxy)
     account = Account(plugin_obj)
     account_list.append(account)
-    all_accounts[username] = [account]
+    all_accounts[plugin_obj.username] = [account]
     
-    database_manager.writeSignleAccount(plugin_obj.id, plugin_obj.username, access_token, data, proxy, service)
+    database_manager.createAccount(plugin_obj.id, plugin_obj.username, access_token, data, proxy, service)
     
     # Emit signal
     signal_emitter.emit(SIGNAL_ACCOUNT_ADDED, account)
     return account
 
-def removeAccount(account):
+def deleteAccount(account):
     del all_accounts[account.plugin.username]
+    account_list.remove(account)
+    database_manager.deleteAccount(account.plugin.id, account.plugin.service)
+    
+    # Emit signal
+    signal_emitter.emit(SIGNAL_ACCOUNT_DELETED, account)
+    
+    del account
