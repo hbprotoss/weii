@@ -7,7 +7,7 @@ import json
 from app import constant
 
 AccountDataStruct = collections.namedtuple('AccountDataStruct',
-    ['id', 'username', 'access_token', 'data', 'proxy', 'service']
+    ['id', 'username', 'access_token', 'data', 'proxy', 'service', 'send', 'receive']
 )
 connection = sqlite3.connect(constant.DATABASE)
 c = connection.cursor()
@@ -18,10 +18,13 @@ create table if not exists Accounts(
     access_token text,
     data text,
     proxy text, -- json format
-    service text
+    service text,
+    send integer DEFAULT 1,  -- Whether chosen when post new tweet
+    receive integer DEFAULT 1 -- Whether receive new tweets 
 )
 ''')
 connection.commit()
+del c
 
 ########################################################################
 # Exports
@@ -36,7 +39,9 @@ def createAccount(uid, username, access_token, data, proxy, service):
         proxy = json.dumps(proxy)
         
     t = (uid, username, access_token, data, proxy, service)
-    cursor.execute("insert into Accounts values(?,?,?,?,?,?)", t)
+    cursor.execute('''insert into Accounts(id, username, access_token, data, proxy, service)
+                                    values(?,?,?,?,?,?)''', t
+    )
     connection.commit()
     
 def deleteAccount(uid, service):

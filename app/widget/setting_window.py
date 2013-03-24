@@ -195,6 +195,7 @@ class AccountOptionWidget(QWidget):
         item = self.list_widget.currentItem()
         if item:
             log.debug(item.text())
+            # TODO: Retrieve data in a new thread in case of blocking UI thread.
             account = self.addAccount(item.text())
             
     def addAccount(self, service):

@@ -3,11 +3,11 @@
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from app.widget import setting_window
+from app.widget import *
 
 app = QApplication(sys.argv)
 
-instance = setting_window.SettingWindow()
+instance = new_tweet_window.NewTweetWindow()
 instance.show()
 
 app.exec()

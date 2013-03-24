@@ -89,21 +89,25 @@ class PictureViewer(QDialog):
         @param path: string. Downloaded image path
         '''
         self.indicator.hide()
-        self.vbox.removeWidget(self.indicator)
+        self.scroll_area.takeWidget()
         
         image = QPixmap(path, imghdr.what(path))
         label_pic = QLabel()
         label_pic.setPixmap(image)
-        self.vbox.addWidget(label_pic)
+        self.scroll_area.setWidget(label_pic)
         
         size = image.size()
         self.resize(size)
         
     def setupUI(self):
-        self.vbox = QVBoxLayout()
-        self.vbox.setAlignment(Qt.AlignCenter)
-        self.vbox.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(self.vbox)
+        vbox = QVBoxLayout()
+        vbox.setAlignment(Qt.AlignCenter)
+        vbox.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(vbox)
+        
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setAlignment(Qt.AlignCenter)
+        vbox.addWidget(self.scroll_area)
         
         self.indicator = LoadingIndicator()
-        self.vbox.addWidget(self.indicator)
+        self.scroll_area.setWidget(self.indicator)
