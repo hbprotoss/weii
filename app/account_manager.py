@@ -15,9 +15,15 @@ EmotionExp = namedtuple('EmotionExp', ['prefix', 'suffix'])
 ALL_ACCOUNTS = 'all_accounts'
 
 class Account:
-    def __init__(self, account_plugin):
-        # Plugin object
+    def __init__(self, account_plugin, if_send, if_receive):
+        '''
+        @param account_plugin: plugin.Plugin object.
+        @param if_send: bool. If enabled when posting new tweet.
+        @param if_receive: bool. If enabled when receiving tweets.
+        '''
         self.plugin = account_plugin
+        self.if_send = if_send
+        self.if_receive = if_receive
         
         # QImage object
         self.service_icon = QImage(self.plugin.service_icon)
@@ -100,7 +106,8 @@ def initAccount():
         acc = Account(
             plugins[account.service].Plugin(
                 account.id, account.username, account.access_token, account.data, json.loads(account.proxy)
-            )
+            ),
+            account.send, account.receive
         )
         rtn.append(acc)
     return rtn
@@ -134,7 +141,7 @@ def setCurrentAccount(username):
     current_list = all_accounts[username]
     
 def getAllAccount():
-    return account_list
+    return list(account_list)
 
 def addAccount(service, uid, username, access_token, data='', proxy={}):
     plugin_obj = plugin.plugins[service].Plugin(uid, username, access_token, data, proxy)

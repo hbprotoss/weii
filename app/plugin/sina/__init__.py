@@ -104,6 +104,22 @@ class Plugin(AbstractPlugin):
         
         return rtn
     
+    def sendTweet(self, text, pic=None):
+        params = {
+            'access_token': self.access_token,
+            'status': text
+        }
+        if pic:
+            pass
+        else:
+            url = 'https://api.weibo.com/2/statuses/update.json'
+            
+        encoded_text = urllib.parse.urlencode(params)
+        log.debug(encoded_text)
+        rtn_from_server = self.getData(url, encoded_text)
+        rtn = json.loads(rtn_from_server.decode('utf-8'))
+        return rtn
+    
     @staticmethod
     def getEmotionExpression():
         return ('[', ']')
@@ -135,9 +151,3 @@ class Plugin(AbstractPlugin):
         res = json.loads(data)
         return (res['access_token'], '')
     
-    @staticmethod
-    def getUidAndUsername(access_token, access_token_secret):
-        url = 'https://api.weibo.com/2/account/get_uid.json?%s' % access_token
-        opener = urllib.request.FancyURLopener(json.loads(config_manager.getParameter('Proxy')))
-        f = opener.open(url)
-        uid = json.loads(f.read().decode('utf-8'))['uid']
