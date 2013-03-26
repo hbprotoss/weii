@@ -71,7 +71,7 @@ class AbstractPlugin():
         @param header: dict. Header key and value pairs.
         @return: bytes.
         '''
-        opener = urllib.request.FancyURLopener(self.proxy)
+        opener = urllib.request.URLopener(self.proxy)
         if header:
             for k,v in header.items():
                 opener.addheader(k, v)

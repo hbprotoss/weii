@@ -19,20 +19,20 @@ class AccountButton(QLabel):
         self.enabled = account.if_send
         
         self.pixmaps = [
-            QPixmap.fromImage(self.convertToGreyscal(account.service_icon)),
+            # Greyscaled logo
+            QPixmap.fromImage(self.convertToGreyscale(account.service_icon)),
+            # Original logo
             QPixmap.fromImage(account.service_icon)
         ]
         
         self.setPixmap(self.pixmaps[int(self.enabled)])
-        #self.setPixmap(self.pixmaps[0])
         self.setCursor(Qt.PointingHandCursor)
         
-    def convertToGreyscal(self, image):
+    def convertToGreyscale(self, image):
         '''
         @param image: QImage. Original image
         @return: QImage. Greyscaled image
         '''
-        # TODO: convert to greyscale image
         rtn = QImage(image)
         for i in range(rtn.width()):
             for j in range(rtn.height()):
@@ -51,6 +51,7 @@ class NewTweetWindow(QDialog):
     '''
     def __init__(self, parent=None):
         super(NewTweetWindow, self).__init__(parent)
+        self.setWindowTitle('发布新微博')
         self.setMinimumSize(400, 200)
         
         self.setupUI()
@@ -63,8 +64,8 @@ class NewTweetWindow(QDialog):
         self.setLayout(vbox)
         
         self.editor = QTextEdit()
+        self.editor.setAcceptRichText(False)
         self.editor.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        #self.editor.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         vbox.addWidget(self.editor)
         
         hbox = QHBoxLayout()
@@ -84,9 +85,17 @@ class NewTweetWindow(QDialog):
         pass
     
     def onClicked_BtnSend(self):
-        text = self.editor.toPlainText()
-        log.debug(text)
-        for account in account_manager.getAllAccount():
-            if account.if_send:
-                rtn = account.plugin.sendTweet(text)
-                log.debug(rtn)
+        self.btn_send.setText('发送中...')
+        self.btn_send.setEnabled(False)
+        try:
+            text = self.editor.toPlainText()
+            log.debug(text)
+            for account in account_manager.getAllAccount():
+                if account.if_send:
+                    rtn = account.plugin.sendTweet(text)
+                    log.debug(rtn)
+        except Exception as e:
+            print(e)
+        finally:
+            self.btn_send.setEnabled(True)
+            self.btn_send.setText('发送')
