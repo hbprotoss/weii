@@ -145,7 +145,7 @@ def getAllAccount():
 
 def addAccount(service, uid, username, access_token, data='', proxy={}):
     plugin_obj = plugin.plugins[service].Plugin(uid, username, access_token, data, proxy)
-    account = Account(plugin_obj)
+    account = Account(plugin_obj, 1, 1)
     account_list.append(account)
     all_accounts[plugin_obj.username] = [account]
     

@@ -12,7 +12,7 @@ class ThreadProc(QThread):
         '''
         Start a new thread to run the task procedure with argvs. When the task is finished, call the
         callback procedure with arguments returned by task.
-        @param task: callable object. def task(*argvs)
+        @param task: callable object. def task(*argvs), return tuple
         @param argvs: tuple. Arguments.
         @param callback: callable object. def callback(*argvs)
         '''

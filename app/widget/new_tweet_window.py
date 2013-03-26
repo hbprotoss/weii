@@ -44,6 +44,22 @@ class AccountButton(QLabel):
         self.enabled = not self.enabled
         self.setPixmap(self.pixmaps[int(self.enabled)])
         self.emit(SIGNAL_CLICKED, self.account, self.enabled)
+        
+SIGNAL_FINISH = SIGNAL('TaskFinished')
+class Task(QThread):
+    def __init__(self, text, parent=None):
+        super(Task, self).__init__(parent)
+        self.text = text
+    
+    def run(self):
+        try:
+            for account in account_manager.getAllAccount():
+                if account.if_send:
+                    rtn = account.plugin.sendTweet(self.text)
+        except Exception as e:
+            log.error(e)
+        finally:
+            self.emit(SIGNAL_FINISH, rtn)
 
 class NewTweetWindow(QDialog):
     '''
@@ -84,18 +100,19 @@ class NewTweetWindow(QDialog):
     def renderUI(self):
         pass
     
+    def updateUI(self, tweet_object):
+        self.btn_send.setEnabled(True)
+        self.btn_send.setText('发送')
+        self.editor.clear()
+        
+        log.debug(tweet_object)
+    
     def onClicked_BtnSend(self):
         self.btn_send.setText('发送中...')
         self.btn_send.setEnabled(False)
-        try:
-            text = self.editor.toPlainText()
-            log.debug(text)
-            for account in account_manager.getAllAccount():
-                if account.if_send:
-                    rtn = account.plugin.sendTweet(text)
-                    log.debug(rtn)
-        except Exception as e:
-            print(e)
-        finally:
-            self.btn_send.setEnabled(True)
-            self.btn_send.setText('发送')
+        
+        text = self.editor.toPlainText()
+        log.debug(text)
+        self.task = Task(text)
+        self.task.start()
+        self.connect(self.task, SIGNAL_FINISH, self.updateUI)

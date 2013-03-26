@@ -146,6 +146,28 @@ class WebView(QDialog):
         
     def getRedirectedUrl(self):
         return self.redirected_url.toString()
+    
+SIGNAL_FINISH = SIGNAL('DownloadFinished')
+class DownloadingTask(QThread):
+    def __init__(self, service, redirected_url, plugin_class, proxy={}, parent=None):
+        super(DownloadingTask, self).__init__(parent)
+        self.service = service
+        self.redirected_url = redirected_url
+        self.plugin_class = plugin_class
+        self.proxy = proxy
+        
+    def run(self):
+        url, data, headers = self.plugin_class.getAccessToken(self.redirected_url)
+        opener = urllib.request.URLopener(self.proxy)
+        for k,v in headers.items():
+            opener.addheader(k, v)
+        f = opener.open(url, data)
+        data = f.read().decode('utf-8')
+        log.debug(data)
+        
+        # Parse returned data.
+        access_token, access_token_secret = self.plugin_class.parseData(data)
+        self.emit(SIGNAL_FINISH, self.service, access_token, access_token_secret)
 
 class AccountOptionWidget(QWidget):
     '''
@@ -162,7 +184,7 @@ class AccountOptionWidget(QWidget):
         self.setupUI()
         self.initItems()
         
-        self.connect(self.add_button, SIGNAL('clicked()'), self.onClicked_BtnAdd)
+        self.connect(self.btn_add, SIGNAL('clicked()'), self.onClicked_BtnAdd)
         
     def setupUI(self):
         vbox = QVBoxLayout()
@@ -179,8 +201,16 @@ class AccountOptionWidget(QWidget):
         #hbox.setAlignment(Qt.AlignRight)
         hbox.addWidget(QLabel('请注意，Web认证页面通过全局代理设置来连接'))
         hbox.addStretch()
-        self.add_button = QPushButton('添加')
-        hbox.addWidget(self.add_button)
+        self.btn_add = QPushButton('添加')
+        hbox.addWidget(self.btn_add)
+        
+    def updateUI(self, service, access_token, access_token_secret):
+        self.btn_add.setText('添加')
+        self.btn_add.setEnabled(True)
+        
+        # SQLite objects created in a thread can only be used in that same thread.
+        acc = account_manager.addAccount(service, '', '', access_token, access_token_secret, config_manager.getParameter('Proxy'))
+        log.info('Account(%s, %s) added.' % (acc.plugin.service, acc.plugin.username))
         
     def initItems(self):
         for name, plugin_module in plugin.plugins.items():
@@ -194,9 +224,12 @@ class AccountOptionWidget(QWidget):
         #QMessageBox.information(self, '', str(self.list_widget.currentRow()))
         item = self.list_widget.currentItem()
         if item:
+            self.btn_add.setText('添加账户中...')
+            self.btn_add.setEnabled(False)
+            
             log.debug(item.text())
             # TODO: Retrieve data in a new thread in case of blocking UI thread.
-            account = self.addAccount(item.text())
+            self.addAccount(item.text())
             
     def addAccount(self, service):
         '''
@@ -223,23 +256,16 @@ class AccountOptionWidget(QWidget):
         
         # Visit access token url.
         redirected_url = web.getRedirectedUrl()
+        # User gives up adding account
         if redirected_url == '':
+            self.btn_add.setText('添加')
+            self.btn_add.setEnabled(True)
             return None
         
-        url, data, headers = plugin_class.getAccessToken(redirected_url)
-        opener = urllib.request.FancyURLopener(global_proxy)
-        for k,v in headers.items():
-            opener.addheader(k, v)
-        f = opener.open(url, data)
-        data = f.read().decode('utf-8')
-        log.debug(data)
+        self.downloading_task = DownloadingTask(service, redirected_url, plugin_class, global_proxy)
+        self.downloading_task.start()
         
-        # Parse returned data.
-        access_token, access_token_secret = plugin_class.parseData(data)
-        acc = account_manager.addAccount(service, '', '', access_token, access_token_secret, config_manager.getParameter('Proxy'))
-        log.info('Account(%s, %s) added.' % (acc.plugin.service, acc.plugin.username))
-        
-        return acc
+        self.connect(self.downloading_task, SIGNAL_FINISH, self.updateUI)
     
 class SingleAccountWidget(QWidget):
     '''
