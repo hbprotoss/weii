@@ -6,6 +6,7 @@ import json
 import time
 from app.plugin import *
 from app import config_manager
+import hashlib
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -107,17 +108,27 @@ class Plugin(AbstractPlugin):
     def sendTweet(self, text, pic=None):
         params = {
             'access_token': self.access_token,
-            'status': text
+            'status': urllib.parse.quote(text)
         }
         if pic:
-            pass
+            url = 'https://upload.api.weibo.com/2/statuses/upload.json'
+            params['pic'] = open(pic, 'rb')
+            encoded_params, boundary = self._encodeMultipart(params)
+            headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary}
         else:
             url = 'https://api.weibo.com/2/statuses/update.json'
+            encoded_params = urllib.parse.urlencode(params, safe='%')
+            headers = None
             
-        encoded_text = urllib.parse.urlencode(params)
-        log.debug(encoded_text)
-        rtn_from_server = self.getData(url, encoded_text)
-        rtn = json.loads(rtn_from_server.decode('utf-8'))
+        #log.debug(encoded_params)
+        print(hashlib.md5(encoded_params).hexdigest())
+        try:
+            rtn_from_server = self.getData(url, encoded_params, headers)
+        except urllib.error.HTTPError as e:
+            rtn = {}
+            log.error(e.fp.read())
+        else:
+            rtn = json.loads(rtn_from_server.decode('utf-8'))
         return rtn
     
     @staticmethod

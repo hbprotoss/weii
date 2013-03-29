@@ -5,14 +5,35 @@ import urllib.parse
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from app import account_manager
+from app import account_manager, theme_manager
 from app import logger
 
 SIGNAL_CLICKED = SIGNAL('clicked')
 
 log = logger.getLogger(__name__)
 
+class PicButton(QLabel):
+    '''
+    Signal:
+        clicked(): Button is clicked(the same as QPushbutton)
+    '''
+    def __init__(self, image=None, parent=None):
+        '''
+        @param image: QImage. Original image
+        '''
+        super(PicButton, self).__init__(parent)
+        
+        self.setCursor(Qt.PointingHandCursor)
+        if image:
+            self.setPixmap(QPixmap.fromImage(image))
+            
+    def mouseReleaseEvent(self, ev):
+        self.emit(SIGNAL('clicked()'))
+
 class AccountButton(QLabel):
+    '''
+    A button with two states: activated(display original image) and deactivated(greyscaled image)
+    '''
     def __init__(self, account, parent=None):
         super(AccountButton, self).__init__(parent)
         self.account = account
@@ -47,16 +68,21 @@ class AccountButton(QLabel):
         
 SIGNAL_FINISH = SIGNAL('TaskFinished')
 class Task(QThread):
-    def __init__(self, text, parent=None):
+    def __init__(self, text, pic=None, parent=None):
+        '''
+        @param text: string. Original text.
+        @param pic: file object. Opened file object of picture.
+        '''
         super(Task, self).__init__(parent)
         self.text = text
+        self.pic = pic
     
     def run(self):
         try:
             for account in account_manager.getAllAccount():
                 if account.if_send:
-                    rtn = account.plugin.sendTweet(self.text)
-        except Exception as e:
+                    rtn = account.plugin.sendTweet(self.text, self.pic)
+        except urllib.error.HTTPError as e:
             log.error(e)
         finally:
             self.emit(SIGNAL_FINISH, rtn)
@@ -74,6 +100,7 @@ class NewTweetWindow(QDialog):
         self.renderUI()
         
         self.connect(self.btn_send, SIGNAL('clicked()'), self.onClicked_BtnSend)
+        self.connect(self.btn_upload_pic, SIGNAL('clicked()'), self.onClicked_UploadPic)
         
     def setupUI(self):
         vbox = QVBoxLayout()
@@ -92,13 +119,16 @@ class NewTweetWindow(QDialog):
         for account in account_manager.getAllAccount():
             account_button = AccountButton(account)
             self.account_bar.addWidget(account_button)
+        self.account_bar.addWidget(QLabel('|'))
+        self.btn_upload_pic = PicButton()
+        self.account_bar.addWidget(self.btn_upload_pic)
             
         hbox.addStretch()
         self.btn_send = QPushButton('发送')
         hbox.addWidget(self.btn_send)
         
     def renderUI(self):
-        pass
+        self.btn_upload_pic.setPixmap(QPixmap(theme_manager.getParameter(theme_manager.SKIN, 'upload-pic')))
     
     def updateUI(self, tweet_object):
         self.btn_send.setEnabled(True)
@@ -112,7 +142,19 @@ class NewTweetWindow(QDialog):
         self.btn_send.setEnabled(False)
         
         text = self.editor.toPlainText()
-        log.debug(text)
-        self.task = Task(text)
-        self.task.start()
-        self.connect(self.task, SIGNAL_FINISH, self.updateUI)
+        if text:
+            log.debug(text)
+            self.task = Task(text, self.pic_file)
+            self.task.start()
+            self.connect(self.task, SIGNAL_FINISH, self.updateUI)
+        
+    def onClicked_UploadPic(self):
+        dlg = QFileDialog(self, '选择图片')
+        dlg.setNameFilter('Image Files(*.png *.jpg *.jpeg *.gif)')
+        dlg.setFileMode(QFileDialog.ExistingFile)
+        dlg.setOption(QFileDialog.DontUseNativeDialog)
+        if not dlg.exec():
+            self.pic_file = None
+        else:
+            self.pic_file = dlg.selectedFiles()[0]
+            log.debug(self.pic_file)

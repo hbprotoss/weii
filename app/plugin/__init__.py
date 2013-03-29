@@ -3,6 +3,7 @@
 import importlib
 import os
 import logging
+import time
 import urllib.request
 
 from app import logger
@@ -57,7 +58,7 @@ class AbstractPlugin():
     def setProxy(self, http, https):
         self.proxy = {'http': http, 'https': https}
         
-    def getData(self, url, data=None, header=None):
+    def getData(self, url, data=None, header={}):
         '''
         **********************************************************************
         * ATTENTION! This is the only way plugin interacts with the Internet.*
@@ -71,13 +72,39 @@ class AbstractPlugin():
         @param header: dict. Header key and value pairs.
         @return: bytes.
         '''
-        opener = urllib.request.URLopener(self.proxy)
-        if header:
-            for k,v in header.items():
-                opener.addheader(k, v)
-                
-        f = opener.open(url, data)
+#        opener = urllib.request.URLopener(self.proxy)
+#        if header:
+#            for k,v in header.items():
+#                opener.addheader(k, v)
+#                
+#        f = opener.open(url, data)
+        req = urllib.request.Request(url, data, header)
+        for proxy_type, url in self.proxy.items():
+            req.set_proxy(url, proxy_type)
+        f = urllib.request.urlopen(req)
         return f.read()
+    
+    def _encodeMultipart(self, params_dict):
+        '''
+        Build a multipart/form-data body with generated random boundary.
+        @param params_dict: dict. (key, value) pair of parameters. A file object means upload a file.
+        '''
+        #boundary = '----------%s' % hex(int(time.time() * 1000))
+        boundary = '----------%s' % 'hbprotoss'
+        data = []
+        for k, v in params_dict.items():
+            data.append('--%s' % boundary)
+            if hasattr(v, 'read'):
+                content = v.read()
+                decoded_content = content.decode('ISO-8859-1')
+                data.append('Content-Disposition: form-data; name="%s"; filename="hidden"' % k)
+                data.append('Content-Type: application/octet-stream\r\n')
+                data.append(decoded_content)
+            else:
+                data.append('Content-Disposition: form-data; name="%s"\r\n' % k)
+                data.append(v if isinstance(v, str) else v.decode('utf-8'))
+        data.append('--%s--\r\n' % boundary)
+        return '\r\n'.join(data).encode('ISO-8859-1'), boundary
     
     def getTweet(self, id):
         '''
