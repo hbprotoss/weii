@@ -7,6 +7,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from app import constant, theme_manager
 from app import logger
+from app import misc
 from app.widget import picture_viewer
 
 log = logger.getLogger(__name__)
@@ -148,6 +149,27 @@ class TweetWidget(QWidget):
         #QMessageBox.information(self, 'test', self.pic_url)
         pic = picture_viewer.PictureViewer(self.pic_url, self.account.picture_manager, self)
         pic.setModal(False)
+        
+        main_window_rect = misc.main_window.geometry()
+        #main_window_rect.left, main_window_rect.top = misc.main_window.mapToGobal(QPoint(0, 0))
+        widget_rect = self.geometry()
+        widget_rect.setTopLeft(self.mapToGlobal(QPoint(0, 0)))
+        screen_rect = QApplication.desktop().availableGeometry()
+        pic_size = pic.size()
+        
+        # Horizontal position
+        if main_window_rect.right() + pic_size.width() > screen_rect.right():
+            left = main_window_rect.left() - pic_size.width()
+        else:
+            left = main_window_rect.right()
+        # Vertical position
+        if widget_rect.top() + pic_size.height() > screen_rect.bottom():
+            top = screen_rect.bottom() - pic_size.height()
+        else:
+            top = widget_rect.top()
+            
+        log.debug('Left %d, top %d' % (left, top))
+        pic.setGeometry(QRect(left, top, pic_size.width(), pic_size.height()))
         pic.show()
         
     def onLinkActivated(self, link):

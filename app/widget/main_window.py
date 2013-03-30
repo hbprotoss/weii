@@ -285,6 +285,23 @@ class MainWindow( QDialog ):
         
     def onClicked_BtnSending(self):
         window = new_tweet_window.NewTweetWindow(self)
+        
+        rect = self.geometry()
+        screen_rect = QApplication.desktop().availableGeometry()
+        size = window.size()
+        
+        # Horizontal position
+        if rect.right() + size.width() > screen_rect.right():
+            left = rect.left() - size.width()
+        else:
+            left = rect.right()
+        # Vertical position
+        if rect.top() + size.height() > screen_rect.bottom():
+            top = screen_rect.bottom() - size.height()
+        else:
+            top = rect.top()
+            
+        window.setGeometry(QRect(left, top, window.width(), window.height()))
         window.show()
         
     def onValueChanged_ScrollBar(self, value):

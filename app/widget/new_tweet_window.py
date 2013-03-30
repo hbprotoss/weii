@@ -78,6 +78,7 @@ class Task(QThread):
         self.pic = pic
     
     def run(self):
+        rtn = {}
         try:
             for account in account_manager.getAllAccount():
                 if account.if_send:
@@ -93,9 +94,10 @@ class NewTweetWindow(QDialog):
     '''
     def __init__(self, parent=None):
         super(NewTweetWindow, self).__init__(parent)
+        self.pic_file = None
+
         self.setWindowTitle('发布新微博')
         self.setMinimumSize(400, 200)
-        
         self.setupUI()
         self.renderUI()
         
@@ -106,16 +108,27 @@ class NewTweetWindow(QDialog):
         vbox = QVBoxLayout()
         self.setLayout(vbox)
         
+        hbox1 = QHBoxLayout()
+        vbox.addLayout(hbox1)
+        
+        self.thumbnail = QLabel()
+        thumbnail_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored)
+        thumbnail_policy.setHorizontalStretch(1)
+        self.thumbnail.setSizePolicy(thumbnail_policy)
+        hbox1.addWidget(self.thumbnail)
+        
         self.editor = QTextEdit()
         self.editor.setAcceptRichText(False)
-        self.editor.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        vbox.addWidget(self.editor)
+        editor_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored)
+        editor_policy.setHorizontalStretch(4)
+        self.editor.setSizePolicy(editor_policy)
+        hbox1.addWidget(self.editor)
         
-        hbox = QHBoxLayout()
-        vbox.addLayout(hbox)
+        hbox2 = QHBoxLayout()
+        vbox.addLayout(hbox2)
         
         self.account_bar = QHBoxLayout()
-        hbox.addLayout(self.account_bar)
+        hbox2.addLayout(self.account_bar)
         for account in account_manager.getAllAccount():
             account_button = AccountButton(account)
             self.account_bar.addWidget(account_button)
@@ -123,19 +136,21 @@ class NewTweetWindow(QDialog):
         self.btn_upload_pic = PicButton()
         self.account_bar.addWidget(self.btn_upload_pic)
             
-        hbox.addStretch()
+        hbox2.addStretch()
         self.btn_send = QPushButton('发送')
-        hbox.addWidget(self.btn_send)
+        hbox2.addWidget(self.btn_send)
         
     def renderUI(self):
         self.btn_upload_pic.setPixmap(QPixmap(theme_manager.getParameter(theme_manager.SKIN, 'upload-pic')))
+        self.thumbnail.hide()
     
     def updateUI(self, tweet_object):
+        log.debug(tweet_object)
+
         self.btn_send.setEnabled(True)
         self.btn_send.setText('发送')
         self.editor.clear()
-        
-        log.debug(tweet_object)
+        self.close()
     
     def onClicked_BtnSend(self):
         self.btn_send.setText('发送中...')
@@ -158,3 +173,7 @@ class NewTweetWindow(QDialog):
         else:
             self.pic_file = dlg.selectedFiles()[0]
             log.debug(self.pic_file)
+            
+            height = self.editor.height()
+            self.thumbnail.show()
+            self.thumbnail.setPixmap(QPixmap(self.pic_file).scaled(100, height, Qt.KeepAspectRatio))

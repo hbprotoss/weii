@@ -3,6 +3,9 @@
 import configparser
 from PyQt4.QtCore import QThread
 
+# Global variable
+main_window = None
+
 class ConfParser(configparser.ConfigParser):
     def optionxform(self, optionstr):
         return optionstr

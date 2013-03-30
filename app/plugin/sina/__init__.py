@@ -117,11 +117,11 @@ class Plugin(AbstractPlugin):
             headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary}
         else:
             url = 'https://api.weibo.com/2/statuses/update.json'
-            encoded_params = urllib.parse.urlencode(params, safe='%')
-            headers = None
+            encoded_params = urllib.parse.urlencode(params, safe='%').encode('utf-8')
+            headers = {}
             
         #log.debug(encoded_params)
-        print(hashlib.md5(encoded_params).hexdigest())
+        #print(hashlib.md5(encoded_params).hexdigest())
         try:
             rtn_from_server = self.getData(url, encoded_params, headers)
         except urllib.error.HTTPError as e:
