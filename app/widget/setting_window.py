@@ -256,6 +256,7 @@ class AccountOptionWidget(QWidget):
         
         # Visit access token url.
         redirected_url = web.getRedirectedUrl()
+        log.debug(redirected_url)
         # User gives up adding account
         if redirected_url == '':
             self.btn_add.setText('添加')

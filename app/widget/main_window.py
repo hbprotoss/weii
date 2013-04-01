@@ -8,11 +8,14 @@ from PyQt4.QtGui import *
 from app import constant
 from app import theme_manager
 from app import account_manager
+from app import logger
 from app.widget import icon_button
 from app.widget import stacked_widget
 from app.widget import setting_window
 from app.widget import new_tweet_window
 from app.widget.ContentWidget import *
+
+log = logger.getLogger(__name__)
 
 MainWindow_QSS = '''
 MainWindow {
@@ -106,6 +109,11 @@ class MainWindow( QDialog ):
         self.connect(account_manager.getEmitter(), account_manager.SIGNAL_ACCOUNT_ADDED,
             lambda x:self.renderUserInfo()
         )
+        
+        # Start timer to check unreads message, every 60 seconds
+        self.timer = QTimer()
+        self.connect(self.timer, SIGNAL('timeout()'), self.checkUnreads)
+        self.timer.start(60 * 1000)
     
     def initTab(self):
         '''
@@ -268,6 +276,21 @@ class MainWindow( QDialog ):
         
     def showEvent(self, event):
         self.button_to_widget[self.home].refresh()
+        
+    def checkUnreads(self):
+        '''
+        Check unread message count.
+        '''
+        # Only availabel for single account.
+        account = account_manager.getCurrentAccount()[0]
+        unreads = account.plugin.getUnreads()
+        log.debug(unreads)
+        
+        self.home.setBuble(int(unreads['tweet']))
+        self.at.setBuble(int(unreads['mention']))
+        self.comment.setBuble(int(unreads['comment']))
+        self.private.setBuble(int(unreads['private']))
+        self.profile.setBuble(int(unreads['follower']))
         
     def onClicked_BtnGroup(self):
         button = self.sender()

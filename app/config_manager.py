@@ -19,7 +19,7 @@ def initConfig():
         parser.set(SECTION, 'Proxy', json.dumps({}))
         
     # Write back at exit
-    atexit.register(parser.write, open(constant.GLOBAL_CONFIG, 'w'))
+    atexit.register(parser.write, open(constant.GLOBAL_CONFIG, 'r+'))
 
 initConfig()
     
@@ -30,4 +30,4 @@ def getParameter(key):
 
 def setParameter(key, value):
     parser.set(SECTION, key, value)
-    parser.write(open(constant.GLOBAL_CONFIG, 'w'))
+    parser.write(open(constant.GLOBAL_CONFIG, 'r+'))

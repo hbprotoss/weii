@@ -72,12 +72,6 @@ class AbstractPlugin():
         @param header: dict. Header key and value pairs.
         @return: bytes.
         '''
-#        opener = urllib.request.URLopener(self.proxy)
-#        if header:
-#            for k,v in header.items():
-#                opener.addheader(k, v)
-#                
-#        f = opener.open(url, data)
         req = urllib.request.Request(url, data, header)
         for proxy_type, url in self.proxy.items():
             req.set_proxy(url, proxy_type)
@@ -331,6 +325,12 @@ class AbstractPlugin():
     def getEmotions(self):
         '''
         @return: Emotion object. See documentation
+        '''
+        raise NotImplementedError
+    
+    def getUnreads(self):
+        '''
+        @return: Unreaded message. See documentation
         '''
         raise NotImplementedError
 

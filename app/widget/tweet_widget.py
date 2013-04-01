@@ -168,7 +168,6 @@ class TweetWidget(QWidget):
         else:
             top = widget_rect.top()
             
-        log.debug('Left %d, top %d' % (left, top))
         pic.setGeometry(QRect(left, top, pic_size.width(), pic_size.height()))
         pic.show()
         

@@ -131,6 +131,20 @@ class Plugin(AbstractPlugin):
             rtn = json.loads(rtn_from_server.decode('utf-8'))
         return rtn
     
+    def getUnreads(self):
+        url = 'https://rm.api.weibo.com/2/remind/unread_count.json?access_token=%s' % self.access_token
+        rtn_from_server = self.getData(url).decode('utf-8')
+        unreads = json.loads(rtn_from_server)
+        rtn = {
+            'tweet': unreads['status'],
+            'follower': unreads['follower'],
+            'comment': unreads['cmt'],
+            'mention': unreads['mention_cmt'] + unreads['mention_status'],
+            'private': unreads['dm']
+        }
+        return rtn
+        pass
+    
     @staticmethod
     def getEmotionExpression():
         return ('[', ']')
