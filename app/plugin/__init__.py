@@ -75,8 +75,15 @@ class AbstractPlugin():
         req = urllib.request.Request(url, data, header)
         for proxy_type, url in self.proxy.items():
             req.set_proxy(url, proxy_type)
-        f = urllib.request.urlopen(req)
-        return f.read()
+        try:
+            f = urllib.request.urlopen(req)
+        except urllib.error.HTTPError as e:
+            if e.fp:
+                raise weiNetworkError(e.fp.read().decode('utf-8'))
+            else:
+                raise weiNetworkError(str(e))
+        else:
+            return f.read()
     
     def _encodeMultipart(self, params_dict):
         '''

@@ -8,7 +8,8 @@ from PyQt4.QtGui import *
 from app import account_manager, theme_manager
 from app import logger
 
-SIGNAL_CLICKED = SIGNAL('clicked')
+SIGNAL_SELECTED = SIGNAL('selected')
+SIGNAL_UNSELECTED = SIGNAL('unselected')
 
 log = logger.getLogger(__name__)
 
@@ -64,11 +65,14 @@ class AccountButton(QLabel):
     def mouseReleaseEvent(self, ev):
         self.enabled = not self.enabled
         self.setPixmap(self.pixmaps[int(self.enabled)])
-        self.emit(SIGNAL_CLICKED, self.account, self.enabled)
+        if self.enabled:
+            self.emit(SIGNAL_SELECTED, self.account)
+        else:
+            self.emit(SIGNAL_UNSELECTED, self.account)
         
 SIGNAL_FINISH = SIGNAL('TaskFinished')
 class Task(QThread):
-    def __init__(self, text, pic=None, parent=None):
+    def __init__(self, accounts, text, pic=None, parent=None):
         '''
         @param text: string. Original text.
         @param pic: file object. Opened file object of picture.
@@ -76,11 +80,12 @@ class Task(QThread):
         super(Task, self).__init__(parent)
         self.text = text
         self.pic = pic
+        self.accounts = accounts
     
     def run(self):
         rtn = {}
         try:
-            for account in account_manager.getAllAccount():
+            for account in self.accounts:
                 if account.if_send:
                     rtn = account.plugin.sendTweet(self.text, self.pic)
         except urllib.error.HTTPError as e:
@@ -95,6 +100,7 @@ class NewTweetWindow(QDialog):
     def __init__(self, parent=None):
         super(NewTweetWindow, self).__init__(parent)
         self.pic_file = None
+        self.selected_accounts = set()
 
         self.setWindowTitle('发布新微博')
         self.setMinimumSize(400, 200)
@@ -132,6 +138,12 @@ class NewTweetWindow(QDialog):
         for account in account_manager.getAllAccount():
             account_button = AccountButton(account)
             self.account_bar.addWidget(account_button)
+            if account.if_send:
+                self.selectAccount(account)
+            # Receive signal
+            self.connect(account_button, SIGNAL_SELECTED, self.selectAccount)
+            self.connect(account_button, SIGNAL_UNSELECTED, self.unselectAccount)
+                
         self.account_bar.addWidget(QLabel('|'))
         self.btn_upload_pic = PicButton()
         self.account_bar.addWidget(self.btn_upload_pic)
@@ -151,17 +163,34 @@ class NewTweetWindow(QDialog):
         self.btn_send.setText('发送')
         self.editor.clear()
         self.close()
+        
+    def selectAccount(self, account):
+        self.selected_accounts.add(account)
+        
+    def unselectAccount(self, account):
+        self.selected_accounts.remove(account)
+        
+    def getSelectedAccounts(self):
+        return list(self.selected_accounts)
     
     def onClicked_BtnSend(self):
-        self.btn_send.setText('发送中...')
-        self.btn_send.setEnabled(False)
-        
         text = self.editor.toPlainText()
         if text:
             log.debug(text)
-            self.task = Task(text, self.pic_file)
-            self.task.start()
-            self.connect(self.task, SIGNAL_FINISH, self.updateUI)
+            
+            accounts = self.getSelectedAccounts()
+            if len(accounts) > 0:
+                self.btn_send.setText('发送中...')
+                self.btn_send.setEnabled(False)
+        
+                self.task = Task(text, self.pic_file)
+                self.task.start()
+                self.connect(self.task, SIGNAL_FINISH, self.updateUI)
+            else:
+                # TODO: No account selected
+                QMessageBox.critical(self, '错误', '请至少选择一个账户!')
+        else:
+            QMessageBox.critical(self, '错误', '微博不能为空!')
         
     def onClicked_UploadPic(self):
         dlg = QFileDialog(self, '选择图片')

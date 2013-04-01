@@ -42,6 +42,7 @@ class Plugin(AbstractPlugin):
     def getTimeline(self, id=None, max_point=None, count=20, page=1):
         rtn = None
         if(id):
+            # TODO: get timeline of user specified by id.
             pass
         else:
             url = 'https://api.weibo.com/2/statuses/home_timeline.json?%s'
