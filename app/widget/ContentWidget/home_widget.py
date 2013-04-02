@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import json
 import time
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -95,7 +96,7 @@ class HomeWidget(abstract_widget.AbstractWidget):
             )
         
     def appendNew(self):
-        # FIXME: Duplicate tweet when turn to next page
+        # FIXME: Possibal duplicate tweet when turn to next page
         if not self.download_task.isRunning():
             account_list = account_manager.getCurrentAccount()
             
@@ -127,14 +128,12 @@ class HomeWidget(abstract_widget.AbstractWidget):
         log.debug('Starting thread')
         self.download_task.start()
         
-#    def refresh(self, account_list):
+#    def refresh(self):
+#        '''
+#        For debug purpose
+#        '''
+#        account_list = account_manager.getCurrentAccount()
 #        account_list[0].last_tweet_id = account_list[0].last_tweet_time = 0
 #        self.clearAllWidgets()
 #        tweets = json.load(open('json'))['statuses']
-#        for tweet in tweets:
-#            widget = TweetWidget(account_list[0], tweet, self.small_loading_image, self.loading_image, self)
-#            self.addWidget(widget)
-#        pass
-    
-#    def refresh(self, account_list):
-#        self.addWidget(TweetWidget(None, next(self.tweets), self.avatar.scaled(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE), None, self))
+#        self.updateUI([(account_list[0], tweets)])

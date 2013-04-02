@@ -1,8 +1,8 @@
 #coding=utf-8
 
 import imghdr
-
 import time
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from app import constant, theme_manager
@@ -19,7 +19,8 @@ url_legal = set('''!#$&'()*+,/:;=?@-._~'''
                 + ''.join([chr(c) for c in range(ord('A'), ord('Z')+1)]))
 
 SIGNAL_FINISH = SIGNAL('downloadFinished')
-SIGNAL_CLICKED = SIGNAL('clicked')
+SIGNAL_THUMBNAIL_CLICKED = SIGNAL('thumbnailClicked')
+SIGNAL_RESPONSE_CLICKED = SIGNAL('responseClicked')
 
 class Text(QLabel):
     def __init__(self, text, parent=None):
@@ -49,7 +50,7 @@ class PictureWidget(QLabel):
         
     def mouseReleaseEvent(self, ev):
         if ev.button() == Qt.LeftButton:
-            self.emit(SIGNAL_CLICKED)
+            self.emit(SIGNAL_THUMBNAIL_CLICKED)
 
 class PictureTask(QThread):
     '''
@@ -79,17 +80,104 @@ class GroupBox(QGroupBox):
             QGroupBox {
                 margin-top: 0px;
                 padding-top: 0px;
-                border-style: solid;
+                border-style: outset;
+                border-radius: 4px;
                 border-width: 1px;
             }
             '''
         )
+        
+class TweetResponseButton(QLabel):
+    '''
+    Comment and repost button.
+    The format is 'text(amount)' if amount greater than 0. 'text' if amount equals to 0.
+    '''
+    def __init__(self, text, amount=0, parent=None):
+        super(TweetResponseButton, self).__init__(parent)
+        self._text = text
+        
+        self.setAmount(amount)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setStyleSheet('''
+            color: blue;
+        ''')
+        
+    def setAmount(self, amount):
+        '''
+        @param amount: int.
+        '''
+        if amount:
+            self.setText('%s(%d)' % (self._text, amount))
+        else:
+            self.setText(self._text)
+            
+    def mouseReleaseEvent(self, ev):
+        self.emit(SIGNAL_RESPONSE_CLICKED)
 
-# Global instance of thread pool
-#g_thread_pool = QThreadPool.globalInstance()
-#g_thread_pool.setMaxThreadCount(6)
-#g_thread_pool.setExpiryTimeout(-1)              # Threads never expire
-
+class ResponseWidget(QGroupBox):
+    '''
+    Widget for commenting or reposting a tweet.
+    '''
+    # Constant
+    COMMENT = 0
+    REPOST = 1
+    
+    def __init__(self, tweet, widget_type, parent=None):
+        '''
+        @param tweet: Tweet object.
+        @param widget_type: COMMENT or REPOST. Determine whether comment or repost a tweet.
+        '''
+        super(ResponseWidget, self).__init__(parent)
+        self.tweet = tweet
+        self.widget_type = widget_type
+        
+        self.setupUI()
+        self.setStyleSheet(
+            '''
+            QGroupBox {
+                margin-top: 0px;
+                padding: 5px;
+                border-style: outset;
+                border-radius: 4px;
+                border-width: 1px;
+            }
+            '''
+        )
+        
+    def setupUI(self):
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(5, 5, 5, 5)
+        self.setLayout(main_layout)
+        
+        self.edit = QTextEdit()
+        self.edit.setMinimumHeight(27)
+        self.edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored)
+        main_layout.addWidget(self.edit)
+        
+        hbox = QHBoxLayout()
+        main_layout.addLayout(hbox)
+        self.checkBox = QCheckBox('check box')
+        hbox.addWidget(self.checkBox)
+        
+        hbox.addStretch()
+        self.button = QPushButton('push')
+        hbox.addWidget(self.button)
+        
+    def setType(self, widget_type):
+        '''
+        @param widget_type: COMMENT or REPOST. Determine whether comment or repost a tweet.
+        '''
+        self.widget_type = widget_type
+        if widget_type == ResponseWidget.COMMENT:
+            self.checkBox.setText('同时转发')
+            self.button.setText('评论')
+        elif widget_type == ResponseWidget.REPOST:
+            self.checkBox.setText('同时评论给 %s' % self.tweet['user']['screen_name'])
+            self.button.setText('转发')
+            
+    def getType(self):
+        return self.widget_type
+        
 class TweetWidget(QWidget):
     '''
     Widget for each tweet
@@ -121,7 +209,12 @@ class TweetWidget(QWidget):
         if self.label_retweet:
             self.connect(self.label_retweet, SIGNAL('linkActivated (const QString&)'), self.onLinkActivated)
         if self.label_thumbnail:
-            self.connect(self.label_thumbnail, SIGNAL_CLICKED, self.onClicked_Thumbnail)
+            self.connect(self.label_thumbnail, SIGNAL_THUMBNAIL_CLICKED, self.onClicked_Thumbnail)
+            
+        # Repost button
+        self.connect(self.btn_tweet_repost, SIGNAL_RESPONSE_CLICKED, self.onClicked_Repost)
+        # Comment button
+        self.connect(self.btn_tweet_comment, SIGNAL_RESPONSE_CLICKED, self.onClicked_Comment)
         
         # Start downloading avatar
         # FIXME: TypeError: updateUI() takes exactly 2 arguments (1 given)
@@ -144,6 +237,28 @@ class TweetWidget(QWidget):
         except UnboundLocalError:
             # No picture
             pass
+        
+    def paintEvent(self, ev):
+        super(TweetWidget, self).paintEvent(ev)
+        size = self.size()
+        painter = QPainter(self)
+        color = 200
+        painter.setPen(QColor(color, color, color))
+        painter.drawLine(QPoint(5, size.height() - 1), QPoint(size.width() - 6, size.height() - 1))
+        
+    def onClicked_Repost(self):
+        if self.response_widget.isHidden():
+            self.response_widget.show()
+        elif self.response_widget.getType() == ResponseWidget.REPOST:
+            self.response_widget.hide()
+        self.response_widget.setType(ResponseWidget.REPOST)
+        
+    def onClicked_Comment(self):
+        if self.response_widget.isHidden():
+            self.response_widget.show()
+        elif self.response_widget.getType() == ResponseWidget.COMMENT:
+            self.response_widget.hide()
+        self.response_widget.setType(ResponseWidget.COMMENT)
         
     def onClicked_Thumbnail(self):
         #QMessageBox.information(self, 'test', self.pic_url)
@@ -388,12 +503,12 @@ class TweetWidget(QWidget):
             v3.addLayout(h4)
             str_time = time.strftime(self.time_format, time.localtime(retweet['created_at']))
             label_retweet_time = QLabel(str_time, self)
-            label_retweet_repost = QLabel('转发(%s)' % str(retweet['reposts_count']), self)
-            label_retweet_comment = QLabel('评论(%s)' % str(retweet['comments_count']), self)
+            self.btn_retweet_repost = TweetResponseButton('转发', retweet['reposts_count'], self)
+            self.btn_retweet_comment = TweetResponseButton('评论', retweet['comments_count'], self)
             h4.addWidget(label_retweet_time)
             h4.addStretch()
-            h4.addWidget(label_retweet_repost)
-            h4.addWidget(label_retweet_comment)
+            h4.addWidget(self.btn_retweet_repost)
+            h4.addWidget(self.btn_retweet_comment)
         ## No retweet and has picture
         elif('thumbnail_pic' in self.tweet):
             self.pic_url = self.tweet['original_pic']
@@ -411,14 +526,17 @@ class TweetWidget(QWidget):
         v2.addLayout(h2)
         str_time = time.strftime(self.time_format, time.localtime(self.tweet['created_at']))
         label_tweet_time = QLabel(str_time, self)
-        label_tweet_repost = QLabel('转发(%s)' % str(self.tweet['reposts_count']), self)
-        label_tweet_comment = QLabel('评论(%s)' % str(self.tweet['comments_count']), self)
+        self.btn_tweet_repost = TweetResponseButton('转发', self.tweet['reposts_count'], self)
+        self.btn_tweet_comment = TweetResponseButton('评论', self.tweet['comments_count'], self)
         h2.addWidget(label_tweet_time)
         h2.addStretch()
-        h2.addWidget(label_tweet_repost)
-        h2.addWidget(label_tweet_comment)
+        h2.addWidget(self.btn_tweet_repost)
+        h2.addWidget(self.btn_tweet_comment)
         
-        v2.addStretch()
+        #v2.addStretch()
+        self.response_widget = ResponseWidget(self.tweet, ResponseWidget.COMMENT, self)
+        self.response_widget.hide()
+        v2.addWidget(self.response_widget)
         
     def renderUI(self):
         self.label_avatar.setCursor(QCursor(Qt.PointingHandCursor))

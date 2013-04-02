@@ -86,8 +86,8 @@ class Task(QThread):
         rtn = {}
         try:
             for account in self.accounts:
-                if account.if_send:
-                    rtn = account.plugin.sendTweet(self.text, self.pic)
+                rtn = account.plugin.sendTweet(self.text, self.pic)
+                log.debug(rtn)
         except urllib.error.HTTPError as e:
             log.error(e)
         finally:
@@ -157,8 +157,6 @@ class NewTweetWindow(QDialog):
         self.thumbnail.hide()
     
     def updateUI(self, tweet_object):
-        log.debug(tweet_object)
-
         self.btn_send.setEnabled(True)
         self.btn_send.setText('发送')
         self.editor.clear()
@@ -183,7 +181,7 @@ class NewTweetWindow(QDialog):
                 self.btn_send.setText('发送中...')
                 self.btn_send.setEnabled(False)
         
-                self.task = Task(text, self.pic_file)
+                self.task = Task(accounts, text, self.pic_file)
                 self.task.start()
                 self.connect(self.task, SIGNAL_FINISH, self.updateUI)
             else:
