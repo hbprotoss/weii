@@ -9,5 +9,7 @@ Ubuntu:
 *****************************
 
 注意：  
-请删除`qt-at-spi`这个包，它会导致Qt打开文件对话框崩溃。  
->sudo apt-get remove qt-at-spi  
+
+1. 请删除`qt-at-spi`这个包，它会导致Qt打开文件对话框崩溃。
+   >sudo apt-get remove qt-at-spi
+2. 使用过旧版本的朋友请清空~/.weibo目录。
