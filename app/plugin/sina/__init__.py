@@ -26,10 +26,10 @@ class Plugin(AbstractPlugin):
     service = 'sina'
     service_icon = os.path.join(BASE_DIR, 'logo.jpg')
     
-    def __init__(self, id, username, access_token, data='', proxy={}):
-        super(Plugin, self).__init__(id, username, access_token, data, proxy)
+    def __init__(self, uid, username, access_token, data='', proxy={}):
+        super(Plugin, self).__init__(uid, username, access_token, data, proxy)
         
-        if (id == '') and (username == ''):
+        if (uid == '') and (username == ''):
             url = 'https://api.weibo.com/2/account/get_uid.json?access_token=%s' % access_token
             self.proxy = json.loads(config_manager.getParameter('Proxy'))
             
@@ -39,10 +39,10 @@ class Plugin(AbstractPlugin):
             user_info = self.getUserInfo(self.id)
             self.username = user_info['screen_name']
         
-    def getTimeline(self, id=None, max_point=None, count=20, page=1):
+    def getTimeline(self, uid=None, max_point=None, count=20, page=1):
         rtn = None
-        if(id):
-            # TODO: get timeline of user specified by id.
+        if(uid):
+            # TODO: get timeline of user specified by uid.
             pass
         else:
             url = 'https://api.weibo.com/2/statuses/home_timeline.json?%s'
@@ -71,14 +71,14 @@ class Plugin(AbstractPlugin):
                         retweet['user'] = {'screen_name':'微博小秘书'}
         return rtn
     
-    def getUserInfo(self, id='', screen_name=''):
+    def getUserInfo(self, uid='', screen_name=''):
         params = dict([('access_token', self.access_token)])
-        if id:
-            params['uid'] = id
+        if uid:
+            params['uid'] = uid
         elif screen_name:
             params['screen_name'] = screen_name
         else:
-            params['uid'] = self.id
+            params['uid'] = self.uid
             
         url = 'https://api.weibo.com/2/users/show.json?%s'
         rtn_from_server = self.getData(url % urllib.parse.urlencode(params)).decode('utf-8')
@@ -131,6 +131,15 @@ class Plugin(AbstractPlugin):
         else:
             rtn = json.loads(rtn_from_server.decode('utf-8'))
         return rtn
+    
+    def sendComment(self, tid, text):
+        url = 'https://api.weibo.com/2/comments/create.json'
+        params = urllib.parse.urlencode({
+            'access_token': self.access_token,
+            'id': tid,
+            'comment': urllib.parse.quote(text)
+        })
+        pass
     
     def getUnreads(self):
         url = 'https://rm.api.weibo.com/2/remind/unread_count.json?access_token=%s' % self.access_token

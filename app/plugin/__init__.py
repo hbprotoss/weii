@@ -37,18 +37,18 @@ class weiNetworkError(Exception):pass
 
 class AbstractPlugin():
     # TODO: Topic
-    def __init__(self, id, username, access_token, data, proxy={}):
+    def __init__(self, uid, username, access_token, data, proxy={}):
         '''
         If both id and username are empty, it means the account is newly added and plugin should
         retrieve id and username from server with access_token.
-        @param id: string. User id.
+        @param uid: string. User id.
         @param username: string.
         @param access_token: string.
         @param data: string. Custom data
         @param proxy: dict. {protocal:proxy_url}. e.g.{'http':'http://proxy.example.com:8080'}
         @return: None
         '''
-        self.id = id
+        self.uid = uid
         self.username = username
         self.access_token = access_token
         self.data = data
@@ -107,18 +107,18 @@ class AbstractPlugin():
         data.append('--%s--\r\n' % boundary)
         return '\r\n'.join(data).encode('ISO-8859-1'), boundary
     
-    def getTweet(self, id):
+    def getTweet(self, tid):
         '''
         Get single tweet
-        @param id: string. ID of tweet
+        @param tid: string. ID of tweet
         @return: Single tweet object. See documentation
         '''
         raise NotImplementedError
     
-    def getTimeline(self, id=None, max_point=None, count=20, page=1):
+    def getTimeline(self, uid=None, max_point=None, count=20, page=1):
         '''
         Get user timeline
-        @param id: string. User ID. None means current user who has logged in.
+        @param uid: string. User ID. None means current user who has logged in.
         @param max_point: tuple(id, time). Returns results with an ID (or time) less than (that is, older than)
                           or equal to the specified ID (or time). None means return newest.
         @param count: int. Tweets per page
@@ -127,10 +127,10 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getComment(self, id, count=50, page=1):
+    def getComment(self, cid, count=50, page=1):
         '''
         Get comments of tweet specified by id
-        @param id: string. Tweet ID
+        @param cid: string. Tweet ID
         @param count: int. Comments per page
         @param page: int. Page number
         @return: List of comment objects. See documentation
@@ -177,32 +177,32 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getPrivateConversation(self, id, count=20, page=1):
+    def getPrivateConversation(self, uid, count=20, page=1):
         '''
         Get private conversation with user specified by id
-        @param id: string. User ID
+        @param uid: string. User ID
         @param count: int. Comments per page
         @param page: int. Page number
         @return: List of private message objects. See documentation
         '''
         raise NotImplementedError
     
-    def getUserInfo(self, id='', screen_name=''):
+    def getUserInfo(self, uid='', screen_name=''):
         '''
         You must supply one and only one parameter between id and screen_name.
         If both supplied, we choose id.
-        @param id: string. User ID
+        @param uid: string. User ID
         @param screen_name: string. User nick name
         @return: User object. See documentation
         '''
         raise NotImplementedError
     
-    def getFriends(self, id=0, screen_name='', count=50, page=1):
+    def getFriends(self, uid=0, screen_name='', count=50, page=1):
         '''
         Get friends list of user specified by id.
         You must supply one and only one parameter between id and screen_name.
         If both supplied, we choose id.
-        @param id: string. User ID
+        @param uid: string. User ID
         @param screen_name: string. User nick name
         @param count: int. Friends per page
         @param page: int. Page number
@@ -210,12 +210,12 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getFollowers(self, id=0, screen_name='', count=50, page=1):
+    def getFollowers(self, uid=0, screen_name='', count=50, page=1):
         '''
         Get followers list of user specified by id.
         You must supply one and only one parameter between id and screen_name.
         If both supplied, we choose id.
-        @param id: string. User ID
+        @param uid: string. User ID
         @param screen_name: string. User nick name
         @param count: int. Friends per page
         @param page: int. Page number
@@ -239,77 +239,77 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def sendRetweet(self, id, text):
+    def sendRetweet(self, tid, text):
         '''
-        @param id: string. ID of tweet to be retweeted.
+        @param tid: string. ID of tweet to be retweeted.
         @param text: string. Text of retweet. Origin text. URLs aren't shortened. No URLEncoding.
         @return: Tweet object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def deleteTweet(self, id):
+    def deleteTweet(self, tid):
         '''
-        @param id: string. ID of tweet to be deleted.
+        @param tid: string. ID of tweet to be deleted.
         @return: Tweet object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def sendComment(self, id, text):
+    def sendComment(self, tid, text):
         '''
-        @param id: string. ID of tweet to be commented.
+        @param tid: string. ID of tweet to be commented.
         @param text: string. Text of comment. Origin text. URLs aren't shortened. No URLEncoding.
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def sendRecomment(self, id, cid, text):
+    def sendRecomment(self, tid, cid, text):
         '''
         Comment a comment
-        @param id: string. ID of tweet to be commented
+        @param tid: string. ID of tweet to be commented
         @param cid: string. ID of comment to be commented
         @param text: string. Text of comment. Origin text. URLs aren't shortened. No URLEncoding.
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def deleteComment(self, id):
+    def deleteComment(self, cid):
         '''
-        @param id: string. ID of comment to be deleted
+        @param cid: string. ID of comment to be deleted
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def sendPrivate(self, id, text):
+    def sendPrivate(self, uid, text):
         '''
         Send private message
-        @param id: string. ID of user
+        @param uid: string. ID of user
         @param text: string. Text of comment. Origin text. URLs aren't shortened. No URLEncoding.
         @return: Private message object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def deletePrivate(self, id):
+    def deletePrivate(self, tid):
         '''
-        @param id: string. ID of private message to be deleted.
+        @param tid: string. ID of private message to be deleted.
         @return: Private message object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def follow(self, id='', screen_name=''):
+    def follow(self, uid='', screen_name=''):
         '''
         You must supply one and only one parameter between id and screen_name.
         If both supplied, we choose id.
-        @param id: string. User ID
+        @param uid: string. User ID
         @param screen_name: string. User nick name
         @return: User object. See documentation
         '''
         raise NotImplementedError
     
-    def unfollow(self, id='', screen_name=''):
+    def unfollow(self, uid='', screen_name=''):
         '''
         You must supply one and only one parameter between id and screen_name.
         If both supplied, we choose id.
-        @param id: string. User ID
+        @param uid: string. User ID
         @param screen_name: string. User nick name
         @return: User object. See documentation
         '''

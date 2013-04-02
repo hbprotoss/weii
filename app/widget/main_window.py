@@ -260,7 +260,7 @@ class MainWindow( QDialog ):
         account_list = account_manager.getCurrentAccount()
         if len(account_list) == 1:
             account = account_list[0]
-            user_info = account.plugin.getUserInfo(account.plugin.id)
+            user_info = account.plugin.getUserInfo(account.plugin.uid)
             avatar = account.avatar_manager.get(user_info['avatar_large'])
             self.avatar.setPixmap( QPixmap(avatar, imghdr.what(avatar)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
             self.account.setText( str( user_info['screen_name'] ) )

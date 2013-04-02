@@ -149,7 +149,7 @@ def addAccount(service, uid, username, access_token, data='', proxy={}):
     account_list.append(account)
     all_accounts[plugin_obj.username] = [account]
     
-    database_manager.createAccount(plugin_obj.id, plugin_obj.username, access_token, data, proxy, service)
+    database_manager.createAccount(plugin_obj.uid, plugin_obj.username, access_token, data, proxy, service)
     
     # Emit signal
     signal_emitter.emit(SIGNAL_ACCOUNT_ADDED, account)
@@ -158,7 +158,7 @@ def addAccount(service, uid, username, access_token, data='', proxy={}):
 def deleteAccount(account):
     del all_accounts[account.plugin.username]
     account_list.remove(account)
-    database_manager.deleteAccount(account.plugin.id, account.plugin.service)
+    database_manager.deleteAccount(account.plugin.uid, account.plugin.service)
     
     # Emit signal
     signal_emitter.emit(SIGNAL_ACCOUNT_DELETED, account)
