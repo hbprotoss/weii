@@ -7,6 +7,7 @@ from PyQt4.QtGui import *
 
 from app import account_manager, theme_manager
 from app import logger
+from app.plugin import weiBaseException
 
 SIGNAL_SELECTED = SIGNAL('selected')
 SIGNAL_UNSELECTED = SIGNAL('unselected')
@@ -88,7 +89,7 @@ class Task(QThread):
             for account in self.accounts:
                 rtn = account.plugin.sendTweet(self.text, self.pic)
                 log.debug(rtn)
-        except urllib.error.HTTPError as e:
+        except weiBaseException as e:
             log.error(e)
         finally:
             self.emit(SIGNAL_FINISH, rtn)

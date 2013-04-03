@@ -10,29 +10,30 @@ from app import logger
 
 ##################################################################################
 # Exceptions which can be raised
-class weiSizeError(Exception):pass
+class weiBaseException(Exception):pass
+
+class weiSizeError(weiBaseException):pass
 class TweetTooLong(weiSizeError):pass
 class TweetIsNull(weiSizeError):pass
-class ImageTooLarge(weiSizeError):pass
 
-class weiContentError(Exception):pass
-class OutOfRateLimit(weiContentError):pass      # Publish tweet too frequently
+class weiContentError(weiBaseException):pass
 class RepeatContent(weiContentError):pass
 class IllegalContent(weiContentError):pass
-class Advertising(weiContentError):pass
 
-class weiStatusError(Exception):pass
+class weiStatusError(weiBaseException):pass
 class TweetNotExists(weiStatusError):pass
 class CommentNotExists(weiStatusError):pass
 class PrivateNotExists(weiStatusError):pass
 class DenyPrivate(weiStatusError):pass          # Private message is denied
 
-class weiFollowerError(Exception):pass
-class CannotFollowSelf(weiFollowerError):pass
+class weiFollowerError(weiBaseException):pass
 class AlreadyFollowed(weiFollowerError):pass
 class FriendCountOutOfLimit(weiFollowerError):pass
 
-class weiNetworkError(Exception):pass
+class weiUnauthorizedError(weiBaseException):pass      # Access token error
+class weiNetworkError(weiBaseException):pass
+class weiUnknownError(weiBaseException):pass
+class weiImageError(weiBaseException):pass
 
 
 class AbstractPlugin():
@@ -75,15 +76,8 @@ class AbstractPlugin():
         req = urllib.request.Request(url, data, header)
         for proxy_type, url in self.proxy.items():
             req.set_proxy(url, proxy_type)
-        try:
-            f = urllib.request.urlopen(req)
-        except urllib.error.HTTPError as e:
-            if e.fp:
-                raise weiNetworkError(e.fp.read().decode('utf-8'))
-            else:
-                raise weiNetworkError(str(e))
-        else:
-            return f.read()
+        f = urllib.request.urlopen(req)
+        return f.read()
     
     def _encodeMultipart(self, params_dict):
         '''

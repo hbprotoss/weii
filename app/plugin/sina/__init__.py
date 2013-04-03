@@ -18,6 +18,56 @@ redirect_uri = 'https://api.weibo.com/oauth2/default.html'
 authorize_url = 'https://api.weibo.com/oauth2/authorize?client_id=%s&response_type=code&redirect_uri=%s' % (KEY, redirect_uri)
 access_token_url = 'https://api.weibo.com/oauth2/access_token'
 
+# Map of error code to plugin exception
+exception_dict = {
+    '10013': weiUnauthorizedError,
+    '20005': weiImageError,
+    '20006': weiImageError,
+    '20007': weiImageError,
+    '20008': TweetIsNull,
+    '20012': TweetTooLong,
+    '20013': TweetTooLong,
+    '20017': RepeatContent,
+    '20111': RepeatContent,
+    '20019': RepeatContent,
+    '20018': IllegalContent,
+    '20020': IllegalContent,
+    '20021': IllegalContent,
+    '20101': TweetNotExists,
+    '20201': CommentNotExists,
+    '20504': weiFollowerError,
+    '20513': FriendCountOutOfLimit,
+    '20506': AlreadyFollowed,
+    '21314': weiUnauthorizedError,
+    '21315': weiUnauthorizedError,
+    '21316': weiUnauthorizedError,
+    '21317': weiUnauthorizedError,
+    '21327': weiUnauthorizedError,
+}
+
+def sinaMethod(func):
+    '''
+    Decorator to handle error code returned by sina
+    '''
+    def func_wrapper(*args, **kwargs):
+        try:
+            raw_rtn = func(*args, **kwargs)
+        except urllib.error.HTTPError as e:
+            if e.fp:
+                # Sina app error
+                error_msg = json.loads(e.fp.read().decode('utf-8'))
+                error_code = str(error_msg['error_code'])
+                if error_code in exception_dict:
+                    raise exception_dict[error_code](error_msg['error'])
+                else:
+                    raise weiUnknownError(str(e))
+            else:
+                # Network error
+                raise weiNetworkError(str(e))
+        else:
+            return raw_rtn
+    return func_wrapper
+
 class Plugin(AbstractPlugin):
     '''
     Plugin for sina
@@ -39,6 +89,7 @@ class Plugin(AbstractPlugin):
             user_info = self.getUserInfo(self.id)
             self.username = user_info['screen_name']
         
+    @sinaMethod
     def getTimeline(self, uid=None, max_point=None, count=20, page=1):
         rtn = None
         if(uid):
@@ -71,6 +122,7 @@ class Plugin(AbstractPlugin):
                         retweet['user'] = {'screen_name':'微博小秘书'}
         return rtn
     
+    @sinaMethod
     def getUserInfo(self, uid='', screen_name=''):
         params = dict([('access_token', self.access_token)])
         if uid:
@@ -86,6 +138,7 @@ class Plugin(AbstractPlugin):
         
         return rtn
     
+    @sinaMethod
     def getEmotions(self):
         params = dict([('access_token', self.access_token)])
         url = 'https://api.weibo.com/2/emotions.json?%s'
@@ -106,6 +159,7 @@ class Plugin(AbstractPlugin):
         
         return rtn
     
+    @sinaMethod
     def sendTweet(self, text, pic=None):
         params = {
             'access_token': self.access_token,
@@ -122,16 +176,11 @@ class Plugin(AbstractPlugin):
             headers = {}
             
         #log.debug(encoded_params)
-        #print(hashlib.md5(encoded_params).hexdigest())
-        try:
-            rtn_from_server = self.getData(url, encoded_params, headers)
-        except urllib.error.HTTPError as e:
-            rtn = {}
-            log.error(e.fp.read())
-        else:
-            rtn = json.loads(rtn_from_server.decode('utf-8'))
+        rtn_from_server = self.getData(url, encoded_params, headers)
+        rtn = json.loads(rtn_from_server.decode('utf-8'))
         return rtn
     
+    @sinaMethod
     def sendComment(self, tid, text):
         url = 'https://api.weibo.com/2/comments/create.json'
         params = urllib.parse.urlencode({
@@ -141,6 +190,7 @@ class Plugin(AbstractPlugin):
         })
         pass
     
+    @sinaMethod
     def getUnreads(self):
         url = 'https://rm.api.weibo.com/2/remind/unread_count.json?access_token=%s' % self.access_token
         rtn_from_server = self.getData(url).decode('utf-8')
@@ -153,7 +203,6 @@ class Plugin(AbstractPlugin):
             'private': unreads['dm']
         }
         return rtn
-        pass
     
     @staticmethod
     def getEmotionExpression():
