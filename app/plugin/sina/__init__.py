@@ -187,8 +187,10 @@ class Plugin(AbstractPlugin):
             'access_token': self.access_token,
             'id': tid,
             'comment': urllib.parse.quote(text)
-        })
-        pass
+        }).encode('utf-8')
+        rtn_from_server = self.getData(url, params).decode('utf-8')
+        rtn = json.loads(rtn_from_server)
+        return rtn
     
     @sinaMethod
     def getUnreads(self):

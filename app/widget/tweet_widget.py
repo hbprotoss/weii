@@ -122,16 +122,18 @@ class ResponseWidget(QGroupBox):
     COMMENT = 0
     REPOST = 1
     
-    def __init__(self, tweet, widget_type, parent=None):
+    def __init__(self, plugin, tweet, widget_type, parent=None):
         '''
         @param tweet: Tweet object.
         @param widget_type: COMMENT or REPOST. Determine whether comment or repost a tweet.
         '''
         super(ResponseWidget, self).__init__(parent)
+        self.plugin = plugin
         self.tweet = tweet
         self.widget_type = widget_type
         
         self.setupUI()
+        self.connect(self.button, SIGNAL('clicked()'), self.onClicked_Btn)
         self.setStyleSheet(
             '''
             QGroupBox {
@@ -162,6 +164,14 @@ class ResponseWidget(QGroupBox):
         hbox.addStretch()
         self.button = QPushButton('push')
         hbox.addWidget(self.button)
+        
+    def onClicked_Btn(self):
+        text = self.edit.toPlainText()
+        log.debug(text)
+        if self.widget_type == ResponseWidget.COMMENT:
+            self.plugin.sendComment(self.tweet['id'], text)
+        elif self.widget_type == ResponseWidget.REPOST:
+            pass
         
     def setType(self, widget_type):
         '''
@@ -534,7 +544,7 @@ class TweetWidget(QWidget):
         h2.addWidget(self.btn_tweet_comment)
         
         #v2.addStretch()
-        self.response_widget = ResponseWidget(self.tweet, ResponseWidget.COMMENT, self)
+        self.response_widget = ResponseWidget(self.account.plugin, self.tweet, ResponseWidget.COMMENT, self)
         self.response_widget.hide()
         v2.addWidget(self.response_widget)
         
