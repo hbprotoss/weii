@@ -84,9 +84,9 @@ class Plugin(AbstractPlugin):
             self.proxy = json.loads(config_manager.getParameter('Proxy'))
             
             rtn_from_server = self.getData(url).decode('utf-8')
-            self.id = json.loads(rtn_from_server)['uid']
+            self.uid = json.loads(rtn_from_server)['uid']
             
-            user_info = self.getUserInfo(self.id)
+            user_info = self.getUserInfo(self.uid)
             self.username = user_info['screen_name']
         
     @sinaMethod

@@ -7,6 +7,7 @@ from PyQt4.QtGui import *
 
 from app import account_manager, theme_manager
 from app import logger
+from app import easy_thread
 from app.plugin import weiBaseException
 
 SIGNAL_SELECTED = SIGNAL('selected')
@@ -70,29 +71,6 @@ class AccountButton(QLabel):
             self.emit(SIGNAL_SELECTED, self.account)
         else:
             self.emit(SIGNAL_UNSELECTED, self.account)
-        
-SIGNAL_FINISH = SIGNAL('TaskFinished')
-class Task(QThread):
-    def __init__(self, accounts, text, pic=None, parent=None):
-        '''
-        @param text: string. Original text.
-        @param pic: file object. Opened file object of picture.
-        '''
-        super(Task, self).__init__(parent)
-        self.text = text
-        self.pic = pic
-        self.accounts = accounts
-    
-    def run(self):
-        rtn = {}
-        try:
-            for account in self.accounts:
-                rtn = account.plugin.sendTweet(self.text, self.pic)
-                log.debug(rtn)
-        except weiBaseException as e:
-            log.error(e)
-        finally:
-            self.emit(SIGNAL_FINISH, rtn)
 
 class NewTweetWindow(QDialog):
     '''
@@ -172,6 +150,18 @@ class NewTweetWindow(QDialog):
     def getSelectedAccounts(self):
         return list(self.selected_accounts)
     
+    def sendTweet(self, accounts, text, pic):
+        rtn = {}
+        try:
+            for account in accounts:
+                rtn = account.plugin.sendTweet(text, pic)
+                log.debug(rtn)
+        except weiBaseException as e:
+            log.error(e)
+            rtn['error'] = str(e)
+        finally:
+            return (rtn, ), {}
+    
     def onClicked_BtnSend(self):
         text = self.editor.toPlainText()
         if text:
@@ -182,9 +172,7 @@ class NewTweetWindow(QDialog):
                 self.btn_send.setText('发送中...')
                 self.btn_send.setEnabled(False)
         
-                self.task = Task(accounts, text, self.pic_file)
-                self.task.start()
-                self.connect(self.task, SIGNAL_FINISH, self.updateUI)
+                easy_thread.start(self.sendTweet, args=(accounts, text, self.pic_file), callback=self.updateUI)
             else:
                 # TODO: No account selected
                 QMessageBox.critical(self, '错误', '请至少选择一个账户!')

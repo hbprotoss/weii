@@ -12,6 +12,7 @@ from app import account_manager
 from app import config_manager
 from app import plugin
 from app import logger
+from app import easy_thread
 import urllib
 
 log = logger.getLogger(__name__)
@@ -82,7 +83,7 @@ class SettingWindow(QDialog):
             
             # Service and id match
             if (dst_account.plugin.service == account.plugin.service) and \
-                    (dst_account.plugin.id == account.plugin.id):
+                    (dst_account.plugin.uid == account.plugin.uid):
                 self.tree_widget.setCurrentItem(self.account_option)
                 self.account_option.removeChild(item)
                 self.content_widget.removeWidget(self.item_to_widget[item])
@@ -147,27 +148,6 @@ class WebView(QDialog):
     def getRedirectedUrl(self):
         return self.redirected_url.toString()
     
-SIGNAL_FINISH = SIGNAL('DownloadFinished')
-class DownloadingTask(QThread):
-    def __init__(self, service, redirected_url, plugin_class, proxy={}, parent=None):
-        super(DownloadingTask, self).__init__(parent)
-        self.service = service
-        self.redirected_url = redirected_url
-        self.plugin_class = plugin_class
-        self.proxy = proxy
-        
-    def run(self):
-        url, data, headers = self.plugin_class.getAccessToken(self.redirected_url)
-        opener = urllib.request.URLopener(self.proxy)
-        for k,v in headers.items():
-            opener.addheader(k, v)
-        f = opener.open(url, data)
-        data = f.read().decode('utf-8')
-        log.debug(data)
-        
-        # Parse returned data.
-        access_token, access_token_secret = self.plugin_class.parseData(data)
-        self.emit(SIGNAL_FINISH, self.service, access_token, access_token_secret)
 
 class AccountOptionWidget(QWidget):
     '''
@@ -231,6 +211,20 @@ class AccountOptionWidget(QWidget):
             # TODO: Retrieve data in a new thread in case of blocking UI thread.
             self.addAccount(item.text())
             
+    def retrieveData(self, service, redirected_url, plugin_class, proxy):
+        url, data, headers = plugin_class.getAccessToken(redirected_url)
+        opener = urllib.request.URLopener(proxy)
+        for k,v in headers.items():
+            opener.addheader(k, v)
+        f = opener.open(url, data)
+        data = f.read().decode('utf-8')
+        log.debug(data)
+        
+        # Parse returned data.
+        access_token, access_token_secret = plugin_class.parseData(data)
+        
+        return (service, access_token, access_token_secret), {}
+            
     def addAccount(self, service):
         '''
         @param service: string. Service name
@@ -263,10 +257,9 @@ class AccountOptionWidget(QWidget):
             self.btn_add.setEnabled(True)
             return None
         
-        self.downloading_task = DownloadingTask(service, redirected_url, plugin_class, global_proxy)
-        self.downloading_task.start()
-        
-        self.connect(self.downloading_task, SIGNAL_FINISH, self.updateUI)
+        easy_thread.start(self.retrieveData, args=(service, redirected_url, plugin_class, global_proxy),
+            callback=self.updateUI
+        )
     
 class SingleAccountWidget(QWidget):
     '''

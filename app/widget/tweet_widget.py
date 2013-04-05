@@ -8,6 +8,7 @@ from PyQt4.QtGui import *
 from app import constant, theme_manager
 from app import logger
 from app import misc
+from app import easy_thread
 from app.widget import picture_viewer
 
 log = logger.getLogger(__name__)
@@ -52,25 +53,6 @@ class PictureWidget(QLabel):
         if ev.button() == Qt.LeftButton:
             self.emit(SIGNAL_THUMBNAIL_CLICKED)
 
-class PictureTask(QThread):
-    '''
-    Task to download picture
-    '''
-    
-    def __init__(self, url, manager, widget, size=None):
-        super(PictureTask, self).__init__()
-        self.url = url
-        self.manager = manager
-        self.widget = widget
-        self.size = size
-        
-    def run(self):
-        try:
-            pic_path = self.manager.get(self.url)
-            self.emit(SIGNAL_FINISH, self.widget, pic_path, self.size)
-        except Exception as e:
-            print(e)
-            
 class GroupBox(QGroupBox):
     def __init__(self, parent=None):
         super(GroupBox, self).__init__(parent)
@@ -229,11 +211,12 @@ class TweetWidget(QWidget):
         # Start downloading avatar
         # FIXME: TypeError: updateUI() takes exactly 2 arguments (1 given)
         avatar_url = tweet['user']['avatar_large']
-        self.avatar_task = PictureTask(avatar_url, self.account.avatar_manager, self.label_avatar,
-            QSize(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE)
+        easy_thread.start(self.getResource,
+            args=(avatar_url, self.account.avatar_manager, self.label_avatar,
+                QSize(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE)
+            ),
+            callback=self.updateUI
         )
-        self.connect(self.avatar_task, SIGNAL_FINISH, self.updateUI)
-        self.avatar_task.start()
         
         # Start downloading thumbnail if exists
         try:
@@ -241,9 +224,10 @@ class TweetWidget(QWidget):
                 url = tweet['thumbnail_pic']
             elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
                 url = tweet['retweeted_status']['thumbnail_pic']
-            self.thumbnail_task = PictureTask(url, self.account.picture_manager, self.label_thumbnail)
-            self.connect(self.thumbnail_task, SIGNAL_FINISH, self.updateUI)
-            self.thumbnail_task.start()
+            easy_thread.start(self.getResource,
+                args=(url, self.account.picture_manager, self.label_thumbnail, None),
+                callback=self.updateUI
+            )
         except UnboundLocalError:
             # No picture
             pass
@@ -255,6 +239,15 @@ class TweetWidget(QWidget):
         color = 200
         painter.setPen(QColor(color, color, color))
         painter.drawLine(QPoint(5, size.height() - 1), QPoint(size.width() - 6, size.height() - 1))
+        
+    def getResource(self, url, manager, widget, size):
+        pic_path = ''
+        try:
+            pic_path = manager.get(url)
+        except Exception as e:
+            log.error(e)
+        finally:
+            return (widget, pic_path, size), {}
         
     def onClicked_Repost(self):
         if self.response_widget.isHidden():
