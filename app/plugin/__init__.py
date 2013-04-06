@@ -233,10 +233,11 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def sendRetweet(self, tid, text):
+    def sendRetweet(self, tid, text, if_comment):
         '''
         @param tid: string. ID of tweet to be retweeted.
         @param text: string. Text of retweet. Origin text. URLs aren't shortened. No URLEncoding.
+        @param if_comment: bool. If comment while retweeting. True to comment. False not to comment.
         @return: Tweet object returned by server. See documentation
         '''
         raise NotImplementedError
@@ -248,10 +249,11 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def sendComment(self, tid, text):
+    def sendComment(self, tid, text, if_repost):
         '''
         @param tid: string. ID of tweet to be commented.
         @param text: string. Text of comment. Origin text. URLs aren't shortened. No URLEncoding.
+        @param if_repost: bool. If repost while commenting. True to repost. False not to repost.
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError

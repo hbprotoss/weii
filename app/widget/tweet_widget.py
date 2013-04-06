@@ -10,6 +10,7 @@ from app import logger
 from app import misc
 from app import easy_thread
 from app.widget import picture_viewer
+from app.plugin import weiBaseException
 
 log = logger.getLogger(__name__)
 
@@ -22,6 +23,7 @@ url_legal = set('''!#$&'()*+,/:;=?@-._~'''
 SIGNAL_FINISH = SIGNAL('downloadFinished')
 SIGNAL_THUMBNAIL_CLICKED = SIGNAL('thumbnailClicked')
 SIGNAL_RESPONSE_CLICKED = SIGNAL('responseClicked')
+SIGNAL_SUCCESSFUL_RESPONSE = SIGNAL('successfulResponse')
 
 class Text(QLabel):
     def __init__(self, text, parent=None):
@@ -77,6 +79,7 @@ class TweetResponseButton(QLabel):
     def __init__(self, text, amount=0, parent=None):
         super(TweetResponseButton, self).__init__(parent)
         self._text = text
+        self._amount = amount
         
         self.setAmount(amount)
         self.setCursor(QCursor(Qt.PointingHandCursor))
@@ -88,10 +91,14 @@ class TweetResponseButton(QLabel):
         '''
         @param amount: int.
         '''
+        self._amount = amount
         if amount:
             self.setText('%s(%d)' % (self._text, amount))
         else:
             self.setText(self._text)
+            
+    def increaseAmount(self):
+        self.setAmount(self._amount + 1)
             
     def mouseReleaseEvent(self, ev):
         self.emit(SIGNAL_RESPONSE_CLICKED)
@@ -147,13 +154,44 @@ class ResponseWidget(QGroupBox):
         self.button = QPushButton('push')
         hbox.addWidget(self.button)
         
+    def updateUI(self, tweet_object):
+        self.button.setEnabled(True)
+        self.edit.setEnabled(True)
+        self.edit.clear()
+        
+        if 'error' not in tweet_object:
+            # If successful, emit signal to notify TweetWidget to increase the
+            # corresponding message counter.
+            self.emit(SIGNAL_SUCCESSFUL_RESPONSE, self.widget_type)
+        
+    def procSendComment(self, tid, text):
+        try:
+            rtn = self.plugin.sendComment(tid, text)
+        except weiBaseException as e:
+            rtn = {'error': str(e)}
+        log.debug(rtn)
+        return (rtn, ), {}
+    
+    def procSendRetweet(self, tid, text):
+        try:
+            rtn = self.plugin.sendRetweet(tid, text)
+        except weiBaseException as e:
+            rtn = {'error': str(e)}
+        log.debug(rtn)
+        return (rtn, ), {}
+        
     def onClicked_Btn(self):
         text = self.edit.toPlainText()
         log.debug(text)
+        self.button.setEnabled(False)
+        self.edit.setEnabled(False)
+        
         if self.widget_type == ResponseWidget.COMMENT:
-            self.plugin.sendComment(self.tweet['id'], text)
+            easy_thread.start(self.procSendComment, args=(self.tweet['id'], text), callback=self.updateUI)
         elif self.widget_type == ResponseWidget.REPOST:
-            pass
+            if 'retweeted_status' in self.tweet:
+                text = ''.join((text, '//@', self.tweet['user']['screen_name'], ': ', self.tweet['text']))
+            easy_thread.start(self.procSendRetweet, args=(self.tweet['id'], text), callback=self.updateUI)
         
     def setType(self, widget_type):
         '''
@@ -540,8 +578,15 @@ class TweetWidget(QWidget):
         self.response_widget = ResponseWidget(self.account.plugin, self.tweet, ResponseWidget.COMMENT, self)
         self.response_widget.hide()
         v2.addWidget(self.response_widget)
+        self.connect(self.response_widget, SIGNAL_SUCCESSFUL_RESPONSE, self.onSuccessfulResponse)
         
     def renderUI(self):
         self.label_avatar.setCursor(QCursor(Qt.PointingHandCursor))
         if self.label_thumbnail:
             self.label_thumbnail.setCursor(QCursor(QPixmap(theme_manager.getParameter('Skin', 'zoom-in-cursor'))))
+            
+    def onSuccessfulResponse(self, widget_type):
+        if widget_type == ResponseWidget.COMMENT:
+            self.btn_tweet_comment.increaseAmount()
+        elif widget_type == ResponseWidget.REPOST:
+            self.btn_tweet_repost.increaseAmount()

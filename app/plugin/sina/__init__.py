@@ -60,6 +60,7 @@ def sinaMethod(func):
                 if error_code in exception_dict:
                     raise exception_dict[error_code](error_msg['error'])
                 else:
+                    log.error('Unknown error %s' % e)
                     raise weiUnknownError(str(e))
             else:
                 # Network error
@@ -181,12 +182,26 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
-    def sendComment(self, tid, text):
+    def sendComment(self, tid, text, if_repost=False):
+        # TODO: if_repost
         url = 'https://api.weibo.com/2/comments/create.json'
         params = urllib.parse.urlencode({
             'access_token': self.access_token,
             'id': tid,
-            'comment': urllib.parse.quote(text)
+            'comment': text
+        }).encode('utf-8')
+        rtn_from_server = self.getData(url, params).decode('utf-8')
+        rtn = json.loads(rtn_from_server)
+        return rtn
+    
+    @sinaMethod
+    def sendRetweet(self, tid, text, if_comment=False):
+        url = 'https://api.weibo.com/2/statuses/repost.json'
+        params = urllib.parse.urlencode({
+            'access_token': self.access_token,
+            'id': tid,
+            'status': text,
+            'is_comment': int(if_comment)
         }).encode('utf-8')
         rtn_from_server = self.getData(url, params).decode('utf-8')
         rtn = json.loads(rtn_from_server)
