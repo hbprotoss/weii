@@ -19,7 +19,10 @@ def initConfig():
         parser.set(SECTION, 'Proxy', json.dumps({}))
         
     # Write back at exit
-    atexit.register(parser.write, open(constant.GLOBAL_CONFIG, 'r+'))
+    try:
+        atexit.register(parser.write, open(constant.GLOBAL_CONFIG, 'r+'))
+    except IOError:
+        atexit.register(parser.write, open(constant.GLOBAL_CONFIG, 'w'))
 
 initConfig()
     
