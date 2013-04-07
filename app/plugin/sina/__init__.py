@@ -196,6 +196,10 @@ class Plugin(AbstractPlugin):
     
     @sinaMethod
     def sendRetweet(self, tid, text, if_comment=False):
+        # temporary code
+        if len(text)> 140:
+            text = text[:140]
+            
         url = 'https://api.weibo.com/2/statuses/repost.json'
         params = urllib.parse.urlencode({
             'access_token': self.access_token,

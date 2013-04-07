@@ -41,7 +41,7 @@ class HomeWidget(abstract_widget.AbstractWidget):
         self.clearWidget(self.refreshing_image)
         whole_list = []
         for account,tweet_list in data:
-            # If it is refreshing, update max_point of account
+            # If it is refreshing(only refreshing_image exists), update max_point of account
             if self.count() == 1:
                 account.last_tweet_id = tweet_list[0]['id']
                 account.last_tweet_time = tweet_list[0]['created_at']
@@ -83,7 +83,6 @@ class HomeWidget(abstract_widget.AbstractWidget):
         return (rtn, ), {}
         
     def appendNew(self):
-        # FIXME: Possibal duplicate tweet when turn to next page
         if self.refreshing:
             return
         

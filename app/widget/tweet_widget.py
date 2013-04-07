@@ -247,7 +247,6 @@ class TweetWidget(QWidget):
         self.connect(self.btn_tweet_comment, SIGNAL_RESPONSE_CLICKED, self.onClicked_Comment)
         
         # Start downloading avatar
-        # FIXME: TypeError: updateUI() takes exactly 2 arguments (1 given)
         avatar_url = tweet['user']['avatar_large']
         easy_thread.start(self.getResource,
             args=(avatar_url, self.account.avatar_manager, self.label_avatar,

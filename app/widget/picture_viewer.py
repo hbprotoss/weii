@@ -91,12 +91,18 @@ class PictureViewer(QDialog):
         self.indicator.hide()
         self.scroll_area.takeWidget()
         
-        image = QPixmap(path, imghdr.what(path))
         label_pic = QLabel()
-        label_pic.setPixmap(image)
+        image_type = imghdr.what(path)
+        if image_type == 'gif':
+            image = QMovie(path)
+            label_pic.setMovie(image)
+            size = image.scaledSize()
+        else:
+            image = QPixmap(path, image_type)
+            label_pic.setPixmap(image)
+            size = image.size()
         self.scroll_area.setWidget(label_pic)
         
-        size = image.size()
         self.resize(size)
         
     def setupUI(self):
