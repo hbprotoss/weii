@@ -38,7 +38,6 @@ class HomeWidget(abstract_widget.AbstractWidget):
         
     def updateUI(self, data):
         log.debug('updateUI')
-        self.clearWidget(self.refreshing_image)
         whole_list = []
         for account,tweet_list in data:
             # If it is refreshing, update max_point of account
@@ -59,6 +58,7 @@ class HomeWidget(abstract_widget.AbstractWidget):
                 whole_list.append((account, tweet))
         
         whole_list.sort(key=lambda x:x[1]['created_at'], reverse=True)
+        self.clearWidget(self.refreshing_image)
                 
         for account, tweet in whole_list:
             avatar = self.small_loading_image
