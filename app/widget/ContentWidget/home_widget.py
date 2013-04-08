@@ -42,9 +42,10 @@ class HomeWidget(abstract_widget.AbstractWidget):
         whole_list = []
         for account,tweet_list in data:
             # If it is refreshing(only refreshing_image exists), update max_point of account
-            if self.count() == 1:
+            if self.count() == 0:
                 account.last_tweet_id = tweet_list[0]['id']
                 account.last_tweet_time = tweet_list[0]['created_at']
+                print(account.last_tweet_id)
                 
             for tweet in tweet_list:
                 dt = parser.parse(tweet['created_at'])

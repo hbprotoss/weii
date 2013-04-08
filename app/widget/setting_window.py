@@ -208,7 +208,6 @@ class AccountOptionWidget(QWidget):
             self.btn_add.setEnabled(False)
             
             log.debug(item.text())
-            # TODO: Retrieve data in a new thread in case of blocking UI thread.
             self.addAccount(item.text())
             
     def retrieveData(self, service, redirected_url, plugin_class, proxy):

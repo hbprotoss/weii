@@ -98,7 +98,6 @@ def initAccount():
     Initiate all accounts stored in database
     @return: List of Account objects
     '''
-    # TODO: Initiate from database
     #return dummyInitAccount()
     plugins = plugin.plugins
     rtn = []

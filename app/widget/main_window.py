@@ -296,7 +296,13 @@ class MainWindow( QDialog ):
         button = self.sender()
         self.button_group.setActive(button)
         
-        self.content_widget.setCurrentWidget(self.button_to_widget[button])
+        new_widget = self.button_to_widget[button]
+        old_widget = self.content_widget.currentWidget()
+        slider = self.scroll_area.verticalScrollBar()
+        self.content_widget.setScrollPosition(old_widget, slider.value())
+        
+        self.content_widget.setCurrentWidget(new_widget)
+        slider.setValue(self.content_widget.getScrollPosition(new_widget))
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
