@@ -124,7 +124,7 @@ class MainWindow( QDialog ):
         
         rtn[self.home] = home_widget.HomeWidget(self)
         
-        rtn[self.at] = home_widget.HomeWidget(self)
+        rtn[self.at] = at_widget.AtWidget(self)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('comment'))
@@ -303,6 +303,8 @@ class MainWindow( QDialog ):
         
         self.content_widget.setCurrentWidget(new_widget)
         slider.setValue(self.content_widget.getScrollPosition(new_widget))
+        
+        new_widget.refresh()
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()

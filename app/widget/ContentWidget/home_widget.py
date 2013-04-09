@@ -3,8 +3,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from widget.ContentWidget import abstract_widget
-from widget.tweet_widget import TweetWidget
+from app.widget.ContentWidget import abstract_widget
 from app import logger
 
 log = logger.getLogger(__name__)
@@ -19,9 +18,6 @@ class HomeWidget(abstract_widget.AbstractTweetContainer):
     '''
     Home tab
     '''
-    def produceWidget(self, account, tweet, avatar, picture):
-        return TweetWidget(account, tweet, avatar, picture)
-    
     def retrieveData(self, account_list, page=1, count=20):
         rtn = []
         for account in account_list:

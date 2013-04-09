@@ -11,6 +11,7 @@ from app import theme_manager
 from app import logger
 from app import dateutil
 from app.dateutil import parser
+from app.widget.tweet_widget import TweetWidget
 
 log = logger.getLogger(__name__)
 
@@ -101,7 +102,7 @@ class AbstractTweetContainer(AbstractWidget):
         @param avatar: QMovie. Loading image. gif
         @param picture: QMovie. Loading image. gif
         '''
-        raise NotImplementedError
+        return TweetWidget(account, tweet, avatar, picutre, self)
     
     def retrieveData(self, account_list, page=1, count=20):
         raise NotImplementedError

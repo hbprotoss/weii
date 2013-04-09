@@ -149,7 +149,7 @@ class Plugin(AbstractPlugin):
             'max_id': str(max_point[0]) if max_point else '0'
         }
         rtn_from_server = self.getData(url % urllib.parse.urlencode(params)).decode('utf-8')
-        rtn = json.loads(rtn_from_server)
+        rtn = json.loads(rtn_from_server)['statuses']
         
         return rtn
     
