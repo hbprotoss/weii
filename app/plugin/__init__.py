@@ -147,19 +147,13 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getMentionedTweet(self, count=20, page=1):
+    def getMentions(self, max_point=None, count=20, page=1):
         '''
+        @param max_point: tuple(id, time). Returns results with an ID (or time) less than (that is, older than)
+                          or equal to the specified ID (or time). None means return newest.
         @param count: int. Comments per page
         @param page: int. Page number
         @return: List of tweet objects. See documentation
-        '''
-        raise NotImplementedError
-    
-    def getMentiondComment(self, count=20, page=1):
-        '''
-        @param count: int. Comments per page
-        @param page: int. Page number
-        @return: List of comment objects. See documentation
         '''
         raise NotImplementedError
     

@@ -140,6 +140,20 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
+    def getMentions(self, max_point=None, count=20, page=1):
+        url = 'https://api.weibo.com/2/statuses/mentions.json?%s'
+        params = {
+            'access_token': self.access_token,
+            'count': count,
+            'page': page,
+            'max_id': str(max_point[0]) if max_point else '0'
+        }
+        rtn_from_server = self.getData(url % urllib.parse.urlencode(params)).decode('utf-8')
+        rtn = json.loads(rtn_from_server)
+        
+        return rtn
+    
+    @sinaMethod
     def getEmotions(self):
         params = dict([('access_token', self.access_token)])
         url = 'https://api.weibo.com/2/emotions.json?%s'
