@@ -123,14 +123,8 @@ class MainWindow( QDialog ):
         rtn = {}
         
         rtn[self.home] = home_widget.HomeWidget(self)
-        
         rtn[self.at] = at_widget.AtWidget(self)
-        
-        layout = QVBoxLayout()
-        layout.addWidget(QPushButton('comment'))
-        widget = QWidget()
-        widget.setLayout(layout)
-        rtn[self.comment] = widget
+        rtn[self.comment] = comment_widget.CommentWidget(self)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('private'))
