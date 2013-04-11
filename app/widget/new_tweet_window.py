@@ -138,8 +138,12 @@ class NewTweetWindow(QDialog):
     def updateUI(self, tweet_object):
         self.btn_send.setEnabled(True)
         self.btn_send.setText('发送')
-        self.editor.clear()
-        self.close()
+        
+        if 'error' in tweet_object:
+            QMessageBox.critical(self, '错误', tweet_object['error'])
+        else:
+            self.editor.clear()
+            self.close()
         
     def selectAccount(self, account):
         self.selected_accounts.add(account)
@@ -174,7 +178,6 @@ class NewTweetWindow(QDialog):
         
                 easy_thread.start(self.sendTweet, args=(accounts, text, self.pic_file), callback=self.updateUI)
             else:
-                # TODO: No account selected
                 QMessageBox.critical(self, '错误', '请至少选择一个账户!')
         else:
             QMessageBox.critical(self, '错误', '微博不能为空!')

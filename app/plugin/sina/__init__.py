@@ -65,6 +65,10 @@ def sinaMethod(func):
             else:
                 # Network error
                 raise weiNetworkError(str(e))
+        except urllib.error.URLError as e:
+            raise weiNetworkError(str(e))
+        except urllib.error.ContentTooShortError as e:
+            raise weiNetworkError(str(e))
         else:
             return raw_rtn
     return func_wrapper
@@ -141,6 +145,34 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
+    def getMentions(self, max_point=None, count=20, page=1):
+        url = 'https://api.weibo.com/2/statuses/mentions.json?%s'
+        params = {
+            'access_token': self.access_token,
+            'count': count,
+            'page': page,
+            'max_id': str(max_point[0]) if max_point else '0'
+        }
+        rtn_from_server = self.getData(url % urllib.parse.urlencode(params)).decode('utf-8')
+        rtn = json.loads(rtn_from_server)['statuses']
+        
+        return rtn
+    
+    @sinaMethod
+    def getComment(self, max_point=None, count=20, page=1):
+        url = 'https://api.weibo.com/2/comments/timeline.json?%s'
+        params = {
+            'access_token': self.access_token,
+            'count': count,
+            'page': page,
+            'max_id': str(max_point[0]) if max_point else '0'
+        }
+        rtn_from_server = self.getData(url % urllib.parse.urlencode(params)).decode('utf-8')
+        rtn = json.loads(rtn_from_server)['comments']
+        
+        return rtn
+    
+    @sinaMethod
     def getEmotions(self):
         params = dict([('access_token', self.access_token)])
         url = 'https://api.weibo.com/2/emotions.json?%s'
@@ -185,11 +217,30 @@ class Plugin(AbstractPlugin):
     @sinaMethod
     def sendComment(self, tid, text, if_repost=False):
         # TODO: if_repost
+        if if_repost:
+            self.sendRetweet(tid, text, False)
+            
         url = 'https://api.weibo.com/2/comments/create.json'
         params = urllib.parse.urlencode({
             'access_token': self.access_token,
             'id': tid,
-            'comment': text
+            'comment': text,
+        }).encode('utf-8')
+        rtn_from_server = self.getData(url, params).decode('utf-8')
+        rtn = json.loads(rtn_from_server)
+        return rtn
+    
+    @sinaMethod
+    def sendRecomment(self, tid, cid, text, if_repost=False):
+        if if_repost:
+            self.sendRetweet(tid, text, False)
+            
+        url = 'https://api.weibo.com/2/comments/reply.json'
+        params = urllib.parse.urlencode({
+            'access_token': self.access_token,
+            'id': tid,
+            'cid': cid,
+            'comment': text,
         }).encode('utf-8')
         rtn_from_server = self.getData(url, params).decode('utf-8')
         rtn = json.loads(rtn_from_server)

@@ -147,19 +147,13 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getMentionedTweet(self, count=20, page=1):
+    def getMentions(self, max_point=None, count=20, page=1):
         '''
+        @param max_point: tuple(id, time). Returns results with an ID (or time) less than (that is, older than)
+                          or equal to the specified ID (or time). None means return newest.
         @param count: int. Comments per page
         @param page: int. Page number
         @return: List of tweet objects. See documentation
-        '''
-        raise NotImplementedError
-    
-    def getMentiondComment(self, count=20, page=1):
-        '''
-        @param count: int. Comments per page
-        @param page: int. Page number
-        @return: List of comment objects. See documentation
         '''
         raise NotImplementedError
     
@@ -258,12 +252,13 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def sendRecomment(self, tid, cid, text):
+    def sendRecomment(self, tid, cid, text, if_repost):
         '''
         Comment a comment
         @param tid: string. ID of tweet to be commented
         @param cid: string. ID of comment to be commented
         @param text: string. Text of comment. Origin text. URLs aren't shortened. No URLEncoding.
+        @param if_repost: bool. If repost while commenting. True to repost. False not to repost.
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError

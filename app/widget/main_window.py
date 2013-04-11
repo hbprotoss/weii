@@ -123,14 +123,8 @@ class MainWindow( QDialog ):
         rtn = {}
         
         rtn[self.home] = home_widget.HomeWidget(self)
-        
-        rtn[self.at] = home_widget.HomeWidget(self)
-        
-        layout = QVBoxLayout()
-        layout.addWidget(QPushButton('comment'))
-        widget = QWidget()
-        widget.setLayout(layout)
-        rtn[self.comment] = widget
+        rtn[self.at] = at_widget.AtWidget(self)
+        rtn[self.comment] = comment_widget.CommentWidget(self)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('private'))
@@ -296,7 +290,15 @@ class MainWindow( QDialog ):
         button = self.sender()
         self.button_group.setActive(button)
         
-        self.content_widget.setCurrentWidget(self.button_to_widget[button])
+        new_widget = self.button_to_widget[button]
+        old_widget = self.content_widget.currentWidget()
+        slider = self.scroll_area.verticalScrollBar()
+        self.content_widget.setScrollPosition(old_widget, slider.value())
+        
+        self.content_widget.setCurrentWidget(new_widget)
+        slider.setValue(self.content_widget.getScrollPosition(new_widget))
+        
+        new_widget.refresh()
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
