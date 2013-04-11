@@ -2,6 +2,12 @@
 
 import os
 
+######################################################################
+# Tweet type. The alternative value of key 'type' in Tweet object.
+COMMENT = 0
+TWEET = 1
+######################################################################
+
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_ROOT = os.path.expanduser('~/.weibo')
 

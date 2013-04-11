@@ -164,15 +164,20 @@ class ResponseWidget(QGroupBox):
             # corresponding message counter.
             self.emit(SIGNAL_SUCCESSFUL_RESPONSE, self.widget_type)
         
-    def procSendComment(self, tid, text):
+    def procSendComment(self, original_tweet, text):
+        tweet_type = original_tweet['type']
         try:
-            rtn = self.plugin.sendComment(tid, text)
+            if tweet_type == constant.TWEET:
+                rtn = self.plugin.sendComment(original_tweet['id'], text)
+            elif tweet_type == constant.COMMENT:
+                rtn = self.plugin.sendRecomment(original_tweet['status']['id'], original_tweet['id'], text)
         except weiBaseException as e:
             rtn = {'error': str(e)}
         log.debug(rtn)
         return (rtn, ), {}
     
-    def procSendRetweet(self, tid, text):
+    def procSendRetweet(self, original_tweet, text):
+        tid = original_tweet['id']
         try:
             rtn = self.plugin.sendRetweet(tid, text)
         except weiBaseException as e:
@@ -187,11 +192,17 @@ class ResponseWidget(QGroupBox):
         self.edit.setEnabled(False)
         
         if self.widget_type == ResponseWidget.COMMENT:
-            easy_thread.start(self.procSendComment, args=(self.tweet['id'], text), callback=self.updateUI)
+            easy_thread.start(self.procSendComment,
+                args=(self.tweet, text),
+                callback=self.updateUI
+            )
         elif self.widget_type == ResponseWidget.REPOST:
             if 'retweeted_status' in self.tweet:
                 text = ''.join((text, '//@', self.tweet['user']['screen_name'], ': ', self.tweet['text']))
-            easy_thread.start(self.procSendRetweet, args=(self.tweet['id'], text), callback=self.updateUI)
+            easy_thread.start(self.procSendRetweet,
+                args=(self.tweet, text),
+                callback=self.updateUI
+            )
         
     def setType(self, widget_type):
         '''
@@ -318,10 +329,7 @@ class TweetWidget(QWidget):
         else:
             left = main_window_rect.right()
         # Vertical position
-        if widget_rect.top() + pic_size.height() > screen_rect.bottom():
-            top = screen_rect.bottom() - pic_size.height()
-        else:
-            top = widget_rect.top()
+        top = main_window_rect.top()
             
         pic.setGeometry(QRect(left, top, pic_size.width(), pic_size.height()))
         pic.show()

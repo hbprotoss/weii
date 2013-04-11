@@ -16,6 +16,8 @@ class AtWidget(abstract_widget.AbstractTweetContainer):
             tweet_list = account.plugin.getMentions(max_point=(account.last_tweet_id, account.last_tweet_time),
                 page=page, count=count
             )
+            for tweet in tweet_list:
+                tweet['type'] = abstract_widget.TWEET
             rtn.append((account, tweet_list))
             
         log.debug('Download finished')

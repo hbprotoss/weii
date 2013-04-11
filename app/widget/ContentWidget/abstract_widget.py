@@ -15,6 +15,12 @@ from app.widget.tweet_widget import TweetWidget
 
 log = logger.getLogger(__name__)
 
+######################################################################
+# Tweet type. The alternative value of key 'type' in Tweet object.
+COMMENT = 0
+TWEET = 1
+######################################################################
+
 class AbstractWidget(QWidget):
     '''
     Abstract widget for holding content

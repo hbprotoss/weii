@@ -17,10 +17,17 @@ class CommentWidget(abstract_widget.AbstractTweetContainer):
                 page=page, count=count
             )
             for tweet in tweet_list:
+                tweet['type'] = abstract_widget.COMMENT
                 tweet['reposts_count'] = 0
                 tweet['comments_count'] = 0
-                tweet['retweeted_status'] = tweet['status']
-                del tweet['status']
+                # Show comment if this tweet is a comment of another, or original tweet otherwise.
+                if 'reply_comment' in tweet:
+                    tweet['retweeted_status'] = tweet['reply_comment']
+                    reply = tweet['reply_comment']
+                    reply['reposts_count'] = 0
+                    reply['comments_count'] = 0
+                else:
+                    tweet['retweeted_status'] = tweet['status']
             rtn.append((account, tweet_list))
             
         log.debug('Download finished')

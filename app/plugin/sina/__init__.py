@@ -223,7 +223,21 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
+    def sendRecomment(self, tid, cid, text):
+        url = 'https://api.weibo.com/2/comments/reply.json'
+        params = urllib.parse.urlencode({
+            'access_token': self.access_token,
+            'id': tid,
+            'cid': cid,
+            'comment': text
+        }).encode('utf-8')
+        rtn_from_server = self.getData(url, params).decode('utf-8')
+        rtn = json.loads(rtn_from_server)
+        return rtn
+    
+    @sinaMethod
     def sendRetweet(self, tid, text, if_comment=False):
+        # TODO: if_comment
         # temporary code
         if len(text)> 140:
             text = text[:140]
