@@ -158,28 +158,35 @@ class ResponseWidget(QGroupBox):
         self.button.setEnabled(True)
         self.edit.setEnabled(True)
         self.edit.clear()
+        self.checkBox.setChecked(False)
         
         if 'error' not in tweet_object:
             # If successful, emit signal to notify TweetWidget to increase the
             # corresponding message counter.
             self.emit(SIGNAL_SUCCESSFUL_RESPONSE, self.widget_type)
         
-    def procSendComment(self, original_tweet, text):
+    def procSendComment(self, original_tweet, text, if_repost):
         tweet_type = original_tweet['type']
+        if if_repost:
+            text = ''.join((text, '//@', self.tweet['user']['screen_name'], ': ', self.tweet['text']))
         try:
             if tweet_type == constant.TWEET:
-                rtn = self.plugin.sendComment(original_tweet['id'], text)
+                rtn = self.plugin.sendComment(original_tweet['id'], text, if_repost)
             elif tweet_type == constant.COMMENT:
-                rtn = self.plugin.sendRecomment(original_tweet['status']['id'], original_tweet['id'], text)
+                rtn = self.plugin.sendRecomment(original_tweet['status']['id'], original_tweet['id'], text, if_repost)
         except weiBaseException as e:
             rtn = {'error': str(e)}
         log.debug(rtn)
         return (rtn, ), {}
     
-    def procSendRetweet(self, original_tweet, text):
-        tid = original_tweet['id']
+    def procSendRetweet(self, original_tweet, text, if_comment):
+        tweet_type = original_tweet['type']
         try:
-            rtn = self.plugin.sendRetweet(tid, text)
+            if tweet_type == constant.TWEET:
+                tid = original_tweet['id']
+            elif tweet_type == constant.COMMENT:
+                tid = original_tweet['status']['id']
+            rtn = self.plugin.sendRetweet(tid, text, if_comment)
         except weiBaseException as e:
             rtn = {'error': str(e)}
         log.debug(rtn)
@@ -187,20 +194,20 @@ class ResponseWidget(QGroupBox):
         
     def onClicked_Btn(self):
         text = self.edit.toPlainText()
-        log.debug(text)
         self.button.setEnabled(False)
         self.edit.setEnabled(False)
         
+        log.debug('checkBox: %s' % self.checkBox.isChecked())
         if self.widget_type == ResponseWidget.COMMENT:
             easy_thread.start(self.procSendComment,
-                args=(self.tweet, text),
+                args=(self.tweet, text, self.checkBox.isChecked()),
                 callback=self.updateUI
             )
         elif self.widget_type == ResponseWidget.REPOST:
             if 'retweeted_status' in self.tweet:
                 text = ''.join((text, '//@', self.tweet['user']['screen_name'], ': ', self.tweet['text']))
             easy_thread.start(self.procSendRetweet,
-                args=(self.tweet, text),
+                args=(self.tweet, text, self.checkBox.isChecked()),
                 callback=self.updateUI
             )
         

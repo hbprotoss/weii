@@ -252,12 +252,13 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def sendRecomment(self, tid, cid, text):
+    def sendRecomment(self, tid, cid, text, if_repost):
         '''
         Comment a comment
         @param tid: string. ID of tweet to be commented
         @param cid: string. ID of comment to be commented
         @param text: string. Text of comment. Origin text. URLs aren't shortened. No URLEncoding.
+        @param if_repost: bool. If repost while commenting. True to repost. False not to repost.
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError
