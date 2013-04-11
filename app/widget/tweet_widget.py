@@ -158,23 +158,35 @@ class ResponseWidget(QGroupBox):
         self.button.setEnabled(True)
         self.edit.setEnabled(True)
         self.edit.clear()
+        self.checkBox.setChecked(False)
         
         if 'error' not in tweet_object:
             # If successful, emit signal to notify TweetWidget to increase the
             # corresponding message counter.
             self.emit(SIGNAL_SUCCESSFUL_RESPONSE, self.widget_type)
         
-    def procSendComment(self, tid, text):
+    def procSendComment(self, original_tweet, text, if_repost):
+        tweet_type = original_tweet['type']
+        if if_repost:
+            text = ''.join((text, '//@', self.tweet['user']['screen_name'], ': ', self.tweet['text']))
         try:
-            rtn = self.plugin.sendComment(tid, text)
+            if tweet_type == constant.TWEET:
+                rtn = self.plugin.sendComment(original_tweet['id'], text, if_repost)
+            elif tweet_type == constant.COMMENT:
+                rtn = self.plugin.sendRecomment(original_tweet['status']['id'], original_tweet['id'], text, if_repost)
         except weiBaseException as e:
             rtn = {'error': str(e)}
         log.debug(rtn)
         return (rtn, ), {}
     
-    def procSendRetweet(self, tid, text):
+    def procSendRetweet(self, original_tweet, text, if_comment):
+        tweet_type = original_tweet['type']
         try:
-            rtn = self.plugin.sendRetweet(tid, text)
+            if tweet_type == constant.TWEET:
+                tid = original_tweet['id']
+            elif tweet_type == constant.COMMENT:
+                tid = original_tweet['status']['id']
+            rtn = self.plugin.sendRetweet(tid, text, if_comment)
         except weiBaseException as e:
             rtn = {'error': str(e)}
         log.debug(rtn)
@@ -182,16 +194,22 @@ class ResponseWidget(QGroupBox):
         
     def onClicked_Btn(self):
         text = self.edit.toPlainText()
-        log.debug(text)
         self.button.setEnabled(False)
         self.edit.setEnabled(False)
         
+        log.debug('checkBox: %s' % self.checkBox.isChecked())
         if self.widget_type == ResponseWidget.COMMENT:
-            easy_thread.start(self.procSendComment, args=(self.tweet['id'], text), callback=self.updateUI)
+            easy_thread.start(self.procSendComment,
+                args=(self.tweet, text, self.checkBox.isChecked()),
+                callback=self.updateUI
+            )
         elif self.widget_type == ResponseWidget.REPOST:
             if 'retweeted_status' in self.tweet:
                 text = ''.join((text, '//@', self.tweet['user']['screen_name'], ': ', self.tweet['text']))
-            easy_thread.start(self.procSendRetweet, args=(self.tweet['id'], text), callback=self.updateUI)
+            easy_thread.start(self.procSendRetweet,
+                args=(self.tweet, text, self.checkBox.isChecked()),
+                callback=self.updateUI
+            )
         
     def setType(self, widget_type):
         '''
@@ -247,7 +265,6 @@ class TweetWidget(QWidget):
         self.connect(self.btn_tweet_comment, SIGNAL_RESPONSE_CLICKED, self.onClicked_Comment)
         
         # Start downloading avatar
-        # FIXME: TypeError: updateUI() takes exactly 2 arguments (1 given)
         avatar_url = tweet['user']['avatar_large']
         easy_thread.start(self.getResource,
             args=(avatar_url, self.account.avatar_manager, self.label_avatar,
@@ -319,10 +336,7 @@ class TweetWidget(QWidget):
         else:
             left = main_window_rect.right()
         # Vertical position
-        if widget_rect.top() + pic_size.height() > screen_rect.bottom():
-            top = screen_rect.bottom() - pic_size.height()
-        else:
-            top = widget_rect.top()
+        top = main_window_rect.top()
             
         pic.setGeometry(QRect(left, top, pic_size.width(), pic_size.height()))
         pic.show()

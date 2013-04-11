@@ -248,6 +248,11 @@ class Plugin(AbstractPlugin):
     
     @sinaMethod
     def sendRetweet(self, tid, text, if_comment=False):
+<<<<<<< HEAD
+=======
+        # TODO: if_comment
+        # temporary code
+>>>>>>> dev
         if len(text)> 140:
             text = text[:140]
             
