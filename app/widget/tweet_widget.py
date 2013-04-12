@@ -28,6 +28,7 @@ SIGNAL_SUCCESSFUL_RESPONSE = SIGNAL('successfulResponse')
 class Text(QLabel):
     def __init__(self, text, parent=None):
         super(Text, self).__init__(text, parent)
+        self.setTextFormat(Qt.RichText)
         self.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.TextSelectableByMouse)
         
 class TweetText(Text):
