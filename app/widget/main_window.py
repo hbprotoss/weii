@@ -5,7 +5,7 @@ import imghdr
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from app import constant
+from app import constant, easy_thread
 from app import theme_manager
 from app import account_manager
 from app import logger
@@ -38,6 +38,8 @@ QLabel#account {
     font-weight: bold;
 }
 '''
+
+SIGNAL_UPDATE_UNREADS = SIGNAL('updateUnreads')
 
 class ButtonGroup:
     '''
@@ -111,9 +113,10 @@ class MainWindow( QDialog ):
         )
         
         # Start timer to check unreads message, every 60 seconds
-        self.timer = QTimer()
-        self.connect(self.timer, SIGNAL('timeout()'), self.checkUnreads)
-        self.timer.start(60 * 1000)
+#        self.timer = QTimer()
+#        self.connect(self.timer, SIGNAL('timeout()'), self.checkUnreads)
+#        self.timer.start(60 * 1000)
+        self.connect(self.button_to_widget[self.home], SIGNAL('refreshFinished'), self.onFirstRefresh)
     
     def initTab(self):
         '''
@@ -276,18 +279,30 @@ class MainWindow( QDialog ):
         Check unread message count.
         '''
         # Only availabel for single account.
-        account = account_manager.getCurrentAccount()[0]
-        unreads = account.plugin.getUnreads()
-        log.debug(unreads)
+        while True:
+            account = account_manager.getCurrentAccount()[0]
+            unreads = account.plugin.getUnreads()
+            log.debug(unreads)
+            self.emit(SIGNAL_UPDATE_UNREADS, unreads)
+            QThread.sleep(60)
         
+    def updateUnreads(self, unreads):
+        log.debug('updateUnreads %s' % unreads)
         self.home.setBuble(int(unreads['tweet']))
         self.at.setBuble(int(unreads['mention']))
         self.comment.setBuble(int(unreads['comment']))
         self.private.setBuble(int(unreads['private']))
         self.profile.setBuble(int(unreads['follower']))
         
+    def onFirstRefresh(self):
+        log.debug('onFirstRefresh called')
+        self.disconnect(self.button_to_widget[self.home], SIGNAL('refreshFinished'), self.onFirstRefresh)
+        easy_thread.start(self.checkUnreads)
+        self.connect(self, SIGNAL_UPDATE_UNREADS, self.updateUnreads)
+        
     def onClicked_BtnGroup(self):
         button = self.sender()
+        button.setBuble(0)
         self.button_group.setActive(button)
         
         new_widget = self.button_to_widget[button]

@@ -179,6 +179,8 @@ class AbstractTweetContainer(AbstractWidget):
         log.debug('Starting thread')
         self.currentPage = 2
         
+        self.emit(SIGNAL('refreshFinished'))
+        
 #    def refresh(self):
 #        '''
 #        For debug purpose
