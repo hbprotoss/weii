@@ -81,6 +81,7 @@ class MainWindow( QDialog ):
     def __init__( self, parent = None ):
         super( MainWindow, self ).__init__( parent )
 
+        self.setupTray()
         self.setMinimumSize( 400, 600 )
         self.setupUI()
         self.renderUI()
@@ -230,6 +231,11 @@ class MainWindow( QDialog ):
         self.scroll_area.setWidget( self.content_widget )
         self.scroll_area.setWidgetResizable(True)
         h2.addWidget( self.scroll_area )
+        
+    def setupTray(self):
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon(constant.TRAY_ICON))
+        self.tray_icon.show()
 
     def renderUI( self ):
         '''

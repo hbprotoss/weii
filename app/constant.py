@@ -14,6 +14,8 @@ DATA_ROOT = os.path.expanduser('~/.weibo')
 AVATER_SIZE = 64
 AVATER_IN_TWEET_SIZE = 40
 
+TRAY_ICON = os.path.join(APP_ROOT, 'theme/logo.png')
+APP_LOGO = os.path.join(APP_ROOT, 'theme/logo.png')
 DEFAULT_AVATER = os.path.join(APP_ROOT, 'theme/user_logo_64x64.png')
 BUBLE = os.path.join(APP_ROOT, 'theme/buble.png')
 DATABASE = os.path.join(DATA_ROOT, 'db.sqlite')
