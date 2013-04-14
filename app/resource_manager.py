@@ -22,10 +22,15 @@ class ResourceManager:
         except:
             pass
         self.resource = {}
-        self.opener = urllib.request.FancyURLopener(proxy)
         
-    def setProxy(self, proxy):
-        self.opener = urllib.request.FancyURLopener(proxy)
+        # Make a copy of proxy dict
+        self.setProxy(dict(proxy))
+        
+    def setProxy(self, proxy={}):
+        for k,v in proxy.items():
+            if not v.startswith('http'):
+                proxy[k] = ''.join(('http://', v))
+        self.opener = urllib.request.URLopener(proxy)
         
     def get(self, url, report_hook=None):
         '''

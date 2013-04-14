@@ -126,6 +126,18 @@ class WebView(QDialog):
         self.callback_url = callback_url
         self.redirected_url = QUrl()
         
+        global_proxy = json.loads(config_manager.getParameter('Proxy'))
+        if len(global_proxy.keys()) != 0:
+            proxy_string = global_proxy['http']
+            (host_name, port) = proxy_string.rsplit(':', 1)
+            #host_name = host_name.split('://')[-1]
+            
+            proxy = QNetworkProxy()
+            proxy.setType(QNetworkProxy.HttpProxy)
+            proxy.setHostName(host_name)
+            proxy.setPort(int(port))
+            QNetworkProxy.setApplicationProxy(proxy)
+        
         self.setupUI()
         self.connect(self.web, SIGNAL('urlChanged (const QUrl&)'), self.onUrlChange)
         
@@ -228,18 +240,6 @@ class AccountOptionWidget(QWidget):
         '''
         @param service: string. Service name
         '''
-        global_proxy = json.loads(config_manager.getParameter('Proxy'))
-        if len(global_proxy.keys()) != 0:
-            proxy_string = global_proxy['http']
-            (host_name, port) = proxy_string.rsplit(':', 1)
-            host_name = host_name.split('://')[-1]
-            
-            proxy = QNetworkProxy()
-            proxy.setType(QNetworkProxy.HttpProxy)
-            proxy.setHostName(host_name)
-            proxy.setPort(int(port))
-            QNetworkProxy.setApplicationProxy(proxy)
-        
         # Visit authorize url and get redirected url.
         plugin_class = plugin.plugins[service].Plugin
         url = plugin_class.getAuthorize()

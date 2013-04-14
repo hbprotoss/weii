@@ -56,8 +56,18 @@ class AbstractPlugin():
         self.proxy = proxy
         self.new_time_format = '%Y-%m-%d %H:%M:%S'
         
+        log.debug(self)
+        
+    def __str__(self):
+        return '''uid:{uid}; username:{username}; access_token:{access_token}; data:{data}; proxy={proxy}
+        '''.format(uid=self.uid, username=self.username, access_token=self.access_token,
+                   data=self.data, proxy=self.proxy)
+        
     def setProxy(self, http, https):
         self.proxy = {'http': http, 'https': https}
+        log.info('uid({uid}, username({username}) sets proxy to {proxy})'.format(
+            uid=self.uid, username=self.username, proxy=self.proxy)
+        )
         
     def getData(self, url, data=None, header={}):
         '''
