@@ -69,9 +69,16 @@ class AbstractPlugin():
         
     def setProxy(self, http, https):
         self.proxy = {'http': http, 'https': https}
+        if not http:
+            del self.proxy['http']
+        if not https:
+            del self.proxy['https']
         log.info('uid({uid}, username({username}) sets proxy to {proxy})'.format(
             uid=self.uid, username=self.username, proxy=self.proxy)
         )
+        
+    def getProxy(self):
+        return dict(self.proxy)
         
     def getData(self, url, data=None, header={}):
         '''

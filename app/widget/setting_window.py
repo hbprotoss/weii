@@ -275,21 +275,21 @@ class SingleAccountWidget(QWidget):
         self.account = account
         
         self.setupUI()
-        # Proxy changed
-        self.connect(self.CheckBox_proxy, SIGNAL('stateChanged (int)'), self.onStateChanged_checkbox)
-        # Delete account
+        
+        # Delete button
         self.connect(self.btn_delete, SIGNAL('clicked()'), self.onClicked_BtnDelete)
+        # Apply button
+        self.connect(self.btn_apply, SIGNAL('clicked()'), self.onClicked_BtnApply)
         
         # Set proxy initial state
         if 'https' in self.account.plugin.proxy:
-            self.CheckBox_proxy.setCheckState(Qt.Checked)
+            self.group_proxy.setChecked(True)
             proxy = self.account.plugin.proxy['https'].split('://')[-1]
             host, port = proxy.split(':')
             self.edit_host.setText(host)
             self.edit_port.setText(port)
         else:
-            self.CheckBox_proxy.setCheckState(Qt.Unchecked)
-            self.onStateChanged_checkbox(Qt.Unchecked)
+            self.group_proxy.setChecked(False)
         
     def setupUI(self):
         vbox = QVBoxLayout()
@@ -297,11 +297,11 @@ class SingleAccountWidget(QWidget):
         self.setLayout(vbox)
         
         # Proxy setting
-        self.CheckBox_proxy = QCheckBox('设置代理')
-        self.CheckBox_proxy.setCheckState(Qt.Checked)
-        vbox.addWidget(self.CheckBox_proxy)
+        self.group_proxy = QGroupBox('设置代理')
+        self.group_proxy.setCheckable(True)
+        vbox.addWidget(self.group_proxy)
         
-        proxy_layout = QHBoxLayout()
+        proxy_layout = QHBoxLayout(self.group_proxy)
         vbox.addLayout(proxy_layout)
         label_host = QLabel('服务器:')
         label_host.setStyleSheet('margin-left: 10px')
@@ -314,7 +314,6 @@ class SingleAccountWidget(QWidget):
         self.edit_port = QLineEdit()
         proxy_layout.addWidget(self.edit_port)
         
-        
         vbox.addStretch()
         
         # Bottom button
@@ -326,13 +325,12 @@ class SingleAccountWidget(QWidget):
         self.btn_apply = QPushButton('应用')
         button_layout.addWidget(self.btn_apply)
         
-    def onStateChanged_checkbox(self, checked):
-        if checked:
-            self.edit_host.setEnabled(True)
-            self.edit_port.setEnabled(True)
-        else:
-            self.edit_host.setEnabled(False)
-            self.edit_port.setEnabled(False)
-            
     def onClicked_BtnDelete(self):
-        account_manager.deleteAccount(self.account)
+        if QMessageBox.question(self, '警告', '您确定要删除账户吗？', QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
+            account_manager.deleteAccount(self.account)
+            
+    def onClicked_BtnApply(self):
+        if self.group_proxy.isChecked():
+            self.account.setProxy(self.edit_host.text(), self.edit_port.text())
+        else:
+            self.account.setProxy('', '')

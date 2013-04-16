@@ -61,10 +61,12 @@ class Account:
         return rtn
     
     def setProxy(self, host, port):
-        # TODO: setProxy
-        proxy = ''.join(('http://', host, ':', port))
+        if host and port:
+            proxy = ':'.join((host, port))
+        else:
+            proxy = ''
         self.plugin.setProxy(proxy, proxy)
-        pass
+        database_manager.setProxy(self.plugin.uid, self.plugin.service, json.dumps(self.plugin.getProxy()))
     
 # Internal
 def dummyInitAccount():

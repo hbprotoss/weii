@@ -48,3 +48,8 @@ def deleteAccount(uid, service):
     cursor = connection.cursor()
     cursor.execute("delete from Accounts where id = ? and service = ?", (uid, service))
     connection.commit()
+    
+def setProxy(uid, service, proxy):
+    cursor = connection.cursor()
+    cursor.execute("update Accounts set proxy=? where id=? and service=?", (proxy, uid, service))
+    connection.commit()
