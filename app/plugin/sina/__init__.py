@@ -144,7 +144,7 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
-    def getMentions(self, max_point=None, count=20, page=1):
+    def getMentionTimeline(self, max_point=None, count=20, page=1):
         url = 'https://api.weibo.com/2/statuses/mentions.json?%s'
         params = {
             'access_token': self.access_token,
@@ -158,7 +158,7 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
-    def getComment(self, max_point=None, count=20, page=1):
+    def getCommentTimeline(self, max_point=None, count=20, page=1):
         url = 'https://api.weibo.com/2/comments/timeline.json?%s'
         params = {
             'access_token': self.access_token,
@@ -289,10 +289,10 @@ class Plugin(AbstractPlugin):
     
     @staticmethod
     def getAuthorize():
-        return authorize_url
+        return authorize_url, ''
     
     @staticmethod
-    def getAccessToken(url):
+    def getAccessToken(url, data):
         code = url.rsplit('=', 1)[-1]
         data_dict = {
             'client_id': KEY,

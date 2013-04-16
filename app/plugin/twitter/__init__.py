@@ -10,12 +10,16 @@ import collections
 import base64
 
 from app.plugin import *
+from app import config_manager
+
+DataStruct = collections.namedtuple('DataStruct', ['oauth_signature', 'oauth_nonce', 'oauth_timestamp'])
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONSUMER_KEY = 'qKtlaEopAyp5wUdljmmlBg'
 CONSUMER_SECRET = 'CILHlKVjMF6eoMwIrt3L3a2X00vXXunvM1gDaezYGc'
+redirect_uri = 'https://api.weibo.com/oauth2/default.html'
+authorize_url = 'https://api.twitter.com/oauth/authorize?oauth_token=%s'
 
-DataStruct = collections.namedtuple('DataStruct', ['oauth_signature', 'oauth_nonce', 'oauth_timestamp'])
 
 class Plugin(AbstractPlugin):
     '''
@@ -28,9 +32,8 @@ class Plugin(AbstractPlugin):
     def __init__(self, id, username, access_token, data, proxy):
         super(Plugin, self).__init__(id, username, access_token, data, proxy)
         
-        res = json.loads(data)
-        self.access_token = res['access_token']
-        self.access_token_secret = res['access_token_secret']
+        self.access_token = access_token
+        self.access_token_secret = data
         self.app_params = {
             'oauth_consumer_key':CONSUMER_KEY,
             'oauth_token':self.access_token,
@@ -65,51 +68,8 @@ class Plugin(AbstractPlugin):
         tweet['user']['avatar_large'] = self.__transferAvatar(tweet['user']['profile_image_url'])
         return tweet
         
-    def calcSignature(self, method, url, params=None):
-        '''
-        @param method: string. Upper case name of method.
-        @param url: string. Raw url string without UrlEncoding.
-        @param params: dict. Both key and value are raw string without UrlEncoding.
-        @return: string. Signature.
-        '''
-        d = dict(self.app_params)
-        if params:
-            d.update(params)
-        query = urllib.parse.urlsplit(url).query
-        if query:
-            d.update(urllib.parse.parse_qsl(query))
-        time_and_nonce = str(int(time.time()))
-        d['oauth_timestamp'] = time_and_nonce
-        d['oauth_nonce'] = time_and_nonce
-#        d['oauth_timestamp'] = '1318622958'
-#        d['oauth_nonce'] = 'kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg'
-        
-        encoded_list = [(urllib.parse.quote(k), urllib.parse.quote(v))
-                        for k,v in d.items()
-                        ]
-        encoded_list.sort(key=lambda x:x[0])
-        parameter_string = ''.join((encoded_list[0][0], '=', encoded_list[0][1]))
-        for item in encoded_list[1:]:
-            parameter_string += ''.join(('&', item[0], '=', item[1]))
-            
-        base_string = ''.join(
-            (method.upper(), '&',
-             urllib.parse.quote_plus(url.split('?', 1)[0]), '&',
-             urllib.parse.quote_plus(parameter_string))
-        )
-        signing_key = ''.join(
-            (urllib.parse.quote(CONSUMER_SECRET),
-             '&',
-             urllib.parse.quote(self.access_token_secret))
-        )
-        hashed = hmac.new(signing_key.encode('utf-8'), base_string.encode('utf-8'), hashlib.sha1)
-        binary_signature = hashed.digest()
-        signature = base64.b64encode(binary_signature).decode('utf-8')
-        
-        return DataStruct._make((signature, d['oauth_nonce'], d['oauth_timestamp']))
-    
     def getHeader(self, method, url, params=None):
-        data = self.calcSignature(method, url, params)
+        data = self.calcSignature(self.access_token, self.access_token_secret, method, url, params)
         oauth_string = self.oauth_header.format(
             oauth_signature = urllib.parse.quote_plus(data.oauth_signature),
             oauth_nonce = data.oauth_nonce,
@@ -163,3 +123,131 @@ class Plugin(AbstractPlugin):
     @staticmethod
     def getEmotionExpression():
         return ('', '')
+    
+    ####################################################
+    # OAuth interface
+    @staticmethod
+    def calcSignature(access_token, access_token_secret, method, url, params=None):
+        '''
+        @param method: string. Upper case name of method.
+        @param url: string. Raw url string without UrlEncoding.
+        @param params: dict. Both key and value are raw string without UrlEncoding.
+        @return: string. Signature.
+        '''
+        app_params = {
+            'oauth_consumer_key':CONSUMER_KEY,
+            'oauth_token':access_token,
+            'oauth_version':'1.0',
+            'oauth_signature_method':'HMAC-SHA1'
+        }
+        d = dict(app_params)
+        if params:
+            d.update(params)
+        query = urllib.parse.urlsplit(url).query
+        if query:
+            d.update(urllib.parse.parse_qsl(query))
+        time_and_nonce = str(int(time.time()))
+        d['oauth_timestamp'] = time_and_nonce
+        d['oauth_nonce'] = time_and_nonce
+#        d['oauth_timestamp'] = '1318622958'
+#        d['oauth_nonce'] = 'kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg'
+        
+        encoded_list = [(urllib.parse.quote(k), urllib.parse.quote(v))
+                        for k,v in d.items()
+                        ]
+        encoded_list.sort(key=lambda x:x[0])
+        parameter_string = '='.join(encoded_list[0])
+        for item in encoded_list[1:]:
+            parameter_string += ''.join(('&', item[0], '=', item[1]))
+            
+        base_string = ''.join(
+            (method.upper(), '&',
+             urllib.parse.quote_plus(url.split('?', 1)[0]), '&',
+             urllib.parse.quote_plus(parameter_string))
+        )
+        signing_key = ''.join(
+            (urllib.parse.quote(CONSUMER_SECRET),
+             '&',
+             urllib.parse.quote(access_token_secret))
+        )
+        hashed = hmac.new(signing_key.encode('utf-8'), base_string.encode('utf-8'), hashlib.sha1)
+        binary_signature = hashed.digest()
+        signature = base64.b64encode(binary_signature).decode('utf-8')
+        
+        return DataStruct._make((signature, d['oauth_nonce'], d['oauth_timestamp']))
+    
+    @staticmethod
+    def getCallbackUrl():
+        return redirect_uri
+    
+    @staticmethod
+    def getAuthorize():
+        time_and_nonce = str(int(time.time()))
+        d = {
+            'oauth_consumer_key': CONSUMER_KEY,
+            'oauth_signature_method': 'HMAC-SHA1',
+            'oauth_timestamp': time_and_nonce,
+            'oauth_nonce': time_and_nonce,
+            'oauth_version': '1.0',
+            #'oauth_callback':redirect_uri
+        }
+        url = 'https://api.twitter.com/oauth/request_token'
+        encoded_list = [(urllib.parse.quote(k), urllib.parse.quote(v))
+                        for k,v in d.items()
+                        ]
+        encoded_list.sort(key=lambda x:x[0])
+        params_string = '='.join(encoded_list[0])
+        for item in encoded_list[1:]:
+            params_string += ''.join(('&', item[0], '=', item[1]))
+        base_string = ''.join(
+            ('GET&',
+             urllib.parse.quote_plus(url), '&',
+             urllib.parse.quote_plus(params_string, safe='%'))
+        )
+        signing_key = ''.join(
+            (urllib.parse.quote(CONSUMER_SECRET),
+             '&')
+        )
+        signature = base64.b64encode(hmac.new(signing_key.encode('utf-8'), base_string.encode('utf-8'), hashlib.sha1).digest()).decode('utf-8')
+        
+        # Request token
+        #del d['oauth_callback']
+        d['oauth_signature'] = signature
+        req = urllib.request.Request(''.join((url, '?', urllib.parse.urlencode(d))))
+        proxy = json.loads(config_manager.getParameter('Proxy'))
+        for proxy_type,url in proxy.items():
+            req.set_proxy(url, proxy_type)
+        f = urllib.request.urlopen(req)
+        response = f.read().decode('utf-8')
+        log.debug(response)
+        
+        # Parse response from server
+        parsed_res = {item[0]:item[1] for item in (seg.split('=') for seg in response.split('&'))}
+        log.debug(parsed_res)
+        return 'https://api.twitter.com/oauth/authenticate?oauth_token='+parsed_res['oauth_token'], parsed_res['oauth_token_secret']
+    
+    @staticmethod
+    def getAccessToken(url, data):
+        query = url.rsplit('?', 1)[-1]
+        # oauth_token, oauth_verifier
+        params = {item[0]:item[1] for item in (seg.split('=') for seg in query.split('&'))}
+        params['oauth_token_secret'] = data
+        # oauth_signature, oauth_nonce, oauth_timestamp
+        signature, nonce, timestamp = Plugin.calcSignature(params['oauth_token'], params['oauth_token_secret'], 'GET', url)
+        params['oauth_signature'] = signature
+        params['oauth_nonce'] = nonce
+        params['oauth_timestamp'] = timestamp
+        
+        params['oauth_signature_method'] = 'HMAC-SHA1'
+        params['oauth_version'] = '1.0'
+        
+        url = 'https://api.twitter.com/oauth/access_token?%s' % urllib.parse.urlencode(params)
+        log.debug(url)
+        
+        return (url, None, {})
+    
+    @staticmethod
+    def parseData(data):
+        res = {item[0]:item[1] for item in (seg.split('=') for seg in data.split('&'))}
+        log.debug(res)
+        return (res['oauth_token'], res['oauth_token_secret'])

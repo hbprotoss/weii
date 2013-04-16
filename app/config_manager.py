@@ -7,22 +7,28 @@ from app import constant
 from app import misc
 
 SECTION = 'Global Config'
+PROXY = 'Proxy'
 
 parser = misc.ConfParser()
 
 def initConfig():
+    initValue()
     parser.read(constant.GLOBAL_CONFIG)
     
     # New configuration
-    if not parser.has_section(SECTION):
-        parser.add_section(SECTION)
-        parser.set(SECTION, 'Proxy', json.dumps({}))
+#    if not parser.has_section(SECTION):
+#        parser.add_section(SECTION)
+#        parser.set(SECTION, 'Proxy', json.dumps({}))
         
     # Write back at exit
     try:
         atexit.register(parser.write, open(constant.GLOBAL_CONFIG, 'r+'))
     except IOError:
         atexit.register(parser.write, open(constant.GLOBAL_CONFIG, 'w'))
+        
+def initValue():
+    parser[SECTION] = {}
+    parser[SECTION][PROXY] = json.dumps({})
 
 initConfig()
     
