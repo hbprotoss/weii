@@ -136,6 +136,38 @@ class Plugin(AbstractPlugin):
                 self._transferTweet(tweet['retweeted_status'])
                 
         return rtn
+    
+    def getUnreads(self):
+        '''
+        Twitter does not support whether a tweet is unread officially
+        '''
+        return {
+                'tweet': 0,
+                'follower': 0,
+                'comment': 0,
+                'mention': 0,
+                'private': 0
+                }
+        
+    def getCommentTimeline(self, max_point=None, count=20, page=1):
+        params = {
+            'count': count,
+            'page': page
+        }
+        if max_point and max_point[0] != 0:
+            params['max_id'] = max_point[0]
+            
+        url = 'https://api.twitter.com/1.1/statuses/retweets_of_me.json?%s' % urllib.parse.urlencode(params)
+        rtn_from_server = self.getData(url, None, self.getHeader('GET', url)).decode('utf-8')
+        rtn = json.loads(rtn_from_server)
+        
+        for tweet in rtn:
+            self._transferTweet(tweet)
+            if 'retweeted_status' in tweet:
+                self._transferTweet(tweet['retweeted_status'])
+                
+        log.debug(rtn)
+        return rtn
         
     def getEmotions(self):
         return {}

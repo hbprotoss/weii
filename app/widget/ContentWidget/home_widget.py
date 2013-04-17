@@ -21,7 +21,7 @@ class HomeWidget(abstract_widget.AbstractTweetContainer):
     def retrieveData(self, account_list, page=1, count=20):
         rtn = []
         for account in account_list:
-            log.debug(account.plugin)
+            #log.debug(account.plugin)
             tweet_list = account.plugin.getTimeline(max_point=(account.last_tweet_id, account.last_tweet_time),
                 page=page, count=count
             )

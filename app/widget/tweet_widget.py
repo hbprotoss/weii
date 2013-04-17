@@ -595,6 +595,8 @@ class TweetWidget(QWidget):
         v2.addWidget(self.response_widget)
         self.connect(self.response_widget, SIGNAL_SUCCESSFUL_RESPONSE, self.onSuccessfulResponse)
         
+        #v2.addStretch()
+        
     def renderUI(self):
         self.label_avatar.setCursor(QCursor(Qt.PointingHandCursor))
         if self.label_thumbnail:
