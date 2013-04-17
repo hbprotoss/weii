@@ -29,8 +29,8 @@ class Plugin(AbstractPlugin):
     service = 'twitter'
     service_icon = os.path.join(BASE_DIR, 'logo.jpg')
         
-    def __init__(self, id, username, access_token, data, proxy):
-        super(Plugin, self).__init__(id, username, access_token, data, proxy)
+    def __init__(self, uid, username, access_token, data, proxy):
+        super(Plugin, self).__init__(uid, username, access_token, data, proxy)
         
         self.access_token = access_token
         self.access_token_secret = data
@@ -51,21 +51,21 @@ class Plugin(AbstractPlugin):
         )
         
         # First initialization
-        if (id == '') and (username == ''):
+        if (uid == '') and (username == ''):
             url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
             rtn_from_server = self.getData(url, None, self.getHeader('GET', url)).decode('utf-8')
             res = json.loads(rtn_from_server)
             
-            self.id = res['id_str']
+            self.uid = res['id_str']
             self.username = res['name']
         
-    def __transferAvatar(self, url):
+    def _transferAvatar(self, url):
         return ''.join(url.split('_normal'))
     
-    def __transferTweet(self, tweet):
+    def _transferTweet(self, tweet):
         tweet['reposts_count'] = tweet['retweet_count']
         tweet['comments_count'] = 0
-        tweet['user']['avatar_large'] = self.__transferAvatar(tweet['user']['profile_image_url'])
+        tweet['user']['avatar_large'] = self._transferAvatar(tweet['user']['profile_image_url'])
         return tweet
         
     def getHeader(self, method, url, params=None):
@@ -95,26 +95,46 @@ class Plugin(AbstractPlugin):
             json_res = json.loads(rtn_from_server.decode())
             
             for tweet in json_res:
-                self.__transferTweet(tweet)
+                self._transferTweet(tweet)
                 if 'retweeted_status' in tweet:
-                    self.__transferTweet(tweet['retweeted_status'])
+                    self._transferTweet(tweet['retweeted_status'])
             
             return json_res
             
     def getUserInfo(self, id='', screen_name=''):
         params = {}
+        print(id)
         if id:
             params['user_id'] = id
         elif screen_name:
             params['screen_name'] = screen_name
         else:
-            params['user_id'] = self.id
+            params['user_id'] = self.uid
             
         url = 'https://api.twitter.com/1.1/users/show.json?%s' % urllib.parse.urlencode(params)
         rtn_from_server = self.getData(url, None, self.getHeader('GET', url, params))
         rtn = json.loads(rtn_from_server.decode())
-        rtn['avatar_large'] = self.__transferAvatar(rtn['profile_image_url'])
+        rtn['avatar_large'] = self._transferAvatar(rtn['profile_image_url'])
         
+        return rtn
+    
+    def getMentionTimeline(self, max_point=None, count=20, page=1):
+        params = {
+            'count': count,
+            'page': page
+        }
+        if max_point and max_point[0] != 0:
+            params['max_id'] = max_point[0]
+            
+        url = 'https://api.twitter.com/1.1/statuses/mentions_timeline.json?%s' % urllib.parse.urlencode(params)
+        rtn_from_server = self.getData(url, None, self.getHeader('GET', url)).decode('utf-8')
+        rtn = json.loads(rtn_from_server)
+        
+        for tweet in rtn:
+            self._transferTweet(tweet)
+            if 'retweeted_status' in tweet:
+                self._transferTweet(tweet['retweeted_status'])
+                
         return rtn
         
     def getEmotions(self):
