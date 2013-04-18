@@ -8,7 +8,7 @@ from PyQt4.QtGui import *
 from app import account_manager, theme_manager
 from app import logger
 from app import easy_thread
-from app.plugin import weiBaseException
+from app.plugin import weiBaseException, weiUnknownError
 
 SIGNAL_SELECTED = SIGNAL('selected')
 SIGNAL_UNSELECTED = SIGNAL('unselected')
@@ -135,13 +135,17 @@ class NewTweetWindow(QDialog):
         self.btn_upload_pic.setPixmap(QPixmap(theme_manager.getParameter(theme_manager.SKIN, 'upload-pic')))
         self.thumbnail.hide()
     
-    def updateUI(self, tweet_object):
+    def updateUI(self, tweet_list):
         self.btn_send.setEnabled(True)
         self.btn_send.setText('发送')
         
-        if 'error' in tweet_object:
-            QMessageBox.critical(self, '错误', tweet_object['error'])
-        else:
+        error = False
+        for tweet in tweet_list:
+            if 'error' in tweet:
+                error = True
+                QMessageBox.critical(self, '错误', tweet['error'])
+                
+        if not error:
             self.editor.clear()
             self.close()
         
@@ -155,16 +159,16 @@ class NewTweetWindow(QDialog):
         return list(self.selected_accounts)
     
     def sendTweet(self, accounts, text, pic):
-        rtn = {}
-        try:
-            for account in accounts:
-                rtn = account.plugin.sendTweet(text, pic)
-                log.debug(rtn)
-        except weiBaseException as e:
-            log.error(e)
-            rtn['error'] = str(e)
-        finally:
-            return (rtn, ), {}
+        rtn = []
+        for account in accounts:
+            try:
+                tweet = account.plugin.sendTweet(text, pic)
+                log.debug(tweet)
+                rtn.append(tweet)
+            except weiBaseException as e:
+                log.error(e)
+                rtn.append({'error': '%s: %s' % (account.plugin.service ,str(e))})
+        return (rtn, ), {}
     
     def onClicked_BtnSend(self):
         text = self.editor.toPlainText()

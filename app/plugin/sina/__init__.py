@@ -196,7 +196,7 @@ class Plugin(AbstractPlugin):
     def sendTweet(self, text, pic=None):
         params = {
             'access_token': self.access_token,
-            'status': urllib.parse.quote(text)
+            'status': text
         }
         if pic:
             url = 'https://upload.api.weibo.com/2/statuses/upload.json'
@@ -205,7 +205,7 @@ class Plugin(AbstractPlugin):
             headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary}
         else:
             url = 'https://api.weibo.com/2/statuses/update.json'
-            encoded_params = urllib.parse.urlencode(params, safe='%').encode('utf-8')
+            encoded_params = urllib.parse.urlencode(params).encode('utf-8')
             headers = {}
             
         #log.debug(encoded_params)

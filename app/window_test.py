@@ -11,10 +11,7 @@ from app.widget import *
 
 app = QApplication(sys.argv)
 
-try:
-    instance = new_tweet_window.NewTweetWindow()
-    instance.show()
-except Exception as e:
-    print(e)
+instance = new_tweet_window.NewTweetWindow()
+instance.show()
 
 app.exec()

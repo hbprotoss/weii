@@ -95,8 +95,8 @@ class AbstractPlugin():
         @return: bytes.
         '''
         req = urllib.request.Request(url, data, header)
-        for proxy_type, url in self.proxy.items():
-            req.set_proxy(url, proxy_type)
+        for proxy_type, proxy_url in self.proxy.items():
+            req.set_proxy(proxy_url, proxy_type)
         f = urllib.request.urlopen(req)
         return f.read()
     
