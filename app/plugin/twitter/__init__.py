@@ -20,6 +20,28 @@ CONSUMER_SECRET = 'CILHlKVjMF6eoMwIrt3L3a2X00vXXunvM1gDaezYGc'
 redirect_uri = 'https://api.weibo.com/oauth2/default.html'
 authorize_url = 'https://api.twitter.com/oauth/authorize?oauth_token=%s'
 
+def twitterMethod(func):
+    '''
+    Decorator to handle error returned by twitter
+    '''
+    def func_wrapper(*args, **kwargs):
+        try:
+            raw_rtn = func(*args, **kwargs)
+        except urllib.error.HTTPError as e:
+            if e.fp:
+                # Twitter app error
+                error_msg = json.loads(e.fp.read().decode('utf-8'))['errors'][0]
+                raise weiBaseException('%d: %s' % (error_msg['code'], error_msg['message']))
+            else:
+                # Network error
+                raise weiNetworkError(str(e))
+        except urllib.error.URLError:
+            raise weiNetworkError(str(e))
+        except urllib.error.ContentTooShortError:
+            raise weiNetworkError(str(e))
+        else:
+            return raw_rtn
+    return func_wrapper
 
 class Plugin(AbstractPlugin):
     '''
@@ -77,6 +99,7 @@ class Plugin(AbstractPlugin):
         )
         return {'Authorization':oauth_string}
     
+    @twitterMethod
     def getTimeline(self, id=None, max_point=None, count=20, page=1):
         rtn = None
         if id:
@@ -101,6 +124,7 @@ class Plugin(AbstractPlugin):
             
             return json_res
             
+    @twitterMethod
     def getUserInfo(self, id='', screen_name=''):
         params = {}
         print(id)
@@ -118,6 +142,7 @@ class Plugin(AbstractPlugin):
         
         return rtn
     
+    @twitterMethod
     def getMentionTimeline(self, max_point=None, count=20, page=1):
         params = {
             'count': count,
@@ -137,6 +162,7 @@ class Plugin(AbstractPlugin):
                 
         return rtn
     
+    @twitterMethod
     def getUnreads(self):
         '''
         Twitter does not support whether a tweet is unread officially
@@ -148,7 +174,8 @@ class Plugin(AbstractPlugin):
                 'mention': 0,
                 'private': 0
                 }
-        
+    
+    @twitterMethod
     def getCommentTimeline(self, max_point=None, count=20, page=1):
         params = {
             'count': count,
@@ -169,6 +196,7 @@ class Plugin(AbstractPlugin):
         log.debug(rtn)
         return rtn
     
+    @twitterMethod
     def sendTweet(self, text, pic=None):
         params = {
             'status': text
@@ -186,6 +214,7 @@ class Plugin(AbstractPlugin):
             
         return rtn
         
+    @twitterMethod
     def sendComment(self, original_tweet, text, if_repost=False):
         # if_repost is ignored in twitter
         tid = original_tweet['id']
@@ -203,7 +232,12 @@ class Plugin(AbstractPlugin):
         log.debug(rtn)
         
         return rtn
+    
+    def sendRecomment(self, original_comment, text, if_repost=False):
+        # if_repost is ignored by twitter
+        return self.sendComment(original_comment, text)
         
+    @twitterMethod
     def sendRetweet(self, original_tweet, text, if_comment=False):
         # if_comment and text are ignored by twitter
         params = {
@@ -268,7 +302,7 @@ class Plugin(AbstractPlugin):
              urllib.parse.quote_plus(url.split('?', 1)[0]), '&',
              urllib.parse.quote(parameter_string, safe=''))
         )
-        log.debug(base_string)
+        log.debug('base string: %s' % base_string)
         signing_key = ''.join(
             (urllib.parse.quote(CONSUMER_SECRET),
              '&',
