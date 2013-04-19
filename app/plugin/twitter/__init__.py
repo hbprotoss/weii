@@ -189,11 +189,11 @@ class Plugin(AbstractPlugin):
     def sendComment(self, original_tweet, text, if_repost=False):
         # if_repost is ignored in twitter
         tid = original_tweet['id']
+        username = original_tweet['user']['screen_name']
         params = {
-            'status': text,
+            'status': ''.join(('@', username, ' ', text)),
             'in_reply_to_status_id': str(tid)
         }
-        print(params)
         url = 'https://api.twitter.com/1.1/statuses/update.json'
         rtn_from_server = self.getData(url,
             urllib.parse.urlencode(params).encode('utf-8'),
@@ -234,12 +234,12 @@ class Plugin(AbstractPlugin):
         if query:
             d.update(urllib.parse.parse_qsl(query))
         time_and_nonce = str(int(time.time()))
-        d['oauth_timestamp'] = time_and_nonce
-        d['oauth_nonce'] = time_and_nonce
-#        d['oauth_timestamp'] = '1318622958'
-#        d['oauth_nonce'] = 'kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg'
+#        d['oauth_timestamp'] = time_and_nonce
+#        d['oauth_nonce'] = time_and_nonce
+        d['oauth_nonce'] = '71b6b8fec4482e3d4605385c33368114'
+        d['oauth_timestamp'] = '1366340409'
         
-        encoded_list = [(urllib.parse.quote(k), urllib.parse.quote(v))
+        encoded_list = [(urllib.parse.quote(k, safe=''), urllib.parse.quote(v, safe=''))
                         for k,v in d.items()
                         ]
         encoded_list.sort(key=lambda x:x[0])
@@ -250,8 +250,9 @@ class Plugin(AbstractPlugin):
         base_string = ''.join(
             (method.upper(), '&',
              urllib.parse.quote_plus(url.split('?', 1)[0]), '&',
-             urllib.parse.quote_plus(parameter_string))
+             urllib.parse.quote(parameter_string, safe=''))
         )
+        #print(base_string)
         signing_key = ''.join(
             (urllib.parse.quote(CONSUMER_SECRET),
              '&',

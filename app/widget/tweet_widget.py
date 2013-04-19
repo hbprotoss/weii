@@ -11,6 +11,7 @@ from app import misc
 from app import easy_thread
 from app.widget import picture_viewer
 from app.plugin import weiBaseException
+import urllib
 
 log = logger.getLogger(__name__)
 
@@ -161,7 +162,9 @@ class ResponseWidget(QGroupBox):
         self.edit.clear()
         self.checkBox.setChecked(False)
         
-        if 'error' not in tweet_object:
+        if 'error' in tweet_object:
+            QMessageBox.critical(self, '错误', tweet_object['error'])
+        else:
             # If successful, emit signal to notify TweetWidget to increase the
             # corresponding message counter.
             self.emit(SIGNAL_SUCCESSFUL_RESPONSE, self.widget_type)
