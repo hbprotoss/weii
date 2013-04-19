@@ -30,8 +30,12 @@ def twitterMethod(func):
         except urllib.error.HTTPError as e:
             if e.fp:
                 # Twitter app error
-                error_msg = json.loads(e.fp.read().decode('utf-8'))['errors'][0]
-                raise weiBaseException('%d: %s' % (error_msg['code'], error_msg['message']))
+                error_msg = json.loads(e.fp.read().decode('utf-8'))['errors']
+                log.error(error_msg)
+                if isinstance(error_msg, list):
+                    raise weiBaseException('%s: %s' % (str(error_msg[0]['code']), error_msg[0]['message']))
+                else:
+                    raise weiBaseException(error_msg)
             else:
                 # Network error
                 raise weiNetworkError(str(e))
@@ -127,7 +131,7 @@ class Plugin(AbstractPlugin):
     @twitterMethod
     def getUserInfo(self, id='', screen_name=''):
         params = {}
-        print(id)
+        #print(id)
         if id:
             params['user_id'] = id
         elif screen_name:

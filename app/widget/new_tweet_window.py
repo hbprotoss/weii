@@ -135,15 +135,15 @@ class NewTweetWindow(QDialog):
         self.btn_upload_pic.setPixmap(QPixmap(theme_manager.getParameter(theme_manager.SKIN, 'upload-pic')))
         self.thumbnail.hide()
     
-    def updateUI(self, tweet_list):
+    def updateUI(self, result_list):
         self.btn_send.setEnabled(True)
         self.btn_send.setText('发送')
         
         error = False
-        for tweet in tweet_list:
+        for account, tweet in result_list:
             if 'error' in tweet:
                 error = True
-                QMessageBox.critical(self, '错误', tweet['error'])
+                QMessageBox.critical(self, account.plugin.service, tweet['error'])
                 
         if not error:
             self.editor.clear()
@@ -164,10 +164,10 @@ class NewTweetWindow(QDialog):
             try:
                 tweet = account.plugin.sendTweet(text, pic)
                 log.debug(tweet)
-                rtn.append(tweet)
+                rtn.append((account, tweet))
             except weiBaseException as e:
                 log.error(e)
-                rtn.append({'error': '%s: %s' % (account.plugin.service ,str(e))})
+                rtn.append((account, {'error': '%s' % str(e)}))
         return (rtn, ), {}
     
     def onClicked_BtnSend(self):

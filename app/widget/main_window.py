@@ -17,6 +17,7 @@ from app.widget.ContentWidget import *
 
 log = logger.getLogger(__name__)
 
+# TODO: round-corner tooltip
 MainWindow_QSS = '''
 MainWindow {
     background-color:%s;
@@ -193,8 +194,10 @@ class MainWindow( QDialog ):
         h111.addStretch()
 
         self.send = icon_button.IconButton(self)
+        self.send.setToolTip('新消息')
         h111.addWidget( self.send )
         self.refresh = icon_button.IconButton(self)
+        self.refresh.setToolTip('刷新')
         h111.addWidget( self.refresh )
 
         # Lower
@@ -204,19 +207,26 @@ class MainWindow( QDialog ):
         v21 = QVBoxLayout()
         h2.addLayout( v21 )
         self.home = icon_button.IconButton(self)
+        self.home.setToolTip('主页')
         v21.addWidget( self.home )
         self.at = icon_button.IconButton(self)
+        self.at.setToolTip('AT')
         v21.addWidget( self.at )
         self.comment = icon_button.IconButton(self)
+        self.comment.setToolTip('评论')
         v21.addWidget( self.comment )
         self.private = icon_button.IconButton(self)
+        self.private.setToolTip('私信')
         v21.addWidget( self.private )
         self.profile = icon_button.IconButton(self)
+        self.profile.setToolTip('档案')
         v21.addWidget( self.profile )
         self.search = icon_button.IconButton(self)
+        self.search.setToolTip('搜索')
         v21.addWidget( self.search )
         v21.addStretch()
         self.setting = icon_button.IconButton(self)
+        self.setting.setToolTip('设置')
         v21.addWidget( self.setting )
 
         ## Scroll area

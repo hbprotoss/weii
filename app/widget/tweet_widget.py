@@ -163,7 +163,7 @@ class ResponseWidget(QGroupBox):
         self.checkBox.setChecked(False)
         
         if 'error' in tweet_object:
-            QMessageBox.critical(self, '错误', tweet_object['error'])
+            QMessageBox.critical(self, self.plugin.service, tweet_object['error'])
         else:
             # If successful, emit signal to notify TweetWidget to increase the
             # corresponding message counter.
