@@ -230,9 +230,11 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
-    def sendRecomment(self, original_tweet, text, if_repost=False):
-        tid = original_tweet['status']['id']
-        cid = original_tweet['id']
+    def sendRecomment(self, original_comment, text, if_repost=False):
+        # Original tweet id
+        tid = original_comment['status']['id']
+        # Original comment id
+        cid = original_comment['id']
         if if_repost:
             self.sendRetweet(tid, text, False)
             
