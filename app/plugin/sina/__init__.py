@@ -214,8 +214,8 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
-    def sendComment(self, tid, text, if_repost=False):
-        # TODO: if_repost
+    def sendComment(self, original_tweet, text, if_repost=False):
+        tid = original_tweet['id']
         if if_repost:
             self.sendRetweet(tid, text, False)
             
@@ -230,7 +230,9 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
-    def sendRecomment(self, tid, cid, text, if_repost=False):
+    def sendRecomment(self, original_tweet, text, if_repost=False):
+        tid = original_tweet['status']['id']
+        cid = original_tweet['id']
         if if_repost:
             self.sendRetweet(tid, text, False)
             
@@ -246,8 +248,8 @@ class Plugin(AbstractPlugin):
         return rtn
     
     @sinaMethod
-    def sendRetweet(self, tid, text, if_comment=False):
-        # TODO: if_comment
+    def sendRetweet(self, original_tweet, text, if_comment=False):
+        tid = original_tweet['id']
         # temporary code
         if len(text)> 140:
             text = text[:140]

@@ -186,6 +186,24 @@ class Plugin(AbstractPlugin):
             
         return rtn
         
+    def sendComment(self, original_tweet, text, if_repost=False):
+        # if_repost is ignored in twitter
+        tid = original_tweet['id']
+        params = {
+            'status': text,
+            'in_reply_to_status_id': str(tid)
+        }
+        print(params)
+        url = 'https://api.twitter.com/1.1/statuses/update.json'
+        rtn_from_server = self.getData(url,
+            urllib.parse.urlencode(params).encode('utf-8'),
+            self.getHeader('POST', url, params)
+        ).decode('utf-8')
+        rtn = json.loads(rtn_from_server)
+        log.debug(rtn)
+        
+        return rtn
+        
     def getEmotions(self):
         return {}
     

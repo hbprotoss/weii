@@ -166,28 +166,28 @@ class ResponseWidget(QGroupBox):
             # corresponding message counter.
             self.emit(SIGNAL_SUCCESSFUL_RESPONSE, self.widget_type)
         
-    def procSendComment(self, original_tweet, text, if_repost):
-        tweet_type = original_tweet['type']
+    def procSendComment(self, text, if_repost):
+        tweet_type = self.tweet['type']
         if if_repost:
             text = ''.join((text, '//@', self.tweet['user']['screen_name'], ': ', self.tweet['text']))
         try:
             if tweet_type == constant.TWEET:
-                rtn = self.plugin.sendComment(original_tweet['id'], text, if_repost)
+                rtn = self.plugin.sendComment(self.tweet, text, if_repost)
             elif tweet_type == constant.COMMENT:
-                rtn = self.plugin.sendRecomment(original_tweet['status']['id'], original_tweet['id'], text, if_repost)
+                rtn = self.plugin.sendRecomment(self.tweet, text, if_repost)
         except weiBaseException as e:
             rtn = {'error': str(e)}
         log.debug(rtn)
         return (rtn, ), {}
     
-    def procSendRetweet(self, original_tweet, text, if_comment):
-        tweet_type = original_tweet['type']
+    def procSendRetweet(self, text, if_comment):
+        tweet_type = self.tweet['type']
         try:
             if tweet_type == constant.TWEET:
-                tid = original_tweet['id']
+                tweet = self.tweet
             elif tweet_type == constant.COMMENT:
-                tid = original_tweet['status']['id']
-            rtn = self.plugin.sendRetweet(tid, text, if_comment)
+                tweet = self.tweet['status']
+            rtn = self.plugin.sendRetweet(tweet, text, if_comment)
         except weiBaseException as e:
             rtn = {'error': str(e)}
         log.debug(rtn)
@@ -201,14 +201,14 @@ class ResponseWidget(QGroupBox):
         log.debug('checkBox: %s' % self.checkBox.isChecked())
         if self.widget_type == ResponseWidget.COMMENT:
             easy_thread.start(self.procSendComment,
-                args=(self.tweet, text, self.checkBox.isChecked()),
+                args=(text, self.checkBox.isChecked()),
                 callback=self.updateUI
             )
         elif self.widget_type == ResponseWidget.REPOST:
             if 'retweeted_status' in self.tweet:
                 text = ''.join((text, '//@', self.tweet['user']['screen_name'], ': ', self.tweet['text']))
             easy_thread.start(self.procSendRetweet,
-                args=(self.tweet, text, self.checkBox.isChecked()),
+                args=(text, self.checkBox.isChecked()),
                 callback=self.updateUI
             )
         

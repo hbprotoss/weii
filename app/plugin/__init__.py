@@ -97,6 +97,7 @@ class AbstractPlugin():
         req = urllib.request.Request(url, data, header)
         for proxy_type, proxy_url in self.proxy.items():
             req.set_proxy(proxy_url, proxy_type)
+        #print(url, data, header)
         f = urllib.request.urlopen(req)
         return f.read()
     
@@ -300,45 +301,44 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def sendRetweet(self, tid, text, if_comment):
+    def sendRetweet(self, original_tweet, text, if_comment):
         '''
-        @param tid: string. ID of tweet to be retweeted.
+        @param original_tweet: tweet_object. Tweet to be retweeted.
         @param text: string. Text of retweet. Origin text. URLs aren't shortened. No URLEncoding.
         @param if_comment: bool. If comment while retweeting. True to comment. False not to comment.
         @return: Tweet object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def deleteTweet(self, tid):
+    def deleteTweet(self, original_tweet):
         '''
-        @param tid: string. ID of tweet to be deleted.
+        @param original_tweet: tweet_object. Tweet to be deleted.
         @return: Tweet object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def sendComment(self, tid, text, if_repost):
+    def sendComment(self, original_tweet, text, if_repost):
         '''
-        @param tid: string. ID of tweet to be commented.
+        @param original_tweet: tweet_ojbect.
         @param text: string. Text of comment. Origin text. URLs aren't shortened. No URLEncoding.
         @param if_repost: bool. If repost while commenting. True to repost. False not to repost.
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def sendRecomment(self, tid, cid, text, if_repost):
+    def sendRecomment(self, original_comment, text, if_repost):
         '''
         Comment a comment
-        @param tid: string. ID of tweet to be commented
-        @param cid: string. ID of comment to be commented
+        @param original_comment: comment_object. Comment to be commented
         @param text: string. Text of comment. Origin text. URLs aren't shortened. No URLEncoding.
         @param if_repost: bool. If repost while commenting. True to repost. False not to repost.
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError
     
-    def deleteComment(self, cid):
+    def deleteComment(self, original_comment):
         '''
-        @param cid: string. ID of comment to be deleted
+        @param original_comment: comment_object. Comment to be deleted
         @return: Comment object returned by server. See documentation
         '''
         raise NotImplementedError
@@ -352,9 +352,9 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def deletePrivate(self, tid):
+    def deletePrivate(self, original_dm):
         '''
-        @param tid: string. ID of private message to be deleted.
+        @param tid: dm_object. Private message to be deleted.
         @return: Private message object returned by server. See documentation
         '''
         raise NotImplementedError
