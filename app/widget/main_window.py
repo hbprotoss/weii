@@ -178,7 +178,7 @@ class MainWindow( QDialog ):
         self.account = QLabel(self)
         self.account.setObjectName( 'account' )
         self.account.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred ) )
-        self.account.setCursor( Qt.PointingHandCursor )
+        #self.account.setCursor( Qt.PointingHandCursor )
         v11.addWidget( self.account )
 
         # ## Lower
@@ -303,7 +303,6 @@ class MainWindow( QDialog ):
             QThread.sleep(60)
         
     def updateUnreads(self, unreads):
-        log.debug('updateUnreads %s' % unreads)
         self.home.setBuble(int(unreads['tweet']))
         self.at.setBuble(int(unreads['mention']))
         self.comment.setBuble(int(unreads['comment']))
