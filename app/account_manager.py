@@ -116,7 +116,7 @@ def initAccount():
 account_list = initAccount()
 # Mapping of username to Account object.
 # Special: all_accounts maps to the whole list.
-all_accounts = {account.plugin.username:[account] for account in account_list}
+all_accounts = {(account.plugin.service, account.plugin.username):[account] for account in account_list}
 all_accounts[ALL_ACCOUNTS] = account_list
 current_list = all_accounts[ALL_ACCOUNTS]
 
@@ -138,8 +138,8 @@ def getCurrentAccount():
     '''
     return list(current_list)
 
-def setCurrentAccount(username):
-    current_list = all_accounts[username]
+def setCurrentAccount(service, username):
+    current_list = all_accounts[(service, username)]
     
 def getAllAccount():
     return list(account_list)

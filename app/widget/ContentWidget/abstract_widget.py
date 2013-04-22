@@ -124,15 +124,19 @@ class AbstractTweetContainer(AbstractWidget):
                 account.last_tweet_time = tweet_list[0]['created_at']
                 
             for tweet in tweet_list:
-                dt = parser.parse(tweet['created_at'])
-                res = dt.astimezone(dateutil.tz.tzlocal())
-                tweet['created_at'] = time.mktime(res.timetuple())
+                created_at = tweet['created_at']
+                if created_at:
+                    dt = parser.parse(created_at)
+                    res = dt.astimezone(dateutil.tz.tzlocal())
+                    tweet['created_at'] = time.mktime(res.timetuple())
                 
                 if 'retweeted_status' in tweet:
                     retweet = tweet['retweeted_status']
-                    dt = parser.parse(retweet['created_at'])
-                    res = dt.astimezone(dateutil.tz.tzlocal())
-                    retweet['created_at'] = time.mktime(res.timetuple())
+                    created_at = retweet['created_at']
+                    if created_at:
+                        dt = parser.parse(retweet['created_at'])
+                        res = dt.astimezone(dateutil.tz.tzlocal())
+                        retweet['created_at'] = time.mktime(res.timetuple())
                 whole_list.append((account, tweet))
         
         whole_list.sort(key=lambda x:x[1]['created_at'], reverse=True)

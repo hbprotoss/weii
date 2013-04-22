@@ -560,7 +560,10 @@ class TweetWidget(QWidget):
                 
             h4 = QHBoxLayout()
             v3.addLayout(h4)
-            str_time = time.strftime(self.time_format, time.localtime(retweet['created_at']))
+            if retweet['created_at']:
+                str_time = time.strftime(self.time_format, time.localtime(retweet['created_at']))
+            else:
+                str_time = ''
             label_retweet_time = QLabel(str_time, self)
             self.btn_retweet_repost = TweetResponseButton('转发', retweet['reposts_count'], self)
             self.btn_retweet_comment = TweetResponseButton('评论', retweet['comments_count'], self)
@@ -583,7 +586,10 @@ class TweetWidget(QWidget):
         ## time, repost, comment
         h2 = QHBoxLayout()
         v2.addLayout(h2)
-        str_time = time.strftime(self.time_format, time.localtime(self.tweet['created_at']))
+        if self.tweet['created_at']:
+            str_time = time.strftime(self.time_format, time.localtime(self.tweet['created_at']))
+        else:
+            str_time = ''
         label_tweet_time = QLabel(str_time, self)
         self.btn_tweet_repost = TweetResponseButton('转发', self.tweet['reposts_count'], self)
         self.btn_tweet_comment = TweetResponseButton('评论', self.tweet['comments_count'], self)

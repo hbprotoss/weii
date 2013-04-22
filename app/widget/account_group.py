@@ -3,45 +3,67 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-SIGNAL_SELECTED = SIGNAL('selected')
-SIGNAL_UNSELECTED = SIGNAL('unselected')
-
-class AccountButton(QLabel):
-    '''
-    A button with two states: activated(display original image) and deactivated(greyscaled image)
-    '''
+class LabelButton(QLabel):
+    def __init__(self, *argv):
+        super(LabelButton, self).__init__(*argv)
+        self.setCursor(Qt.PointingHandCursor)
+        
+    def mouseReleaseEvent(self, ev):
+        self.emit(SIGNAL('clicked()'))
+        
+class AccountButton(LabelButton):
     def __init__(self, account, parent=None):
         super(AccountButton, self).__init__(parent)
         self.account = account
-        self.enabled = account.if_send
-        
-        self.pixmaps = [
-            # Greyscaled logo
-            QPixmap.fromImage(self.convertToGreyscale(account.service_icon)),
-            # Original logo
-            QPixmap.fromImage(account.service_icon)
-        ]
-        
-        self.setPixmap(self.pixmaps[int(self.enabled)])
-        self.setCursor(Qt.PointingHandCursor)
-        self.setToolTip(self.account.plugin.username)
-        
-    def convertToGreyscale(self, image):
-        '''
-        @param image: QImage. Original image
-        @return: QImage. Greyscaled image
-        '''
-        rtn = QImage(image)
-        for i in range(rtn.width()):
-            for j in range(rtn.height()):
-                grey = qGray(image.pixel(i, j))
-                rtn.setPixel(QPoint(i, j), qRgb(grey, grey, grey))
-        return rtn
         
     def mouseReleaseEvent(self, ev):
-        self.enabled = not self.enabled
-        self.setPixmap(self.pixmaps[int(self.enabled)])
-        if self.enabled:
-            self.emit(SIGNAL_SELECTED, self.account)
+        self.emit(SIGNAL('clicked'), self.account)
+            
+LEFT_ARROW = '◀'
+RIGHT_ARROW = '▶'
+ARROWS = [LEFT_ARROW, RIGHT_ARROW]
+class AccountGroup(QWidget):
+    '''
+    Widget to display available accounts. User can choose one of them exclusively.
+    '''
+    def __init__(self, parent=None):
+        super(AccountGroup, self).__init__(parent)
+        self.arrow_index = 0
+        self.accounts = {}
+        
+        self.setupUI()
+        self.connect(self.arrow, SIGNAL('clicked()'), self.onClicked_Arrow)
+    
+    def setupUI(self):
+        self.main_layout = QHBoxLayout()
+        self.arrow = LabelButton(ARROWS[self.arrow_index])
+        self.main_layout.addWidget(self.arrow)
+        
+        self.setLayout(self.main_layout)
+        
+    def addAccount(self, account):
+        '''
+        @param account: account_manager.Account ojbect
+        '''
+        acc = AccountButton(account)
+        acc.setPixmap(QPixmap.fromImage(account.service_icon))
+        acc.setToolTip(account.plugin.username)
+        self.main_layout.addWidget(acc)
+        self.accounts[account.plugin.username] = acc
+        if self.arrow_index == 0:
+            acc.hide()
+            
+        self.connect(acc, SIGNAL('clicked'), self.onClicked_Account)
+        
+    def onClicked_Arrow(self):
+        self.arrow_index = 1 - self.arrow_index
+        self.arrow.setText(ARROWS[self.arrow_index])
+        if self.arrow_index == 0:
+            for username, widget in self.accounts.items():
+                widget.hide()
         else:
-            self.emit(SIGNAL_UNSELECTED, self.account)
+            for username, widget in self.accounts.items():
+                widget.show()
+                
+    def onClicked_Account(self, account):
+        self.emit(SIGNAL('clicked'), account)
