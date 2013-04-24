@@ -79,7 +79,7 @@ class Plugin(AbstractPlugin):
     '''
     
     service = 'sina'
-    service_icon = os.path.join(BASE_DIR, 'logo.jpg')
+    service_icon = os.path.join(BASE_DIR, 'logo.png')
     
     def __init__(self, uid, username, access_token, data='', proxy={}):
         super(Plugin, self).__init__(uid, username, access_token, data, proxy)

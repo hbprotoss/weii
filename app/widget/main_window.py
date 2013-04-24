@@ -13,6 +13,7 @@ from app.widget import icon_button
 from app.widget import stacked_widget
 from app.widget import setting_window
 from app.widget import new_tweet_window
+from app.widget import account_group
 from app.widget.ContentWidget import *
 
 log = logger.getLogger(__name__)
@@ -115,10 +116,10 @@ class MainWindow( QDialog ):
         )
         
         # Start timer to check unreads message, every 60 seconds
-#        self.timer = QTimer()
-#        self.connect(self.timer, SIGNAL('timeout()'), self.checkUnreads)
-#        self.timer.start(60 * 1000)
         self.connect(self.button_to_widget[self.home], SIGNAL('refreshFinished'), self.onFirstRefresh)
+        
+        # Account group
+        self.connect(self.account_group, SIGNAL('clicked'), self.onClicked_AccountGroup)
     
     def initTab(self):
         '''
@@ -174,31 +175,41 @@ class MainWindow( QDialog ):
         v11 = QVBoxLayout()
         h1.addLayout( v11 )
 
-        # ## Upper, account
+        # ## Upper, account name
+        h21 = QHBoxLayout()
         self.account = QLabel(self)
         self.account.setObjectName( 'account' )
         self.account.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred ) )
         #self.account.setCursor( Qt.PointingHandCursor )
-        v11.addWidget( self.account )
+        h21.addWidget(self.account)
+        
+        h21.addStretch()
+        
+        # ## Upper, account group
+        self.account_group = account_group.AccountGroup()
+        for acc in account_manager.getAllAccount():
+            self.account_group.addAccount(acc)
+        h21.addWidget(self.account_group)
+        v11.addLayout(h21)
 
         # ## Lower
-        h111 = QHBoxLayout()
-        v11.addLayout( h111 )
+        h22 = QHBoxLayout()
+        v11.addLayout( h22 )
 
         self.fans = QLabel(self)
-        h111.addWidget( self.fans )
+        h22.addWidget( self.fans )
         self.following = QLabel(self)
-        h111.addWidget( self.following )
+        h22.addWidget( self.following )
         self.tweets = QLabel(self)
-        h111.addWidget( self.tweets )
-        h111.addStretch()
+        h22.addWidget( self.tweets )
+        h22.addStretch()
 
         self.send = icon_button.IconButton(self)
         self.send.setToolTip('新消息')
-        h111.addWidget( self.send )
+        h22.addWidget( self.send )
         self.refresh = icon_button.IconButton(self)
         self.refresh.setToolTip('刷新')
-        h111.addWidget( self.refresh )
+        h22.addWidget( self.refresh )
 
         # Lower
         h2 = QHBoxLayout()
@@ -275,17 +286,29 @@ class MainWindow( QDialog ):
             account = account_list[0]
             user_info = account.plugin.getUserInfo(account.plugin.uid)
             avatar = account.avatar_manager.get(user_info['avatar_large'])
-            self.avatar.setPixmap( QPixmap(avatar, imghdr.what(avatar)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation) )
-            self.account.setText( str( user_info['screen_name'] ) )
-            self.fans.setText( '粉丝(%s)' % str( user_info['followers_count'] ) )
-            self.following.setText( '关注(%s)' % str( user_info['friends_count'] ) )
-            self.tweets.setText( '微博(%s)' % str( user_info['statuses_count'] ) )
+            self.updateUserInfo(
+                avatar,
+                user_info
+            )
         else:
-            self.avatar.setPixmap(QPixmap(constant.DEFAULT_AVATER))
-            self.account.setText('全部账户')
-            self.fans.setText('粉丝(x)')
-            self.following.setText('关注(x)')
-            self.tweets.setText('微博(x)')
+            self.updateUserInfo(constant.DEFAULT_AVATER,
+                {
+                    'screen_name': '全部账户',
+                    'followers_count': 'x', 
+                    'friends_count': 'x',
+                    'statuses_count': 'x'
+                }
+            )
+            
+    def updateUserInfo(self, avatar, user_info):
+        '''
+        @param user_info: Object returned by plugin.getUserInfo
+        '''
+        self.avatar.setPixmap(QPixmap(avatar, imghdr.what(avatar)).scaled(constant.AVATER_SIZE, constant.AVATER_SIZE, transformMode=Qt.SmoothTransformation))
+        self.account.setText(user_info['screen_name'])
+        self.fans.setText('粉丝(%s)' % user_info['followers_count'])
+        self.following.setText('关注(%s)' % user_info['friends_count'])
+        self.tweets.setText('微博(%s)' % user_info['statuses_count'])
         
     def showEvent(self, event):
         self.button_to_widget[self.home].refresh()
@@ -296,9 +319,18 @@ class MainWindow( QDialog ):
         '''
         # Only availabel for single account.
         while True:
-            account = account_manager.getCurrentAccount()[0]
-            unreads = account.plugin.getUnreads()
-            log.debug(unreads)
+            unreads = {
+                'tweet': 0,
+                'mention': 0,
+                'comment': 0,
+                'follower': 0,
+                'private': 0
+            }
+            for account in account_manager.getCurrentAccount():
+                acc_unreads = account.plugin.getUnreads()
+                log.debug('%s, %s, %s' % (account.plugin.service, account.plugin.username, acc_unreads))
+                for key in unreads.keys():
+                    unreads[key] += acc_unreads[key]
             self.emit(SIGNAL_UPDATE_UNREADS, unreads)
             QThread.sleep(60)
         
@@ -358,6 +390,21 @@ class MainWindow( QDialog ):
             
         window.setGeometry(QRect(left, top, window.width(), window.height()))
         window.show()
+        
+    def onClicked_AccountGroup(self, account):
+        def getUserInfo(account):
+            user_info = account.plugin.getUserInfo(account.plugin.uid)
+            avatar = account.avatar_manager.get(user_info['avatar_large'])
+            return (avatar, user_info), {}
+        
+        account_manager.setCurrentAccount(account.plugin.service, account.plugin.username)
+        easy_thread.start(getUserInfo,
+            args=(account, ),
+            callback=self.updateUserInfo
+        )
+        
+        widget = self.button_to_widget[self.button_group.getCurrent()]
+        widget.refresh()
         
     def onValueChanged_ScrollBar(self, value):
         if value > self.scroll_area.verticalScrollBar().maximum() * 0.9:

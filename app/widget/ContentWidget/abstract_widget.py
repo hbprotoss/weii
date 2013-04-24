@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import time
+import json
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -189,8 +190,12 @@ class AbstractTweetContainer(AbstractWidget):
 #        '''
 #        For debug purpose
 #        '''
-#        account_list = account_manager.getCurrentAccount()
-#        account_list[0].last_tweet_id = account_list[0].last_tweet_time = 0
 #        self.clearAllWidgets()
-#        tweets = json.load(open('json'))['statuses']
-#        self.updateUI([(account_list[0], tweets)])
+#        
+#        import random
+#        account_list = account_manager.getCurrentAccount()
+#        length = len(account_list)
+#        rtn = [(account, []) for account in account_list]
+#        for tweet in json.load(open('json'))['statuses']:
+#            rtn[random.randrange(0, length)][1].append(tweet)
+#        self.updateUI(rtn)

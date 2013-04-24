@@ -12,7 +12,7 @@ from app import constant
 from app import database_manager
 
 EmotionExp = namedtuple('EmotionExp', ['prefix', 'suffix'])
-ALL_ACCOUNTS = 'all_accounts'
+ALL_ACCOUNTS = ('all_accounts', 'all_accounts')
 
 class Account:
     def __init__(self, account_plugin, if_send, if_receive):
@@ -139,6 +139,7 @@ def getCurrentAccount():
     return list(current_list)
 
 def setCurrentAccount(service, username):
+    global current_list
     current_list = all_accounts[(service, username)]
     
 def getAllAccount():
