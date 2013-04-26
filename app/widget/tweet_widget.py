@@ -433,6 +433,8 @@ class TweetWidget(QWidget):
                         end = self.findUrlEnding(src, i+7)
                         target.append((i, end))
                         i = end
+                    else:
+                        i += 1
                 # emotion
                 elif src[i] == self.account.emotion_exp.prefix:
                     end = self.findEmotionEnding(src, i+1)
