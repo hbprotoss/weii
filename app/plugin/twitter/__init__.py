@@ -202,6 +202,7 @@ class Plugin(AbstractPlugin):
     
     @twitterMethod
     def sendTweet(self, text, pic=None):
+        # FIXME: '~' encode error
         params = {
             'status': text
         }

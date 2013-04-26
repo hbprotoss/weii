@@ -3,6 +3,18 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+from app import account_manager
+from app import constant
+
+class AccountStruct:
+    '''
+    Dummy class of account_manager.Account. Serving for 'all_accounts'
+    '''
+    class Plugin:
+        service = 'all_accounts'
+        username = 'all_accounts'
+    plugin = Plugin()
+
 class LabelButton(QLabel):
     def __init__(self, *argv):
         super(LabelButton, self).__init__(*argv)
@@ -36,8 +48,17 @@ class AccountGroup(QWidget):
     
     def setupUI(self):
         self.main_layout = QHBoxLayout()
+        
         self.arrow = LabelButton(ARROWS[self.arrow_index])
         self.main_layout.addWidget(self.arrow)
+        
+        self.all_account = AccountButton(AccountStruct())
+        self.all_account.setPixmap(QPixmap(constant.ALL_ACCOUNTS))
+        self.all_account.setToolTip('所有账户')
+        self.accounts['all_accounts'] = self.all_account
+        self.all_account.hide()
+        self.connect(self.all_account, SIGNAL('clicked'), self.onClicked_Account)
+        self.main_layout.addWidget(self.all_account)
         
         self.setLayout(self.main_layout)
         

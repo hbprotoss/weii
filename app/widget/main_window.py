@@ -393,8 +393,17 @@ class MainWindow( QDialog ):
         
     def onClicked_AccountGroup(self, account):
         def getUserInfo(account):
-            user_info = account.plugin.getUserInfo(account.plugin.uid)
-            avatar = account.avatar_manager.get(user_info['avatar_large'])
+            if account.plugin.service == 'all_accounts':
+                user_info = {
+                    'screen_name': '所有账户',
+                    'followers_count': 'x',
+                    'friends_count': 'x',
+                    'statuses_count': 'x'
+                }
+                avatar = constant.DEFAULT_AVATER
+            else:
+                user_info = account.plugin.getUserInfo(account.plugin.uid)
+                avatar = account.avatar_manager.get(user_info['avatar_large'])
             return (avatar, user_info), {}
         
         account_manager.setCurrentAccount(account.plugin.service, account.plugin.username)

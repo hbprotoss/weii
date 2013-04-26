@@ -136,14 +136,14 @@ def getCurrentAccount():
     @return: List of current account. If only one account is chosen, the list contains only the current Account
              object. If all accounts are chosen, the list contains all Account objects. 
     '''
-    return list(current_list)
+    return current_list
 
 def setCurrentAccount(service, username):
     global current_list
     current_list = all_accounts[(service, username)]
     
 def getAllAccount():
-    return list(account_list)
+    return account_list
 
 def addAccount(service, uid, username, access_token, data='', proxy={}):
     plugin_obj = plugin.plugins[service].Plugin(uid, username, access_token, data, proxy)
