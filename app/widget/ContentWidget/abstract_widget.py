@@ -116,7 +116,8 @@ class AbstractTweetContainer(AbstractWidget):
         
     def updateUI(self, data):
         log.debug('updateUI')
-        self.clearWidget(self.refreshing_image)
+        self.clearAllWidgets()
+        #self.clearWidget(self.refreshing_image)
         whole_list = []
         for account,tweet_list in data:
             # If it is refreshing(only refreshing_image exists), update max_point of account
@@ -175,7 +176,6 @@ class AbstractTweetContainer(AbstractWidget):
             account.last_tweet_id = 0
             account.last_tweet_time = 0
             
-        self.clearAllWidgets()
         self.refreshing_image.show()
         self.insertWidget(0, self.refreshing_image)
         
