@@ -41,11 +41,11 @@ class AbstractWidget(QWidget):
         image = QMovie(theme_manager.getParameter('Skin', 'loading-image'))
         image.setScaledSize(QSize(32, 32))
         image.start()
-        self.refreshing_image = QLabel()
-        self.refreshing_image.setMovie(image)
-        self.refreshing_image.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-#        self.refreshing_image.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-#        self.refreshing_image.setFixedSize(32, 32)
+        self.retrievingData_image = QLabel()
+        self.retrievingData_image.setMovie(image)
+        self.retrievingData_image.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+#        self.retrievingData_image.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+#        self.retrievingData_image.setFixedSize(32, 32)
         self.setupUI()
         
     def setupUI(self):
@@ -74,6 +74,9 @@ class AbstractWidget(QWidget):
             else:
                 break
         
+    def itemAt(self, index):
+        return self.__layout.itemAt(index)
+        
     def insertWidget(self, pos, widget):
         '''
         @param pos: Insert at pos
@@ -99,6 +102,7 @@ class AbstractTweetContainer(AbstractWidget):
         super(AbstractTweetContainer, self).__init__(parent)
         self.currentPage = 1
         self.time_format = '%a %b %d %H:%M:%S %z %Y'
+        self.retrievingData = False
         self.refreshing = False
         
     def produceWidget(self, account, tweet, avatar, picutre):
@@ -116,14 +120,15 @@ class AbstractTweetContainer(AbstractWidget):
         
     def updateUI(self, data):
         log.debug('updateUI')
-        self.clearAllWidgets()
-        #self.clearWidget(self.refreshing_image)
+        self.clearWidget(self.retrievingData_image)
         whole_list = []
         for account,tweet_list in data:
-            # If it is refreshing(only refreshing_image exists), update max_point of account
-            if self.count() == 0:
+            # If it is refreshing(only retrievingData_image exists), update max_point of account
+            if self.refreshing:
                 account.last_tweet_id = tweet_list[0]['id']
                 account.last_tweet_time = tweet_list[0]['created_at']
+                self.clearAllWidgets()
+                self.refreshing = False
                 
             for tweet in tweet_list:
                 created_at = tweet['created_at']
@@ -150,25 +155,27 @@ class AbstractTweetContainer(AbstractWidget):
             self.addWidget(
                 self.produceWidget(account, tweet, avatar, picture)
             )
-        self.refreshing = False
+        self.retrievingData = False
         
     def appendNew(self):
-        if self.refreshing:
+        if self.retrievingData:
             return
         
         account_list = account_manager.getCurrentAccount()
         
-        self.refreshing_image.show()
-        self.insertWidget(-1, self.refreshing_image)
+        self.retrievingData_image.show()
+        self.insertWidget(-1, self.retrievingData_image)
         
-        self.refreshing = True
+        self.retrievingData = True
         easy_thread.start(self.retrieveData, args=(account_list, self.currentPage, 20), callback=self.updateUI)
         log.debug('Starting thread')
         self.currentPage += 1
         
     def refresh(self):
-        if self.refreshing:
+        if self.retrievingData:
             return
+        else:
+            self.refreshing = True
         
         account_list = account_manager.getCurrentAccount()
         
@@ -176,10 +183,10 @@ class AbstractTweetContainer(AbstractWidget):
             account.last_tweet_id = 0
             account.last_tweet_time = 0
             
-        self.refreshing_image.show()
-        self.insertWidget(0, self.refreshing_image)
+        self.retrievingData_image.show()
+        self.insertWidget(0, self.retrievingData_image)
         
-        self.refreshing = True
+        self.retrievingData = True
         easy_thread.start(self.retrieveData, args=(account_list, 1, 20), callback=self.updateUI)
         log.debug('Starting thread')
         self.currentPage = 2
