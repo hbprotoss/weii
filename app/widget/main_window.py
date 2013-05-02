@@ -244,6 +244,7 @@ class MainWindow( QDialog ):
         self.button_to_widget = self.initTab()
         widget = self.button_to_widget[self.home]
         self.content_widget = stacked_widget.StackedWidget()
+        self.content_widget.setStyleSheet('background-color:#f0f1f2')
         #self.content_widget.setStyleSheet('border-style:solid;border-width:5px')
         for k,v in self.button_to_widget.items():
             self.content_widget.addWidget(v)
