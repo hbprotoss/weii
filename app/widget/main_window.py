@@ -120,6 +120,7 @@ class MainWindow( QDialog ):
         
         # Account group
         self.connect(self.account_group, SIGNAL('clicked'), self.onClicked_AccountGroup)
+        
     
     def initTab(self):
         '''
@@ -329,7 +330,7 @@ class MainWindow( QDialog ):
             }
             for account in account_manager.getCurrentAccount():
                 acc_unreads = account.plugin.getUnreads()
-                log.debug('%s, %s, %s' % (account.plugin.service, account.plugin.username, acc_unreads))
+                log.info('%s, %s, %s' % (account.plugin.service, account.plugin.username, acc_unreads))
                 for key in unreads.keys():
                     unreads[key] += acc_unreads[key]
             self.emit(SIGNAL_UPDATE_UNREADS, unreads)
@@ -361,11 +362,13 @@ class MainWindow( QDialog ):
         self.content_widget.setCurrentWidget(new_widget)
         slider.setValue(self.content_widget.getScrollPosition(new_widget))
         
-        new_widget.refresh()
+        #new_widget.refresh()
+        self.onClicked_BtnRefresh()
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
         self.button_to_widget[button].refresh()
+        self.scroll_area.verticalScrollBar().setSliderPosition(0)
         
     def onClicked_BtnSetting(self):
         window = setting_window.SettingWindow()
@@ -394,27 +397,37 @@ class MainWindow( QDialog ):
         
     def onClicked_AccountGroup(self, account):
         def getUserInfo(account):
-            if account.plugin.service == 'all_accounts':
-                user_info = {
-                    'screen_name': '所有账户',
-                    'followers_count': 'x',
-                    'friends_count': 'x',
-                    'statuses_count': 'x'
-                }
-                avatar = constant.DEFAULT_AVATER
+            try:
+                if account.plugin.service == 'all_accounts':
+                    user_info = {
+                        'screen_name': '所有账户',
+                        'followers_count': 'x',
+                        'friends_count': 'x',
+                        'statuses_count': 'x'
+                    }
+                    avatar = constant.DEFAULT_AVATER
+                else:
+                    user_info = account.plugin.getUserInfo(account.plugin.uid)
+                    avatar = account.avatar_manager.get(user_info['avatar_large'])
+                return (avatar, user_info)
+            except Exception as e:
+                return (None, {'error': str(e), 'service': account.plugin.service}), {}
+            
+        def updateUI(avatar, user_info):
+            if 'error' in user_info:
+                QMessageBox.critical(None, user_info['service'], user_info['error'])
             else:
-                user_info = account.plugin.getUserInfo(account.plugin.uid)
-                avatar = account.avatar_manager.get(user_info['avatar_large'])
-            return (avatar, user_info), {}
+                self.updateUserInfo(avatar, user_info)
+                self.button_to_widget[self.button_group.getCurrent()].refresh()
         
         account_manager.setCurrentAccount(account.plugin.service, account.plugin.username)
         easy_thread.start(getUserInfo,
             args=(account, ),
-            callback=self.updateUserInfo
+            callback=updateUI
         )
         
-        widget = self.button_to_widget[self.button_group.getCurrent()]
-        widget.refresh()
+#        widget = self.button_to_widget[self.button_group.getCurrent()]
+#        widget.refresh()
         
     def onValueChanged_ScrollBar(self, value):
         if value > self.scroll_area.verticalScrollBar().maximum() * 0.9:

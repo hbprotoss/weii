@@ -8,6 +8,10 @@ Specially used when GUI thread wants to do time-consuming task but doesn't want 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+from app import logger
+
+log = logger.getLogger(__name__) 
+
 SIGNAL_TASK_FINISH = SIGNAL('taskFinished')
 class Task(QObject):
     def __init__(self, func, args=(), kwargs={}, callback=None, parent=None):
@@ -21,8 +25,8 @@ class Task(QObject):
         self.parent_thread = QThread.currentThread()
         
     def run(self):
-        args, kwargs = self.func(*self.args, **self.kwargs)
-        self.emit(SIGNAL_TASK_FINISH, self, args, kwargs)
+        args = self.func(*self.args, **self.kwargs)
+        self.emit(SIGNAL_TASK_FINISH, self, args)
         
 # Dict to maintain reference to QThread object in case of deleted by Python gc.
 thread_dict = dict()
@@ -47,10 +51,10 @@ def start(func, args=(), kwargs={}, callback=None):
     
     thread.start()
     
-def onFinished(task, args, kwargs):
+def onFinished(task, args):
     # This function is invoked within parent thread context
     if task.callback:
-        task.callback(*args, **kwargs)
+        task.callback(*args)
     thread_dict[task].wait()
     del thread_dict[task]
     task.deleteLater()

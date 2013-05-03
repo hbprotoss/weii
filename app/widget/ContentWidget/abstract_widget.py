@@ -48,6 +48,7 @@ class AbstractWidget(QWidget):
 #        self.retrievingData_image.setFixedSize(32, 32)
         self.setupUI()
         
+        
     def setupUI(self):
         frame_layout = QVBoxLayout()
         frame_layout.setMargin(0)
@@ -129,6 +130,10 @@ class AbstractTweetContainer(AbstractWidget):
                 account.last_tweet_time = tweet_list[0]['created_at']
                 self.clearAllWidgets()
                 self.refreshing = False
+                
+            if isinstance(tweet_list, dict):
+                QMessageBox.critical(None, account.plugin.service, tweet_list['error'])
+                continue
                 
             for tweet in tweet_list:
                 created_at = tweet['created_at']

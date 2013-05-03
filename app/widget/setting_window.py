@@ -225,8 +225,8 @@ class AccountOptionWidget(QWidget):
         # Parse returned data.
         access_token, access_token_secret = plugin_class.parseData(data)
         
-        return (service, access_token, access_token_secret), {}
-            
+        return (service, access_token, access_token_secret)
+    
     def addAccount(self, service):
         '''
         @param service: string. Service name

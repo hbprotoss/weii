@@ -30,7 +30,7 @@ class HomeWidget(abstract_widget.AbstractTweetContainer):
                     tweet['type'] = abstract_widget.TWEET
                 rtn.append((account, tweet_list))
             except Exception as e:
-                QMessageBox.critical(self, '错误', str(e))
+                rtn.append((account, {'error': str(e)}))
             
         log.debug('Download finished')
-        return (rtn, ), {}
+        return (rtn, )

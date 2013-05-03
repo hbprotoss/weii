@@ -181,7 +181,7 @@ class ResponseWidget(QGroupBox):
         except weiBaseException as e:
             rtn = {'error': str(e)}
         log.debug(rtn)
-        return (rtn, ), {}
+        return (rtn, )
     
     def procSendRetweet(self, text, if_comment):
         tweet_type = self.tweet['type']
@@ -194,8 +194,8 @@ class ResponseWidget(QGroupBox):
         except weiBaseException as e:
             rtn = {'error': str(e)}
         log.debug(rtn)
-        return (rtn, ), {}
-        
+        return (rtn, )
+    
     def onClicked_Btn(self):
         text = self.edit.toPlainText()
         self.button.setEnabled(False)
@@ -306,7 +306,7 @@ class TweetWidget(QWidget):
         except Exception as e:
             log.error(e)
         finally:
-            return (widget, pic_path, size), {}
+            return (widget, pic_path, size)
         
     def onClicked_Repost(self):
         if self.response_widget.isHidden():

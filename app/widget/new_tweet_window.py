@@ -170,7 +170,7 @@ class NewTweetWindow(QDialog):
             except weiBaseException as e:
                 log.error(e)
                 rtn.append((account, {'error': '%s' % str(e)}))
-        return (rtn, ), {}
+        return (rtn, )
     
     def onClicked_BtnSend(self):
         text = self.editor.toPlainText()

@@ -33,23 +33,20 @@ class AccountButton(LabelButton):
             
 LEFT_ARROW = '◀'
 RIGHT_ARROW = '▶'
-ARROWS = [LEFT_ARROW, RIGHT_ARROW]
 class AccountGroup(QWidget):
     '''
     Widget to display available accounts. User can choose one of them exclusively.
     '''
     def __init__(self, parent=None):
         super(AccountGroup, self).__init__(parent)
-        self.arrow_index = 0
         self.accounts = {}
         
         self.setupUI()
-        self.connect(self.arrow, SIGNAL('clicked()'), self.onClicked_Arrow)
     
     def setupUI(self):
         self.main_layout = QHBoxLayout()
         
-        self.arrow = LabelButton(ARROWS[self.arrow_index])
+        self.arrow = LabelButton(LEFT_ARROW)
         self.main_layout.addWidget(self.arrow)
         
         self.all_account = AccountButton(AccountStruct())
@@ -71,20 +68,19 @@ class AccountGroup(QWidget):
         acc.setToolTip(account.plugin.username)
         self.main_layout.addWidget(acc)
         self.accounts[account.plugin.username] = acc
-        if self.arrow_index == 0:
-            acc.hide()
+        acc.hide()
             
         self.connect(acc, SIGNAL('clicked'), self.onClicked_Account)
         
-    def onClicked_Arrow(self):
-        self.arrow_index = 1 - self.arrow_index
-        self.arrow.setText(ARROWS[self.arrow_index])
-        if self.arrow_index == 0:
-            for username, widget in self.accounts.items():
-                widget.hide()
-        else:
-            for username, widget in self.accounts.items():
-                widget.show()
-                
+    def enterEvent(self, ev):
+        self.arrow.setText(RIGHT_ARROW)
+        for widget in self.accounts.values():
+            widget.show()
+            
+    def leaveEvent(self, ev):
+        self.arrow.setText(LEFT_ARROW)
+        for widget in self.accounts.values():
+            widget.hide()
+        
     def onClicked_Account(self, account):
         self.emit(SIGNAL('clicked'), account)
