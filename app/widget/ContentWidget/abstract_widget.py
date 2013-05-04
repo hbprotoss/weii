@@ -11,6 +11,7 @@ from app import constant
 from app import theme_manager
 from app import logger
 from app import dateutil
+from app import keywords
 from app.dateutil import parser
 from app.widget.tweet_widget import TweetWidget
 
@@ -114,7 +115,12 @@ class AbstractTweetContainer(AbstractWidget):
         @param avatar: QMovie. Loading image. gif
         @param picture: QMovie. Loading image. gif
         '''
-        return TweetWidget(account, tweet, avatar, picutre, self)
+        if keywords.checkForJunk(tweet['text']):
+            return None
+        elif ('retweeted_status') in tweet and keywords.checkForJunk(tweet['retweeted_status']['text']):
+            return None
+        else:
+            return TweetWidget(account, tweet, avatar, picutre, self)
     
     def retrieveData(self, account_list, page=1, count=20):
         raise NotImplementedError
@@ -157,9 +163,10 @@ class AbstractTweetContainer(AbstractWidget):
             avatar = self.small_loading_image
             picture = self.loading_image
                 
-            self.addWidget(
-                self.produceWidget(account, tweet, avatar, picture)
-            )
+            widget = self.produceWidget(account, tweet, avatar, picture)
+            if widget:
+                # Not junk ads
+                self.addWidget(widget)
         self.retrievingData = False
         
     def appendNew(self):
@@ -176,38 +183,38 @@ class AbstractTweetContainer(AbstractWidget):
         log.debug('Starting thread')
         self.currentPage += 1
         
-    def refresh(self):
-        if self.retrievingData:
-            return
-        else:
-            self.refreshing = True
-        
-        account_list = account_manager.getCurrentAccount()
-        
-        for account in account_list:
-            account.last_tweet_id = 0
-            account.last_tweet_time = 0
-            
-        self.retrievingData_image.show()
-        self.insertWidget(0, self.retrievingData_image)
-        
-        self.retrievingData = True
-        easy_thread.start(self.retrieveData, args=(account_list, 1, 20), callback=self.updateUI)
-        log.debug('Starting thread')
-        self.currentPage = 2
-        
-        self.emit(SIGNAL('refreshFinished'))
-        
 #    def refresh(self):
-#        '''
-#        For debug purpose
-#        '''
-#        self.clearAllWidgets()
+#        if self.retrievingData:
+#            return
+#        else:
+#            self.refreshing = True
 #        
-#        import random
 #        account_list = account_manager.getCurrentAccount()
-#        length = len(account_list)
-#        rtn = [(account, []) for account in account_list]
-#        for tweet in json.load(open('json'))['statuses']:
-#            rtn[random.randrange(0, length)][1].append(tweet)
-#        self.updateUI(rtn)
+#        
+#        for account in account_list:
+#            account.last_tweet_id = 0
+#            account.last_tweet_time = 0
+#            
+#        self.retrievingData_image.show()
+#        self.insertWidget(0, self.retrievingData_image)
+#        
+#        self.retrievingData = True
+#        easy_thread.start(self.retrieveData, args=(account_list, 1, 20), callback=self.updateUI)
+#        log.debug('Starting thread')
+#        self.currentPage = 2
+#        
+#        self.emit(SIGNAL('refreshFinished'))
+        
+    def refresh(self):
+        '''
+        For debug purpose
+        '''
+        self.clearAllWidgets()
+        
+        import random
+        account_list = account_manager.getCurrentAccount()
+        length = len(account_list)
+        rtn = [(account, []) for account in account_list]
+        for tweet in json.load(open('doc/json'))['statuses']:
+            rtn[random.randrange(0, length)][1].append(tweet)
+        self.updateUI(rtn)
