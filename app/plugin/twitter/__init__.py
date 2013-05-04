@@ -39,10 +39,12 @@ def twitterMethod(func):
             else:
                 # Network error
                 raise weiNetworkError(str(e))
-        except urllib.error.URLError:
+        except urllib.error.URLError as e:
             raise weiNetworkError(str(e))
-        except urllib.error.ContentTooShortError:
+        except urllib.error.ContentTooShortError as e:
             raise weiNetworkError(str(e))
+        except Exception as e:
+            raise weiUnknownError(str(e))
         else:
             return raw_rtn
     return func_wrapper

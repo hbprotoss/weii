@@ -32,4 +32,4 @@ class CommentWidget(abstract_widget.AbstractTweetContainer):
             rtn.append((account, tweet_list))
             
         log.debug('Download finished')
-        return (rtn, ), {}
+        return (rtn, )
