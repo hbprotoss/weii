@@ -91,11 +91,13 @@ class AbstractWidget(QWidget):
         @param widget: Widget to be added
         '''
         self.__layout.addWidget(widget)
+        
+    def appendNew(self):
+        raise NotImplementedError
     
     def refresh(self):
         '''
         Refresh self with data from account list
-        @param account_list: List of account objects(Plugin)
         '''
         raise NotImplementedError
 
@@ -117,11 +119,10 @@ class AbstractTweetContainer(AbstractWidget):
         '''
         if keywords.checkForJunk(tweet['text']) or keywords.checkForJunk(tweet['user']['screen_name']):
             return None
-        elif 'retweeted_status' in tweet:
-            if keywords.checkForJunk(tweet['retweeted_status']['text']) or keywords.checkForJunk(tweet['retweeted_status']['user']['screen_name']):
+        elif 'retweeted_status' in tweet and (keywords.checkForJunk(tweet['retweeted_status']['text']) or keywords.checkForJunk(tweet['retweeted_status']['user']['screen_name'])):
                 return None
         else:
-            return TweetWidget(account, tweet, avatar, picutre, self)
+            return TweetWidget(account, tweet, avatar, picutre)
     
     def retrieveData(self, account_list, page=1, count=20):
         raise NotImplementedError

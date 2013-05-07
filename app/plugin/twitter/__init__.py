@@ -145,6 +145,7 @@ class Plugin(AbstractPlugin):
         rtn_from_server = self.getData(url, None, self.getHeader('GET', url, params))
         rtn = json.loads(rtn_from_server.decode())
         rtn['avatar_large'] = self._transferAvatar(rtn['profile_image_url'])
+        rtn['gender'] = 'n'
         
         return rtn
     

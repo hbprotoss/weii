@@ -83,6 +83,7 @@ class MainWindow( QDialog ):
     def __init__( self, parent = None ):
         super( MainWindow, self ).__init__( parent )
 
+        self.setWindowTitle('weii')
         self.setupTray()
         self.setMinimumSize( 400, 600 )
         self.setupUI()
@@ -122,16 +123,16 @@ class MainWindow( QDialog ):
         self.connect(self.account_group, SIGNAL('clicked'), self.onClicked_AccountGroup)
         
     
-    def initTab(self):
+    def initTab(self, content_widget):
         '''
         Initiate content tab for home, at, comment, private, profile, search
         @return: A dict of button to widget of QScrollArea
         '''
         rtn = {}
         
-        rtn[self.home] = home_widget.HomeWidget(self)
-        rtn[self.at] = at_widget.AtWidget(self)
-        rtn[self.comment] = comment_widget.CommentWidget(self)
+        rtn[self.home] = home_widget.HomeWidget(content_widget)
+        rtn[self.at] = at_widget.AtWidget(content_widget)
+        rtn[self.comment] = comment_widget.CommentWidget(content_widget)
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('private'))
@@ -139,11 +140,7 @@ class MainWindow( QDialog ):
         widget.setLayout(layout)
         rtn[self.private] = widget
         
-        layout = QVBoxLayout()
-        layout.addWidget(QPushButton('profile'))
-        widget = QWidget()
-        widget.setLayout(layout)
-        rtn[self.profile] = widget
+        rtn[self.profile] = profile_widget.ProfileWidget(content_widget) 
         
         layout = QVBoxLayout()
         layout.addWidget(QPushButton('search'))
@@ -242,10 +239,10 @@ class MainWindow( QDialog ):
         v21.addWidget( self.setting )
 
         ## Scroll area
-        self.button_to_widget = self.initTab()
-        widget = self.button_to_widget[self.home]
         self.content_widget = stacked_widget.StackedWidget()
-        self.content_widget.setStyleSheet('background-color:#f0f1f2')
+        self.button_to_widget = self.initTab(self.content_widget)
+        widget = self.button_to_widget[self.home]
+        self.content_widget.setStyleSheet('background-color:#f4f4f2')
         #self.content_widget.setStyleSheet('border-style:solid;border-width:5px')
         for k,v in self.button_to_widget.items():
             self.content_widget.addWidget(v)
@@ -357,13 +354,13 @@ class MainWindow( QDialog ):
         new_widget = self.button_to_widget[button]
         old_widget = self.content_widget.currentWidget()
         slider = self.scroll_area.verticalScrollBar()
-        self.content_widget.setScrollPosition(old_widget, slider.value())
+        self.content_widget.setScrollPosition(old_widget, slider.sliderPosition())
         
         self.content_widget.setCurrentWidget(new_widget)
-        slider.setValue(self.content_widget.getScrollPosition(new_widget))
+        slider.setSliderPosition(self.content_widget.getScrollPosition(new_widget))
         
         #new_widget.refresh()
-        self.onClicked_BtnRefresh()
+        #self.onClicked_BtnRefresh()
     
     def onClicked_BtnRefresh(self):
         button = self.button_group.getCurrent()
@@ -407,11 +404,11 @@ class MainWindow( QDialog ):
                     }
                     avatar = constant.DEFAULT_AVATER
                 else:
-                    user_info = account.plugin.getUserInfo(account.plugin.uid)
+                    user_info = account.getUserInfo(account.plugin.uid)
                     avatar = account.avatar_manager.get(user_info['avatar_large'])
                 return (avatar, user_info)
             except Exception as e:
-                return (None, {'error': str(e), 'service': account.plugin.service}), {}
+                return (None, {'error': str(e), 'service': account.plugin.service})
             
         def updateUI(avatar, user_info):
             if 'error' in user_info:

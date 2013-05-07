@@ -3,6 +3,7 @@
 
 # misc
 misc/
+*test*
 
 # C extensions
 *.so

@@ -12,13 +12,16 @@ class AtWidget(abstract_widget.AbstractTweetContainer):
     def retrieveData(self, account_list, page=1, count=20):
         rtn = []
         for account in account_list:
-            #log.debug(account.plugin)
-            tweet_list = account.plugin.getMentionTimeline(max_point=(account.last_tweet_id, account.last_tweet_time),
-                page=page, count=count
-            )
-            for tweet in tweet_list:
-                tweet['type'] = abstract_widget.TWEET
-            rtn.append((account, tweet_list))
+            try:
+                #log.debug(account.plugin)
+                tweet_list = account.plugin.getMentionTimeline(max_point=(account.last_tweet_id, account.last_tweet_time),
+                    page=page, count=count
+                )
+                for tweet in tweet_list:
+                    tweet['type'] = abstract_widget.TWEET
+                rtn.append((account, tweet_list))
+            except Exception as e:
+                rtn.append((account, {'error': str(e)}))
             
         log.debug('Download finished')
         return (rtn, )

@@ -24,6 +24,7 @@ class Account:
         self.plugin = account_plugin
         self.if_send = if_send
         self.if_receive = if_receive
+        self.user_info = None
         
         # QImage object
         self.service_icon = QImage(self.plugin.service_icon)
@@ -51,6 +52,10 @@ class Account:
         # for append new tweet
         self.last_tweet_id = None
         self.last_tweet_time = None
+        
+    def getUserInfo(self, uid='', screen_name=''):
+        self.user_info = self.plugin.getUserInfo(uid, screen_name)
+        return self.user_info
         
     def getEmotionDict(self, emotion_list):
         rtn = {}

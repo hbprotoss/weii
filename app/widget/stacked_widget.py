@@ -25,3 +25,10 @@ class StackedWidget(QStackedWidget):
         self.currentWidget().setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         super(StackedWidget, self).setCurrentWidget(widget)
         self.currentWidget().setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.updateGeometry()
+        
+    def sizeHint(self):
+        if self.count() > 0:
+            return self.currentWidget().minimumSize()
+        else:
+            return QWidget.sizeHint(self)
