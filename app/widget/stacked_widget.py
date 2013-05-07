@@ -3,32 +3,48 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-class StackedWidget(QStackedWidget):
+class StackedWidget(QWidget):
     def __init__(self, parent=None):
         super(StackedWidget, self).__init__(parent)
         self.scroll_pos = {}
+        self.current_widget = None
+        self.widgets = set()
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
         
     def addWidget(self, w):
-        super(StackedWidget, self).addWidget(w)
+        self.widgets.add(w)
+        self.layout.addWidget(w)
+        self.current_widget = w
+        self.showCurrentWidget()
         self.scroll_pos[w] = 0
+        
+    def currentWidget(self):
+        return self.current_widget
+    
+    def setCurrentWidget(self, w):
+        self.current_widget = w
+        self.showCurrentWidget()
+        
+    def showCurrentWidget(self):
+        if self.count() > 0:
+            for widget in self.widgets:
+                widget.hide()
+            self.current_widget.show()
+            self.updateGeometry()
+            
+    def sizeHint(self):
+        if self.count() > 0:
+            return self.current_widget.minimumSizeHint()
+        else:
+            return QWidget.sizeHint(self)
         
     def setScrollPosition(self, w, pos):
         self.scroll_pos[w] = pos
         
     def getScrollPosition(self, w):
         return self.scroll_pos[w]
+    
+    def count(self):
+        return len(self.widgets)
         
-    def setCurrentWidget(self, widget):
-        # Automatically switch size depending on the content of the page
-        # @see: http://doc.qt.digia.com/qq/qq06-qwidgetstack.html
-        # TODO: remember scroll position of last widget
-        self.currentWidget().setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        super(StackedWidget, self).setCurrentWidget(widget)
-        self.currentWidget().setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.updateGeometry()
-        
-    def sizeHint(self):
-        if self.count() > 0:
-            return self.currentWidget().minimumSize()
-        else:
-            return QWidget.sizeHint(self)
