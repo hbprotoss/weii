@@ -95,8 +95,10 @@ class PictureViewer(QDialog):
         image_type = imghdr.what(path)
         if image_type == 'gif':
             image = QMovie(path)
+            image.start()
             label_pic.setMovie(image)
-            size = image.scaledSize()
+            rect = image.frameRect()
+            size = QSize(rect.width(), rect.height())
         else:
             image = QPixmap(path, image_type)
             label_pic.setPixmap(image)
