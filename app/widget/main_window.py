@@ -295,7 +295,7 @@ class MainWindow( QDialog ):
                 user_info
             )
         else:
-            self.updateUserInfo(constant.DEFAULT_AVATER,
+            self.updateUserInfo(constant.ALL_ACCOUNTS_AVATAR,
                 {
                     'screen_name': '全部账户',
                     'followers_count': 'x', 
@@ -407,7 +407,7 @@ class MainWindow( QDialog ):
                         'friends_count': 'x',
                         'statuses_count': 'x'
                     }
-                    avatar = constant.DEFAULT_AVATER
+                    avatar = constant.ALL_ACCOUNTS_AVATAR
                 else:
                     user_info = account.getUserInfo(account.plugin.uid)
                     avatar = account.avatar_manager.get(user_info['avatar_large'])

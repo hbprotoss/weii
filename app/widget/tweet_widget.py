@@ -271,7 +271,7 @@ class TweetWidget(QWidget):
         # Start downloading avatar
         avatar_url = tweet['user']['avatar_large']
         easy_thread.start(self.getResource,
-            args=(avatar_url, self.account.avatar_manager, self.label_avatar,
+            args=(avatar_url, constant.BROKEN_AVATAR, self.account.avatar_manager, self.label_avatar,
                 QSize(constant.AVATER_IN_TWEET_SIZE, constant.AVATER_IN_TWEET_SIZE)
             ),
             callback=self.updateUI
@@ -284,7 +284,7 @@ class TweetWidget(QWidget):
             elif ('retweeted_status' in tweet) and ('thumbnail_pic' in tweet['retweeted_status']):
                 url = tweet['retweeted_status']['thumbnail_pic']
             easy_thread.start(self.getResource,
-                args=(url, self.account.picture_manager, self.label_thumbnail, None),
+                args=(url, constant.BROKEN_IMAGE, self.account.picture_manager, self.label_thumbnail, None),
                 callback=self.updateUI
             )
         except UnboundLocalError:
@@ -299,12 +299,13 @@ class TweetWidget(QWidget):
         painter.setPen(QColor(color, color, color))
         painter.drawLine(QPoint(5, size.height() - 1), QPoint(size.width() - 6, size.height() - 1))
         
-    def getResource(self, url, manager, widget, size):
+    def getResource(self, url, broken_image_path, manager, widget, size):
         pic_path = ''
         try:
             pic_path = manager.get(url)
         except Exception as e:
             log.error(e)
+            pic_path = broken_image_path
         finally:
             return (widget, pic_path, size)
         

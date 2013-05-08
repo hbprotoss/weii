@@ -18,7 +18,9 @@ AVATER_IN_TWEET_SIZE = 40
 TRAY_ICON = os.path.join(APP_ROOT, 'theme/logo.png')
 ALL_ACCOUNTS = os.path.join(APP_ROOT, 'theme/all.png')
 APP_LOGO = os.path.join(APP_ROOT, 'theme/logo.png')
-DEFAULT_AVATER = os.path.join(APP_ROOT, 'theme/user_logo_64x64.png')
+ALL_ACCOUNTS_AVATAR = os.path.join(APP_ROOT, 'theme/all_accounts_avatar.png')
+BROKEN_AVATAR = os.path.join(APP_ROOT, 'theme/broken_avatar.png')
+BROKEN_IMAGE = os.path.join(APP_ROOT, 'theme/broken_image.png')
 BUBLE = os.path.join(APP_ROOT, 'theme/buble.png')
 
 # Configuration
