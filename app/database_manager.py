@@ -3,13 +3,15 @@
 import sqlite3
 import collections
 import json
+import atexit
 
 from app import constant
 
 AccountDataStruct = collections.namedtuple('AccountDataStruct',
     ['id', 'username', 'access_token', 'data', 'proxy', 'service', 'send', 'receive']
 )
-connection = sqlite3.connect(constant.DATABASE)
+# FIXME: the parameter `check_same_thread` may be a potential bug here, cause the doc doesn't suggest it.
+connection = sqlite3.connect(constant.DATABASE, check_same_thread=False)
 c = connection.cursor()
 c.execute('''
 create table if not exists Accounts(
@@ -23,9 +25,39 @@ create table if not exists Accounts(
     receive integer DEFAULT 1 -- Whether receive new tweets 
 )
 ''')
+c.execute('''
+create table if not exists Timeline(
+    id integer PRIMARY KEY AUTOINCREMENT,
+    content text    -- json format
+)
+''')
+c.execute('''
+create table if not exists Mention(
+    id integer PRIMARY KEY AUTOINCREMENT,
+    content text    -- json format
+)
+''')
+c.execute('''
+create table if not exists Comment(
+    id integer PRIMARY KEY AUTOINCREMENT,
+    content text    -- json format
+)
+''')
 connection.commit()
 del c
 
+def onExit():
+    tables = ['Timeline', 'Comment', 'Mention']
+    cursor = connection.cursor()
+    for table in tables:
+        cursor.execute('''
+        delete from %s 
+        where id not in 
+            (select id from %s order by id desc limit 20)
+        ''' % (table, table))
+    connection.commit()
+
+atexit.register(onExit)
 ########################################################################
 # Exports
 def getAccountsInfo():
@@ -52,4 +84,22 @@ def deleteAccount(uid, service):
 def setProxy(uid, service, proxy):
     cursor = connection.cursor()
     cursor.execute("update Accounts set proxy=? where id=? and service=?", (proxy, uid, service))
+    connection.commit()
+    
+def getHistory(table):
+    '''
+    @param table: string. Table name
+    '''
+    cursor = connection.cursor()
+    cursor.execute('''select content from %s''' % table)
+    return list(cursor)
+
+def insertHistory(table, contents):
+    '''
+    @param table: string. Table name.
+    @param contents: list of strings. Content to be inserted.
+    '''
+    cursor = connection.cursor()
+    for content in contents:
+        cursor.execute("insert into %s(content) values(?)" % table, (content, ))
     connection.commit()

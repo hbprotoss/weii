@@ -1,10 +1,13 @@
 # coding=utf-8
 
+import json
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from app.widget.ContentWidget import abstract_widget
 from app import logger
+from app import database_manager
 
 log = logger.getLogger(__name__)
 
@@ -20,6 +23,7 @@ class AtWidget(abstract_widget.AbstractTweetContainer):
                 for tweet in tweet_list:
                     tweet['type'] = abstract_widget.TWEET
                 rtn.append((account, tweet_list))
+                database_manager.insertHistory('Mention', [json.dumps(tweet) for tweet in tweet_list])
             except Exception as e:
                 rtn.append((account, {'error': str(e)}))
             

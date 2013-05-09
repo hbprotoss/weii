@@ -1,9 +1,12 @@
 # coding=utf-8
 
+import json
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from app import logger
+from app import database_manager
 from app.widget.ContentWidget import abstract_widget
 
 log = logger.getLogger(__name__)
@@ -31,6 +34,7 @@ class CommentWidget(abstract_widget.AbstractTweetContainer):
     #                else:
     #                    tweet['retweeted_status'] = tweet['status']
                 rtn.append((account, tweet_list))
+                database_manager.insertHistory('Comment', [json.dumps(tweet) for tweet in tweet_list])
             except Exception as e:
                 rtn.append((account, {'error': str(e)}))
             
