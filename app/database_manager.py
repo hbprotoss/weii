@@ -28,19 +28,25 @@ create table if not exists Accounts(
 c.execute('''
 create table if not exists Timeline(
     id integer PRIMARY KEY AUTOINCREMENT,
-    content text    -- json format
+    content text,    -- json format
+    service text,
+    uid text
 )
 ''')
 c.execute('''
 create table if not exists Mention(
     id integer PRIMARY KEY AUTOINCREMENT,
-    content text    -- json format
+    content text,    -- json format
+    service text,
+    uid text
 )
 ''')
 c.execute('''
 create table if not exists Comment(
     id integer PRIMARY KEY AUTOINCREMENT,
-    content text    -- json format
+    content text,    -- json format
+    service text,
+    uid text
 )
 ''')
 connection.commit()
@@ -53,7 +59,7 @@ def onExit():
         cursor.execute('''
         delete from %s 
         where id not in 
-            (select id from %s order by id desc limit 20)
+            (select id from %s order by id desc limit 40)
         ''' % (table, table))
     connection.commit()
 
@@ -91,15 +97,15 @@ def getHistory(table):
     @param table: string. Table name
     '''
     cursor = connection.cursor()
-    cursor.execute('''select content from %s''' % table)
+    cursor.execute('''select content,service,uid from %s''' % table)
     return list(cursor)
 
-def insertHistory(table, contents):
+def insertHistory(table, contents, service, uid):
     '''
     @param table: string. Table name.
     @param contents: list of strings. Content to be inserted.
     '''
     cursor = connection.cursor()
     for content in contents:
-        cursor.execute("insert into %s(content) values(?)" % table, (content, ))
+        cursor.execute("insert into %s(content,service,uid) values(?, ?, ?)" % table, (content, service, uid))
     connection.commit()

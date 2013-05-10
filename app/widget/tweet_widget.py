@@ -239,7 +239,7 @@ class TweetWidget(QWidget):
         '''
         @param account: misc.Account object
         @param tweet: dict of tweet. See doc/插件接口设计.pdf: 单条微博
-        @param avatar: QPixmap of user avatar
+        @param avatar: QMovie showing that the avatar is still loading from Internet
         @param thumbnail: QMovie showing that the thumbnail is still loading from Internet
         @return: None
         '''

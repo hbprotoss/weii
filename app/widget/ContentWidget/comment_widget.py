@@ -13,6 +13,9 @@ log = logger.getLogger(__name__)
 
 class CommentWidget(abstract_widget.AbstractTweetContainer):
     # FIXME: TweetWidget too loose when there is only one tweet
+    def __init__(self, parent=None):
+        super(CommentWidget, self).__init__('Comment', parent)
+    
     def retrieveData(self, account_list, page=1, count=20):
         rtn = []
         for account in account_list:
@@ -34,7 +37,11 @@ class CommentWidget(abstract_widget.AbstractTweetContainer):
     #                else:
     #                    tweet['retweeted_status'] = tweet['status']
                 rtn.append((account, tweet_list))
-                database_manager.insertHistory('Comment', [json.dumps(tweet) for tweet in tweet_list])
+                database_manager.insertHistory('Comment',
+                    [json.dumps(tweet) for tweet in tweet_list],
+                    account.plugin.service,
+                    account.plugin.uid
+                )
             except Exception as e:
                 rtn.append((account, {'error': str(e)}))
             

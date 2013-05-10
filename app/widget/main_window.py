@@ -116,9 +116,6 @@ class MainWindow( QDialog ):
             lambda x:self.renderUserInfo()
         )
         
-        # Start timer to check unreads message, every 60 seconds
-        self.connect(self.button_to_widget[self.home], SIGNAL('refreshFinished'), self.onFirstRefresh)
-        
         # Account group
         self.connect(self.account_group, SIGNAL('clicked'), self.onClicked_AccountGroup)
         
@@ -315,7 +312,11 @@ class MainWindow( QDialog ):
         self.tweets.setText('微博(%s)' % user_info['statuses_count'])
         
     def showEvent(self, event):
-        self.button_to_widget[self.home].refresh()
+        self.button_to_widget[self.home].initialRefresh()
+        self.button_to_widget[self.comment].initialRefresh()
+        self.button_to_widget[self.at].initialRefresh()
+        easy_thread.start(self.checkUnreads)
+        self.connect(self, SIGNAL_UPDATE_UNREADS, self.updateUnreads)
         
     def checkUnreads(self):
         '''
@@ -344,12 +345,6 @@ class MainWindow( QDialog ):
         self.comment.setBuble(int(unreads['comment']))
         self.private.setBuble(int(unreads['private']))
         self.profile.setBuble(int(unreads['follower']))
-        
-    def onFirstRefresh(self):
-        log.debug('onFirstRefresh called')
-        self.disconnect(self.button_to_widget[self.home], SIGNAL('refreshFinished'), self.onFirstRefresh)
-        easy_thread.start(self.checkUnreads)
-        self.connect(self, SIGNAL_UPDATE_UNREADS, self.updateUnreads)
         
     def onClicked_BtnGroup(self):
         button = self.sender()

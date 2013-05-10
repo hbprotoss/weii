@@ -7,6 +7,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from app import account_manager
 from app import easy_thread
+from app import database_manager
 from app import constant
 from app import theme_manager
 from app import logger
@@ -102,12 +103,13 @@ class AbstractWidget(QWidget):
         raise NotImplementedError
 
 class AbstractTweetContainer(AbstractWidget):
-    def __init__(self, parent=None):
+    def __init__(self, table_name, parent=None):
         super(AbstractTweetContainer, self).__init__(parent)
         self.currentPage = 1
         self.time_format = '%a %b %d %H:%M:%S %z %Y'
         self.retrievingData = False
         self.refreshing = False
+        self.table_name = table_name
         
     def produceWidget(self, account, tweet, avatar, picutre):
         '''
@@ -184,6 +186,21 @@ class AbstractTweetContainer(AbstractWidget):
         easy_thread.start(self.retrieveData, args=(account_list, self.currentPage, 20), callback=self.updateUI)
         log.debug('Starting thread')
         self.currentPage += 1
+        
+    def initialRefresh(self):
+        history = database_manager.getHistory(self.table_name)
+        if len(history) == 0:
+            self.refresh()
+            return
+        
+        accounts = account_manager.getAllAccount()
+        rtn = {account:[] for account in accounts}
+        for content,service,uid in history:
+            for account in accounts:
+                if service == account.plugin.service and uid == account.plugin.uid:
+                    rtn[account].append(json.loads(content))
+                    break
+        self.updateUI(rtn.items())
         
     def refresh(self):
         if self.retrievingData:
