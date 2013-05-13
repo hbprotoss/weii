@@ -38,7 +38,9 @@ class SettingWindow(QDialog):
         self.setMinimumSize(600, 400)
         self.setupUI()
         
+        # Add option page
         self.addAccountOption()
+        self.addNetworkOption()
         self.expandFirstLayer()
         
         # Tree item clicked
@@ -106,7 +108,7 @@ class SettingWindow(QDialog):
             
         self.account_option = TreeWidgetItem(self.tree_widget, ['账户'])
         self.tree_widget.addTopLevelItem(self.account_option)
-        widget = AccountOptionWidget()
+        widget = AccountOption()
         self.item_to_widget[self.account_option] = widget
         self.content_widget.addWidget(widget)
         
@@ -115,6 +117,13 @@ class SettingWindow(QDialog):
         
         for account in account_manager.getAllAccount():
             addAccount(account)
+            
+    def addNetworkOption(self):
+        self.network_option = TreeWidgetItem(self.tree_widget, ['网络'])
+        self.tree_widget.addTopLevelItem(self.network_option)
+        widget = NetworkOption()
+        self.item_to_widget[self.network_option] = widget
+        self.content_widget.addWidget(widget)
             
 class WebView(QDialog):
     '''
@@ -149,7 +158,7 @@ class WebView(QDialog):
         return self.redirected_url.toString()
     
 
-class AccountOptionWidget(QWidget):
+class AccountOption(QWidget):
     '''
     List how many plugins are available and guide user to create a new account. 
     
@@ -159,7 +168,7 @@ class AccountOptionWidget(QWidget):
     '''
     
     def __init__(self, parent=None):
-        super(AccountOptionWidget, self).__init__(parent)
+        super(AccountOption, self).__init__(parent)
         
         self.setupUI()
         self.initItems()
@@ -334,3 +343,67 @@ class SingleAccountWidget(QWidget):
             self.account.setProxy(self.edit_host.text(), self.edit_port.text())
         else:
             self.account.setProxy('', '')
+            
+class NetworkOption(QWidget):
+    '''
+    Widget for single network setting
+    '''
+    def __init__(self, parent=None):
+        '''
+        @param account: account_manager.Account object
+        '''
+        super(NetworkOption, self).__init__(parent)
+        
+        self.setupUI()
+        
+        # Apply button
+        self.connect(self.btn_apply, SIGNAL('clicked()'), self.onClicked_BtnApply)
+        
+        # Set proxy initial state
+        proxy = json.loads(config_manager.getParameter('Proxy'))
+        if 'https' in proxy:
+            self.group_proxy.setChecked(True)
+            host, port = proxy['https'].split(':')
+            self.edit_host.setText(host)
+            self.edit_port.setText(port)
+        else:
+            self.group_proxy.setChecked(False)
+        
+    def setupUI(self):
+        vbox = QVBoxLayout()
+        vbox.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(vbox)
+        
+        # Proxy setting
+        self.group_proxy = QGroupBox('设置代理')
+        self.group_proxy.setCheckable(True)
+        vbox.addWidget(self.group_proxy)
+        
+        proxy_layout = QHBoxLayout(self.group_proxy)
+        vbox.addLayout(proxy_layout)
+        label_host = QLabel('服务器:')
+        label_host.setStyleSheet('margin-left: 10px')
+        proxy_layout.addWidget(label_host)
+        self.edit_host = QLineEdit()
+        proxy_layout.addWidget(self.edit_host)
+        label_port = QLabel('端口:')
+        label_port.setStyleSheet('margin-left: 5px')
+        proxy_layout.addWidget(label_port)
+        self.edit_port = QLineEdit()
+        proxy_layout.addWidget(self.edit_port)
+        
+        vbox.addStretch()
+        
+        # Bottom button
+        button_layout = QHBoxLayout()
+        vbox.addLayout(button_layout)
+        button_layout.addStretch()
+        self.btn_apply = QPushButton('应用')
+        button_layout.addWidget(self.btn_apply)
+            
+    def onClicked_BtnApply(self):
+        if self.group_proxy.isChecked():
+            proxy = '%s:%s' % (self.edit_host, self.edit_port)
+            config_manager.setParameter('Proxy', json.dumps({'http':proxy, 'https':proxy}))
+        else:
+            config_manager.setParameter('Proxy', '{}')
