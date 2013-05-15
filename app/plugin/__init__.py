@@ -124,63 +124,6 @@ class AbstractPlugin():
         data.append('--%s--\r\n' % boundary)
         return '\r\n'.join(data).encode('ISO-8859-1'), boundary
     
-#    @staticmethod
-#    def calcSignature(app_params, method, url, params=None):
-#        '''
-#        @param app_params: dict. Must obtain
-#                oauth_consumer_key: consumer key
-#                oauth_token: access token. Can be ignored when getting Request Token
-#                oauth_version: version
-#                oauth_signature_method: signature method
-#        @param method: string. Upper case name of method.
-#        @param url: string. Raw url string without UrlEncoding.
-#        @param params: dict. Both key and value are raw string without UrlEncoding.
-#        @return: string. Signature.
-#        '''
-#        d = dict(app_params)
-#        if params:
-#            d.update(params)
-#        query = urllib.parse.urlsplit(url).query
-#        if query:
-#            d.update(urllib.parse.parse_qsl(query))
-#        time_and_nonce = str(int(time.time()))
-#        d['oauth_timestamp'] = time_and_nonce
-#        d['oauth_nonce'] = time_and_nonce
-#        
-#        encoded_list = [(urllib.parse.quote(k), urllib.parse.quote(v))
-#                        for k,v in d.items()
-#                        ]
-#        encoded_list.sort(key=lambda x:x[0])
-#        parameter_string = ''.join((encoded_list[0][0], '=', encoded_list[0][1]))
-#        for item in encoded_list[1:]:
-#            parameter_string += ''.join(('&', item[0], '=', item[1]))
-#            
-#        base_string = ''.join(
-#            (method.upper(), '&',
-#             urllib.parse.quote_plus(url.split('?', 1)[0]), '&',
-#             urllib.parse.quote_plus(parameter_string))
-#        )
-#        signing_key = ''.join(
-#            (urllib.parse.quote(app_params['oauth_consumer_key']),
-#             '&',
-#             urllib.parse.quote(self.access_token_secret))
-#        )
-#        hashed = hmac.new(signing_key.encode('utf-8'), base_string.encode('utf-8'), hashlib.sha1)
-#        binary_signature = hashed.digest()
-#        signature = base64.b64encode(binary_signature).decode('utf-8')
-#        
-#        return DataStruct._make((signature, d['oauth_nonce'], d['oauth_timestamp']))
-#    
-#    @staticmethod
-#    def getHeader(app_params, method, url, params=None):
-#        data = AbstractPlugin.calcSignature(app_params, method, url, params)
-#        oauth_string = self.oauth_header.format(
-#            oauth_signature = urllib.parse.quote_plus(data.oauth_signature),
-#            oauth_nonce = data.oauth_nonce,
-#            oauth_timestamp = data.oauth_timestamp
-#        )
-#        return {'Authorization':oauth_string}
-    
     def getTweet(self, tid):
         '''
         Get single tweet

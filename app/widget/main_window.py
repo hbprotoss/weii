@@ -132,7 +132,7 @@ class MainWindow( QDialog ):
         rtn[self.comment] = comment_widget.CommentWidget(content_widget)
         
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton('private'))
+        layout.addWidget(QLabel('正在建设中...'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.private] = widget
@@ -140,7 +140,7 @@ class MainWindow( QDialog ):
         rtn[self.profile] = profile_widget.ProfileWidget(content_widget) 
         
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton('search'))
+        layout.addWidget(QLabel('正在建设中...'))
         widget = QWidget()
         widget.setLayout(layout)
         rtn[self.search] = widget
