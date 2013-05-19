@@ -64,15 +64,15 @@ class AbstractWidget(QWidget):
     def count(self):
         return self.__layout.count()
         
-    def clearWidget(self, widget):
+    def removeWidget(self, widget):
         widget.hide()
         self.__layout.removeWidget(widget)
         
-    def clearAllWidgets(self):
+    def removeAllWidgets(self):
         while(True):
             child = self.__layout.itemAt(0)
             if child:
-                self.clearWidget(child.widget())
+                self.removeWidget(child.widget())
                 del child
             else:
                 break
@@ -131,14 +131,14 @@ class AbstractTweetContainer(AbstractWidget):
         
     def updateUI(self, data):
         log.debug('updateUI')
-        self.clearWidget(self.retrievingData_image)
+        self.removeWidget(self.retrievingData_image)
         whole_list = []
         for account,tweet_list in data:
             # If it is refreshing(only retrievingData_image exists), update max_point of account
             if self.refreshing:
                 account.last_tweet_id = tweet_list[0]['id']
                 account.last_tweet_time = tweet_list[0]['created_at']
-                self.clearAllWidgets()
+                self.removeAllWidgets()
                 self.refreshing = False
                 
             if isinstance(tweet_list, dict):
@@ -228,7 +228,7 @@ class AbstractTweetContainer(AbstractWidget):
 #        '''
 #        For debug purpose
 #        '''
-#        self.clearAllWidgets()
+#        self.removeAllWidgets()
 #        
 #        import random
 #        account_list = account_manager.getCurrentAccount()

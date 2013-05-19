@@ -19,6 +19,11 @@ class StackedWidget(QWidget):
         self.showCurrentWidget()
         self.scroll_pos[w] = 0
         
+    def removeWidget(self, w):
+        self.widgets.remove(w)
+        self.layout.removeWidget(w)
+        del self.scroll_pos[w]
+        
     def currentWidget(self):
         return self.current_widget
     

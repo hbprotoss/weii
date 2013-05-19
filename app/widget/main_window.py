@@ -82,6 +82,7 @@ class MainWindow( QDialog ):
 
     def __init__( self, parent = None ):
         super( MainWindow, self ).__init__( parent )
+        self.first_show = True
 
         self.setWindowTitle('weii')
         self.setupTray()
@@ -312,11 +313,13 @@ class MainWindow( QDialog ):
         self.tweets.setText('微博(%s)' % user_info['statuses_count'])
         
     def showEvent(self, event):
-        self.button_to_widget[self.home].initialRefresh()
-        self.button_to_widget[self.comment].initialRefresh()
-        self.button_to_widget[self.at].initialRefresh()
-        easy_thread.start(self.checkUnreads)
-        self.connect(self, SIGNAL_UPDATE_UNREADS, self.updateUnreads)
+        if self.first_show:
+            self.button_to_widget[self.home].initialRefresh()
+            self.button_to_widget[self.comment].initialRefresh()
+            self.button_to_widget[self.at].initialRefresh()
+            easy_thread.start(self.checkUnreads)
+            self.connect(self, SIGNAL_UPDATE_UNREADS, self.updateUnreads)
+            self.first_show = False
         
     def checkUnreads(self):
         '''
@@ -348,7 +351,6 @@ class MainWindow( QDialog ):
         
     def onClicked_BtnGroup(self):
         button = self.sender()
-        button.setBuble(0)
         self.button_group.setActive(button)
         
         new_widget = self.button_to_widget[button]

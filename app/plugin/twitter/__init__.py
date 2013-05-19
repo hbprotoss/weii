@@ -360,10 +360,12 @@ class Plugin(AbstractPlugin):
         #del d['oauth_callback']
         d['oauth_signature'] = signature
         req = urllib.request.Request(''.join((url, '?', urllib.parse.urlencode(d))))
-        proxy = json.loads(config_manager.getParameter('Proxy'))
-        for proxy_type,url in proxy.items():
-            req.set_proxy(url, proxy_type)
-        f = urllib.request.urlopen(req)
+        proxy = urllib.request.ProxyHandler(json.loads(config_manager.getParameter('Proxy')))
+        opener = urllib.request.build_opener(proxy)
+        f = opener.open(req)
+#        for proxy_type,url in proxy.items():
+#            req.set_proxy(url, proxy_type)
+#        f = urllib.request.urlopen(req)
         response = f.read().decode('utf-8')
         log.debug(response)
         

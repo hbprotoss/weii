@@ -110,7 +110,7 @@ class ProfileWidget(abstract_widget.AbstractWidget):
         pass
     
     def updateUI(self, data):
-        self.clearAllWidgets()
+        self.removeAllWidgets()
         for user_info in data:
             if 'error' in user_info:
                 QMessageBox.critical(None, user_info['service'], user_info['error'])

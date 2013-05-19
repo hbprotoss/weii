@@ -154,7 +154,7 @@ def addAccount(service, uid, username, access_token, data='', proxy={}):
     plugin_obj = plugin.plugins[service].Plugin(uid, username, access_token, data, proxy)
     account = Account(plugin_obj, 1, 1)
     account_list.append(account)
-    all_accounts[plugin_obj.username] = [account]
+    all_accounts[(plugin_obj.service, plugin_obj.username)] = [account]
     
     database_manager.createAccount(plugin_obj.uid, plugin_obj.username, access_token, data, proxy, service)
     
@@ -163,7 +163,7 @@ def addAccount(service, uid, username, access_token, data='', proxy={}):
     return account
 
 def deleteAccount(account):
-    del all_accounts[account.plugin.username]
+    del all_accounts[account.plugin.service, account.plugin.username]
     account_list.remove(account)
     database_manager.deleteAccount(account.plugin.uid, account.plugin.service)
     

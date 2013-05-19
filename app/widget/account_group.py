@@ -42,11 +42,14 @@ class AccountGroup(QWidget):
         self.accounts = {}
         
         self.setupUI()
+        self.connect(account_manager.signal_emitter, account_manager.SIGNAL_ACCOUNT_ADDED, self.onAccountAdded)
+        self.connect(account_manager.signal_emitter, account_manager.SIGNAL_ACCOUNT_DELETED, self.onAccountDeleted)
     
     def setupUI(self):
         self.main_layout = QHBoxLayout()
         
-        self.arrow = LabelButton(LEFT_ARROW)
+        self.arrow = AccountButton(None)
+        self.arrow.setText(LEFT_ARROW)
         self.main_layout.addWidget(self.arrow)
         
         self.all_account = AccountButton(AccountStruct())
@@ -67,7 +70,7 @@ class AccountGroup(QWidget):
         acc.setPixmap(QPixmap.fromImage(account.service_icon))
         acc.setToolTip(account.plugin.username)
         self.main_layout.addWidget(acc)
-        self.accounts[account.plugin.username] = acc
+        self.accounts[(account.plugin.service, account.plugin.username)] = acc
         acc.hide()
             
         self.connect(acc, SIGNAL('clicked'), self.onClicked_Account)
@@ -81,6 +84,18 @@ class AccountGroup(QWidget):
         self.arrow.setText(LEFT_ARROW)
         for widget in self.accounts.values():
             widget.hide()
+            
+    def onAccountAdded(self, account):
+        self.addAccount(account)
+    
+    def onAccountDeleted(self, account):
+        del self.accounts[(account.plugin.service, account.plugin.username)]
+        for i in range(self.main_layout.count()):
+            widget = self.main_layout.itemAt(i).widget()
+            if account is widget.account:
+                child = self.main_layout.takeAt(i)
+                del child
+                return
         
     def onClicked_Account(self, account):
         self.emit(SIGNAL('clicked'), account)
