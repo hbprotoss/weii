@@ -58,6 +58,7 @@ class AbstractPlugin():
         self.access_token = access_token
         self.data = data
         self.proxy = proxy
+        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler(proxy))
         self.new_time_format = '%Y-%m-%d %H:%M:%S'
         
         log.debug(self)
@@ -76,6 +77,7 @@ class AbstractPlugin():
         log.info('uid({uid}, username({username}) sets proxy to {proxy})'.format(
             uid=self.uid, username=self.username, proxy=self.proxy)
         )
+        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler(self.proxy))
         
     def getProxy(self):
         return dict(self.proxy)
@@ -94,11 +96,8 @@ class AbstractPlugin():
         @param header: dict. Header key and value pairs.
         @return: bytes.
         '''
-        req = urllib.request.Request(url, data, header)
-        for proxy_type, proxy_url in self.proxy.items():
-            req.set_proxy(proxy_url, proxy_type)
-        #print(url, data, header)
-        f = urllib.request.urlopen(req)
+        self.opener.addheaders = header.items()
+        f = self.opener.open(url, data)
         return f.read()
     
     @staticmethod
