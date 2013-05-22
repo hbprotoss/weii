@@ -404,7 +404,7 @@ if __name__ == 'app.plugin':
         files = [file.split('.')[0]
                  for file in os.listdir(BASE_DIR)
                  if (not file.startswith('__'))]
-        plugins = {file:importlib.import_module('plugin.' + file)
+        plugins = {file:importlib.import_module('app.plugin.' + file)
                    for file in files}
         log.info('Loading plugins done')
         for name,plugin in plugins.items():

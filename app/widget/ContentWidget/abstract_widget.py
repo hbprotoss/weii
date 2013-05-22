@@ -58,7 +58,7 @@ class AbstractWidget(QWidget):
         self.__layout.setMargin(0)
         self.__layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
         frame_layout.addLayout(self.__layout)
-        frame_layout.addStretch()
+#        frame_layout.addStretch()
         self.setLayout(frame_layout)
         
     def count(self):

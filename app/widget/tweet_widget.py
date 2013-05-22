@@ -254,7 +254,7 @@ class TweetWidget(QWidget):
         
         self.setupUI()
         self.renderUI()
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding))
         #self.setStyleSheet('border-style:solid;border-width:5px')
         
         self.connect(self.label_tweet, SIGNAL('linkActivated (const QString&)'), self.onLinkActivated)
