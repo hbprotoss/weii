@@ -1,3 +1,10 @@
+### v0.5.8 (Emergent bug fix)
+
+#### Bug fix
+1. Widget disappear when there exist more than 140 tweets.
+
+***
+
 ### v0.5.7
 
 #### Feature
