@@ -93,6 +93,12 @@ class ScrollArea(QScrollArea):
             
     def wheelEvent(self, ev):
         if not self.ctrl_down:
+            if ev.delta() > 0:
+                direction = 1
+            else:
+                direction = -1
+            v = self.verticalScrollBar()
+            v.setValue(v.value() - direction * 80)      # Opposite to slider direction
             return
         
         widget = self.widget()
@@ -141,9 +147,9 @@ class ScrollArea(QScrollArea):
         #log.debug('%d %d' % (delta_x, delta_y))
         
         v = self.verticalScrollBar()
-        v.setValue(v.value() - delta_y)     # Opposite to scroll direction
+        v.setValue(v.value() - delta_y)     # Opposite to slider direction
         h = self.horizontalScrollBar()
-        h.setValue(h.value() - delta_x)     # Opposite to scroll direction
+        h.setValue(h.value() - delta_x)     # Opposite to slider direction
         
         self.last_pos = pos
         
