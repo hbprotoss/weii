@@ -14,7 +14,7 @@ Python3 + PyQt
 安装：  
 Ubuntu:  
 > sudo apt-get install python3 python3-pyqt4 python3-six  
-> git clone https://github.com/hbprotoss/weibo.git  
+> git clone https://github.com/hbprotoss/weii.git  
 > cd weibo  
 > ./weibo
 
