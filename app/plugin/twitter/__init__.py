@@ -210,7 +210,14 @@ class Plugin(AbstractPlugin):
             'status': text
         }
         if pic:
-            pass
+#            url = 'https://api.twitter.com/1.1/statuses/update_with_media.json'
+#            params['media[]'] = open(pic, 'rb')
+#            encoded_params, boundary = self._encodeMultipart(params)
+#            header = self.getHeader('POST', url)
+#            header['Content-Type'] = 'multipart/form-data;boundary=%s' % boundary
+#            rtn_from_server = self.getData(url, encoded_params, header)
+#            rtn = json.loads(rtn_from_server)
+            rtn = {'error': 'Twitter插件暂不支持上传图片:-('}
         else:
             url = 'https://api.twitter.com/1.1/statuses/update.json'
             rtn_from_server = self.getData(url,
@@ -297,7 +304,7 @@ class Plugin(AbstractPlugin):
 #        d['oauth_nonce'] = 'f038454cdc08d2740b162ea8e30d0054'
 #        d['oauth_timestamp'] = '1366343105'
         
-        encoded_list = [(urllib.parse.quote(k, safe=''), urllib.parse.quote(v, safe=''))
+        encoded_list = [(urllib.parse.quote(k, safe='~'), urllib.parse.quote(v, safe='~'))
                         for k,v in d.items()
                         ]
         encoded_list.sort(key=lambda x:x[0])
@@ -308,7 +315,7 @@ class Plugin(AbstractPlugin):
         base_string = ''.join(
             (method.upper(), '&',
              urllib.parse.quote_plus(url.split('?', 1)[0]), '&',
-             urllib.parse.quote(parameter_string, safe=''))
+             urllib.parse.quote(parameter_string, safe='~'))
         )
         log.debug('base string: %s' % base_string)
         signing_key = ''.join(

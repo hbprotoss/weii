@@ -22,6 +22,7 @@ ALL_ACCOUNTS_AVATAR = os.path.join(APP_ROOT, 'theme/all_accounts_avatar.png')
 BROKEN_AVATAR = os.path.join(APP_ROOT, 'theme/broken_avatar.png')
 BROKEN_IMAGE = os.path.join(APP_ROOT, 'theme/broken_image.png')
 BUBLE = os.path.join(APP_ROOT, 'theme/buble.png')
+CURSOR_MAGNIFY = os.path.join(APP_ROOT, 'theme/cursor_magnify.png')
 
 # Configuration
 DATABASE = os.path.join(DATA_ROOT, 'db.sqlite')

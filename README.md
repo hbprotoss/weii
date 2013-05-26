@@ -14,7 +14,7 @@ Python3 + PyQt
 安装：  
 Ubuntu:  
 > sudo apt-get install python3 python3-pyqt4 python3-six  
-> git clone https://github.com/hbprotoss/weibo.git  
+> git clone https://github.com/hbprotoss/weii.git  
 > cd weibo  
 > ./weibo
 
@@ -24,9 +24,4 @@ Ubuntu:
    >sudo apt-get remove qt-at-spi
 2. 使用过旧版本的朋友请清空~/.weibo目录。
 3. 关键词配置功能还未提供图形接口，请在~/.weibo/keywords.txt中指定要过滤的关键词（通配符、正则表达式匹配 功能正在开发中）
-
-*****************************
-
-正处于开发阶段，不稳定期，添加功能中。(注：这个repo会在基本功能完成后废弃，用于发布的repo待定)  
-
 
