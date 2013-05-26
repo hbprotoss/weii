@@ -1,79 +1,81 @@
-<!doctype html>
-<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
-<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
+<!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
-  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-  <script type="text/javascript" src="javascripts/script.js"></script>
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Weibo : Weibo client for Linux" />
 
-  <title>Weibo</title>
-  <meta name="description" content="Weibo client for Linux">
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Weibo</title>
+  </head>
 
-</head>
+  <body>
 
-<body>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/hbprotoss/weii">View on GitHub</a>
 
-  <div class="wrapper">
-    <header>
-      <h1 class="title">Weibo</h1>
-    </header>
-    <div id="container">
-      <p class="tagline">Weibo client for Linux</p>
-      <div id="main" role="main">
-        <div class="download-bar">
-        <div class="inner">
-          <a href="https://github.com/hbprotoss/weibo/tarball/master" class="download-button tar"><span>Download</span></a>
-          <a href="https://github.com/hbprotoss/weibo/zipball/master" class="download-button zip"><span>Download</span></a>
-          <a href="https://github.com/hbprotoss/weibo" class="code">View Weibo on GitHub</a>
-        </div>
-        <span class="blc"></span><span class="trc"></span>
-        </div>
-        <article class="markdown-body">
-          <p>微博Linux客户端<br>
+          <h1 id="project_title">Weibo</h1>
+          <h2 id="project_tagline">Weibo client for Linux</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/hbprotoss/weii/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/hbprotoss/weii/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>SNS客户端平台<br>
 Python3 + PyQt  </p>
 
-<p>正处于开发阶段，不稳定期，添加功能中。(注：这个repo会在基本功能完成后废弃，用于发布的repo待定)  </p>
+<p>特性：</p>
+
+<ol>
+<li>多账户同时登录，多条时间线统一显示。</li>
+<li>一键状态更新。</li>
+<li>便捷的账户切换，可随时显示单个账户时间线、评论、AT等。</li>
+<li>评论、转发任意账户状态。</li>
+<li>关键字过滤（基于用户自定义关键词）。</li>
+<li>划词搜索（开发中）</li>
+<li>划词翻译（开发中）</li>
+</ol><p>安装：<br>
+完整包: <a href="https://github.com/hbprotoss/weii/archive/master.zip">https://github.com/hbprotoss/weii/archive/master.zip</a></p>
 
 <p>Ubuntu:  </p>
 
 <blockquote>
-<p>sudo apt-get install python3 python3-pyqt4 python3-six  </p>
+<p>sudo apt-get install python3 python3-pyqt4 python3-six<br>
+git clone <a href="https://github.com/hbprotoss/weii.git">https://github.com/hbprotoss/weii.git</a><br>
+cd weibo<br>
+./weibo</p>
 </blockquote>
 
-<hr><p>注意：  </p>
+<p>使用注意事项：</p>
 
 <ol>
 <li>请删除<code>qt-at-spi</code>这个包，它会导致Qt打开文件对话框崩溃。
 &gt;sudo apt-get remove qt-at-spi</li>
 <li>使用过旧版本的朋友请清空~/.weibo目录。</li>
+<li>关键词配置功能还未提供图形接口，请在~/.weibo/keywords.txt中指定要过滤的关键词（通配符、正则表达式匹配 功能正在开发中）</li>
 </ol>
-        </article>
-      </div>
+      </section>
     </div>
-    <footer>
-      <div class="owner">
-      <p><a href="https://github.com/hbprotoss" class="avatar"><img src="https://secure.gravatar.com/avatar/31d164198013cf804d1811444640071e?s=30&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png" width="48" height="48"/></a> <a href="https://github.com/hbprotoss">hbprotoss</a> maintains <a href="https://github.com/hbprotoss/weibo">Weibo</a></p>
 
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Weibo maintained by <a href="https://github.com/hbprotoss">hbprotoss</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
 
-      </div>
-      <div class="creds">
-        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a></small>
-      </div>
-    </footer>
-  </div>
-  <div class="current-section">
-    <a href="#top">Scroll to top</a>
-    <a href="https://github.com/hbprotoss/weibo/tarball/master" class="tar">tar</a><a href="https://github.com/hbprotoss/weibo/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
-    <p class="name"></p>
-  </div>
+    
 
-  
-</body>
+  </body>
 </html>
