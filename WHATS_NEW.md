@@ -1,3 +1,21 @@
+### v0.6.0
+#### Improve
+PictureViewer:
+
+1. Mouse wheel to zoom in/out when ctrl key pressed
+2. Mouse to drag picture
+3. Scroll up/down when ctrl is not pressed
+4. Keep position of viewport center not changed after zoom in/out
+
+TextEditor:
+
+1. Press Ctrl+Return to send
+
+#### Bug fix
+Twitter plugin '~' encode error when sending new tweet
+
+***
+
 ### v0.5.8 (Emergent bug fix)
 
 #### Bug fix
