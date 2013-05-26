@@ -10,6 +10,7 @@ from app import logger
 from app import misc
 from app import easy_thread
 from app.widget import picture_viewer
+from app.widget import text_editor
 from app.plugin import weiBaseException
 import urllib
 
@@ -125,6 +126,7 @@ class ResponseWidget(QGroupBox):
         
         self.setupUI()
         self.connect(self.button, SIGNAL('clicked()'), self.onClicked_Btn)
+        self.connect(self.edit, text_editor.SIGNAL_READY_TO_SEND, self.onClicked_Btn)
         self.setStyleSheet(
             '''
             QGroupBox {
@@ -142,7 +144,7 @@ class ResponseWidget(QGroupBox):
         main_layout.setContentsMargins(5, 5, 5, 5)
         self.setLayout(main_layout)
         
-        self.edit = QTextEdit()
+        self.edit = text_editor.TextEditor()
         self.edit.setMinimumHeight(27)
         self.edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored)
         main_layout.addWidget(self.edit)

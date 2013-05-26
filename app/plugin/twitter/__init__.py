@@ -210,13 +210,14 @@ class Plugin(AbstractPlugin):
             'status': text
         }
         if pic:
-            url = 'https://api.twitter.com/1.1/statuses/update_with_media.json'
-            params['media[]'] = open(pic, 'rb')
-            encoded_params, boundary = self._encodeMultipart(params)
-            header = self.getHeader('POST', url)
-            header['Content-Type'] = 'multipart/form-data;boundary=%s' % boundary
-            rtn_from_server = self.getData(url, encoded_params, header)
-            rtn = json.loads(rtn_from_server)
+#            url = 'https://api.twitter.com/1.1/statuses/update_with_media.json'
+#            params['media[]'] = open(pic, 'rb')
+#            encoded_params, boundary = self._encodeMultipart(params)
+#            header = self.getHeader('POST', url)
+#            header['Content-Type'] = 'multipart/form-data;boundary=%s' % boundary
+#            rtn_from_server = self.getData(url, encoded_params, header)
+#            rtn = json.loads(rtn_from_server)
+            rtn = {'error': 'Twitter插件暂不支持上传图片:-('}
         else:
             url = 'https://api.twitter.com/1.1/statuses/update.json'
             rtn_from_server = self.getData(url,

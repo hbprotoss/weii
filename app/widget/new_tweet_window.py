@@ -8,6 +8,7 @@ from PyQt4.QtGui import *
 from app import account_manager, theme_manager
 from app import logger
 from app import easy_thread
+from app.widget import text_editor
 from app.plugin import weiBaseException
 
 log = logger.getLogger(__name__)
@@ -89,6 +90,7 @@ class NewTweetWindow(QDialog):
         self.renderUI()
         
         self.connect(self.btn_send, SIGNAL('clicked()'), self.onClicked_BtnSend)
+        self.connect(self.editor, text_editor.SIGNAL_READY_TO_SEND, self.onClicked_BtnSend)
         self.connect(self.btn_upload_pic, SIGNAL('clicked()'), self.onClicked_UploadPic)
         
     def setupUI(self):
@@ -104,7 +106,7 @@ class NewTweetWindow(QDialog):
         self.thumbnail.setSizePolicy(thumbnail_policy)
         hbox1.addWidget(self.thumbnail)
         
-        self.editor = QTextEdit()
+        self.editor = text_editor.TextEditor()
         self.editor.setAcceptRichText(False)
         editor_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored)
         editor_policy.setHorizontalStretch(4)

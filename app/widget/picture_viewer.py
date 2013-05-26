@@ -123,6 +123,7 @@ class ScrollArea(QScrollArea):
         if widget.movie():
             pic = QMovie(self.image)
             pic.setScaledSize(QSize(width, height))
+            pic.start()
             widget.setMovie(pic)
         else:
             pic = self.image.scaled(QSize(width, height), transformMode=Qt.SmoothTransformation)
