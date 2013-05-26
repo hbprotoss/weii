@@ -63,7 +63,7 @@ class LoadingIndicator(QWidget):
 class ScrollArea(QScrollArea):
     def __init__(self, *argv, **kwargv):
         super(ScrollArea, self).__init__(*argv, **kwargv)
-        self.zoom_delta = 0.1
+        self.zoom_delta = 0.2
         self.ratio = 1.0
         self.original_size = None
         self.image = None
@@ -92,6 +92,7 @@ class ScrollArea(QScrollArea):
             self.original_size = self.image.size()
             
     def wheelEvent(self, ev):
+        # Scroll up/down when ctrl not pressed
         if not self.ctrl_down:
             if ev.delta() > 0:
                 direction = 1
@@ -101,21 +102,23 @@ class ScrollArea(QScrollArea):
             v.setValue(v.value() - direction * 80)      # Opposite to slider direction
             return
         
+        # Zoom in/out
         widget = self.widget()
         if isinstance(widget, LoadingIndicator):
             return
         
+        ratio = self.ratio
         if ev.delta() > 0:
-            self.ratio += self.zoom_delta
-            if self.ratio > 2.0:
-                self.ratio = 2.0
+            ratio += self.zoom_delta
+            if ratio > 2.0:
+                ratio = 2.0
         else:
-            self.ratio -= self.zoom_delta
-            if self.ratio < 0.2:
-                self.ratio = 0.2
+            ratio -= self.zoom_delta
+            if ratio < 0.2:
+                ratio = 0.2
                 
-        width = self.original_size.width() * self.ratio
-        height = self.original_size.height() * self.ratio
+        width = self.original_size.width() * ratio
+        height = self.original_size.height() * ratio
         
         if widget.movie():
             pic = QMovie(self.image)
@@ -126,6 +129,15 @@ class ScrollArea(QScrollArea):
             widget.setPixmap(pic)
         widget.resize(QSize(width, height))
         
+        # Keep the position of viewport center not changed after zoom in/out
+        w = self.viewport().width()
+        h = self.viewport().height()
+        x = self.horizontalScrollBar().value() + w / 2
+        y = self.verticalScrollBar().value() + h / 2
+        self.horizontalScrollBar().setValue(x * ratio / self.ratio - w / 2)
+        self.verticalScrollBar().setValue(y * ratio / self.ratio - h / 2)
+        
+        self.ratio = ratio
         self.emit(SIGNAL_ZOOM, self.ratio)
         
     def mousePressEvent(self, ev):
