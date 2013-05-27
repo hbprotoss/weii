@@ -17,7 +17,7 @@ log = logger.getLogger(__name__)
 class DownloadTask(QThread):
     def __init__(self, url, manager, parent=None):
         super(DownloadTask, self).__init__(parent)
-        log.debug('Start downloading %s' % url)
+        log.info('Start downloading %s' % url)
         self.url = url
         self.manager = manager
         
@@ -28,8 +28,8 @@ class DownloadTask(QThread):
         
     def run(self):
         path = self.manager.get(self.url, self.reportHook)
-        log.debug('%s finished' % self.url)
-        log.debug('save to %s' % path)
+        log.info('%s finished' % self.url)
+        log.info('save to %s' % path)
         self.emit(SIGNAL_FINISH, path)
 
 class LoadingIndicator(QWidget):

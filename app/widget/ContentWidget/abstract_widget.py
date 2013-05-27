@@ -130,7 +130,7 @@ class AbstractTweetContainer(AbstractWidget):
         raise NotImplementedError
         
     def updateUI(self, data):
-        log.debug('updateUI')
+        log.info('updateUI')
         self.removeWidget(self.retrievingData_image)
         whole_list = []
         for account,tweet_list in data:
@@ -184,7 +184,7 @@ class AbstractTweetContainer(AbstractWidget):
         
         self.retrievingData = True
         easy_thread.start(self.retrieveData, args=(account_list, self.currentPage, 20), callback=self.updateUI)
-        log.debug('Starting thread')
+        log.info('Starting thread')
         self.currentPage += 1
         
     def initialRefresh(self):
@@ -219,7 +219,7 @@ class AbstractTweetContainer(AbstractWidget):
         
         self.retrievingData = True
         easy_thread.start(self.retrieveData, args=(account_list, 1, 20), callback=self.updateUI)
-        log.debug('Starting thread')
+        log.info('Starting thread')
         self.currentPage = 2
         
         self.emit(SIGNAL('refreshFinished'))

@@ -105,7 +105,7 @@ class ProfileWidget(abstract_widget.AbstractWidget):
     def refresh(self):
         self.insertWidget(0, self.retrievingData_image)
         
-        log.debug('Starting thread')
+        log.info('Starting thread')
         easy_thread.start(self.retrieveData, (account_manager.getCurrentAccount(), ), callback=self.updateUI)
         pass
     
@@ -127,5 +127,5 @@ class ProfileWidget(abstract_widget.AbstractWidget):
             except Exception as e:
                 rtn.append({'error': str(e), 'service': account.plugin.service})
                 
-        log.debug('Download finished')
+        log.info('Download finished')
         return (rtn,)

@@ -19,7 +19,7 @@ class AtWidget(abstract_widget.AbstractTweetContainer):
         rtn = []
         for account in account_list:
             try:
-                #log.debug(account.plugin)
+                log.info(account.plugin)
                 tweet_list = account.plugin.getMentionTimeline(max_point=(account.last_tweet_id, account.last_tweet_time),
                     page=page, count=count
                 )
@@ -34,5 +34,5 @@ class AtWidget(abstract_widget.AbstractTweetContainer):
             except Exception as e:
                 rtn.append((account, {'error': str(e)}))
             
-        log.debug('Download finished')
+        log.info('Download finished')
         return (rtn, )
