@@ -3,23 +3,24 @@
 import logging
 
 g_level = None
+with open('weii.log', 'a+') as f:
+    f.write('#'*80)
+    f.write('\n')
 
 def getLogger(name):
     log = logging.getLogger(name)
-    log.setLevel(g_level)
-    
-    formatter = logging.Formatter('%(levelname)s - %(name)s: %(message)s')
+    log.setLevel(logging.DEBUG)
     
     # Standard output handler
     sh = logging.StreamHandler()
     sh.setLevel(g_level)
-    sh.setFormatter(formatter)
+    sh.setFormatter(logging.Formatter('%(levelname)s - %(name)s: %(message)s'))
     log.addHandler(sh)
     
     # File output handler
     fh = logging.FileHandler('weii.log')
     fh.setLevel(logging.DEBUG)
-    fh.setFormatter(formatter)
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s: %(message)s'))
     log.addHandler(fh)
     
     return log

@@ -25,13 +25,13 @@ options = parser.parse_args()
 from app import logger
 logger.setLogLevel(options.log)
 
-import widget.main_window
+from app.widget import main_window
 
 # Launching app
 app = QApplication(sys.argv)
 
 # Setting up main window
-instance = widget.main_window.MainWindow()
+instance = main_window.MainWindow()
 instance.show()
 
 misc.main_window = instance
