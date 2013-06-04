@@ -9,7 +9,7 @@ TWEET = 1
 ######################################################################
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-DATA_ROOT = os.path.expanduser('~/.weibo')
+DATA_ROOT = os.path.expanduser('~/.weii')
 
 AVATER_SIZE = 64
 AVATER_IN_TWEET_SIZE = 40
@@ -18,7 +18,7 @@ AVATER_IN_TWEET_SIZE = 40
 TRAY_ICON = os.path.join(APP_ROOT, 'theme/logo.png')
 ALL_ACCOUNTS = os.path.join(APP_ROOT, 'theme/all.png')
 APP_LOGO = os.path.join(APP_ROOT, 'theme/logo.png')
-ALL_ACCOUNTS_AVATAR = os.path.join(APP_ROOT, 'theme/all_accounts_avatar.png')
+ALL_ACCOUNTS_AVATAR = os.path.join(APP_ROOT, 'theme/logo.png')
 BROKEN_AVATAR = os.path.join(APP_ROOT, 'theme/broken_avatar.png')
 BROKEN_IMAGE = os.path.join(APP_ROOT, 'theme/broken_image.png')
 BUBLE = os.path.join(APP_ROOT, 'theme/buble.png')

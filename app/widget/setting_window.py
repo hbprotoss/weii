@@ -403,7 +403,7 @@ class NetworkOption(QWidget):
             
     def onClicked_BtnApply(self):
         if self.group_proxy.isChecked():
-            proxy = '%s:%s' % (self.edit_host, self.edit_port)
+            proxy = '%s:%s' % (self.edit_host.text(), self.edit_port.text())
             config_manager.setParameter('Proxy', json.dumps({'http':proxy, 'https':proxy}))
         else:
             config_manager.setParameter('Proxy', '{}')

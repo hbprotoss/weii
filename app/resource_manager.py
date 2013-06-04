@@ -3,9 +3,12 @@
 import os
 import hashlib
 import urllib.request
+import socket
+from PyQt4.QtCore import *
 
 from app import logger
 
+socket.setdefaulttimeout(30)
 log = logger.getLogger(__name__)
 
 class ResourceManager:
@@ -22,6 +25,8 @@ class ResourceManager:
         except:
             pass
         self.resource = {}
+        self.locks = {}             # URL hash to QMutex map
+        self.query_lock = QMutex()  # Lock when query key in self.locks
         
         # Make a copy of proxy dict
         self.setProxy(dict(proxy))
@@ -46,17 +51,33 @@ class ResourceManager:
             #log.debug('Found in memory')
             return self.resource[url_hash]
         
+        self.query_lock.lock()
+        if url_hash not in self.locks:
+            self.locks[url_hash] = QReadWriteLock()
+        self.query_lock.unlock()
+        
+        self.locks[url_hash].lockForRead()
+        
         # Resource in disk
         abs_path = os.path.join(self.path, url_hash)
         if os.path.exists(abs_path):
             #log.debug('Found in disk')
-            #res = QImage(abs_path, imghdr.what(abs_path))
             self.resource[url_hash] = abs_path
+            
+            if url_hash in self.locks:
+                self.locks[url_hash].unlock()
+                del self.locks[url_hash]
+                
             return abs_path
         
+        self.locks[url_hash].unlock()
+        self.locks[url_hash].lockForWrite()
         # Resource from Internet
         #log.debug('Found from Internet')
         self.opener.retrieve(url, abs_path, report_hook)
         #res = QImage(abs_path, imghdr.what(abs_path))
         self.resource[url_hash] = abs_path
+        
+        self.locks[url_hash].unlock()
+        del self.locks[url_hash]
         return abs_path
