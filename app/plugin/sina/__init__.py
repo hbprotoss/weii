@@ -73,6 +73,35 @@ def sinaMethod(func):
             return raw_rtn
     return func_wrapper
 
+def tweetModifier(func):
+    def func_wrapper(*argv, **kwargv):
+        rtn = func(*argv, **kwargv)
+        if isinstance(rtn, list):
+            tweets = rtn
+        else:
+            tweets = [rtn]
+            
+        for tweet in tweets:
+            if('deleted' in tweet):
+                tweet['created_at'] = ''
+                tweet['reposts_count'] = 0
+                tweet['comments_count'] = 0
+                tweet['user'] = {'screen_name':'微博小秘书'}
+            
+            if('retweeted_status' in tweet):
+                retweet = tweet['retweeted_status']
+                if('deleted' in retweet):
+                    retweet['created_at'] = ''
+                    retweet['reposts_count'] = 0
+                    retweet['comments_count'] = 0
+                    retweet['user'] = {'screen_name':'微博小秘书'}
+                    
+        if isinstance(rtn, list):
+            return tweets
+        else:
+            return tweets[0]
+    return func_wrapper
+
 class Plugin(AbstractPlugin):
     '''
     Plugin for sina
@@ -94,6 +123,7 @@ class Plugin(AbstractPlugin):
             user_info = self.getUserInfo(self.uid)
             self.username = user_info['screen_name']
         
+    @tweetModifier
     @sinaMethod
     def getTimeline(self, uid=None, max_point=None, count=20, page=1):
         rtn = None
@@ -111,20 +141,6 @@ class Plugin(AbstractPlugin):
             rtn_from_server = self.getData(url % params).decode('utf-8')
             rtn = json.loads(rtn_from_server)['statuses']
             
-            for tweet in rtn:
-                if('deleted' in tweet):
-                    tweet['created_at'] = ''
-                    tweet['reposts_count'] = 0
-                    tweet['comments_count'] = 0
-                    tweet['user'] = {'screen_name':'微博小秘书'}
-                
-                if('retweeted_status' in tweet):
-                    retweet = tweet['retweeted_status']
-                    if('deleted' in retweet):
-                        retweet['created_at'] = ''
-                        retweet['reposts_count'] = 0
-                        retweet['comments_count'] = 0
-                        retweet['user'] = {'screen_name':'微博小秘书'}
         return rtn
     
     @sinaMethod
@@ -143,6 +159,7 @@ class Plugin(AbstractPlugin):
         
         return rtn
     
+    @tweetModifier
     @sinaMethod
     def getMentionTimeline(self, max_point=None, count=20, page=1):
         url = 'https://api.weibo.com/2/statuses/mentions.json?%s'
@@ -157,6 +174,7 @@ class Plugin(AbstractPlugin):
         
         return rtn
     
+    @tweetModifier
     @sinaMethod
     def getCommentTimeline(self, max_point=None, count=20, page=1):
         url = 'https://api.weibo.com/2/comments/timeline.json?%s'
