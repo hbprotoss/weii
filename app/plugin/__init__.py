@@ -143,10 +143,12 @@ class AbstractPlugin():
         '''
         raise NotImplementedError
     
-    def getComment(self, cid, count=50, page=1):
+    def getComment(self, cid, max_point=None, count=50, page=1):
         '''
         Get comments of tweet specified by id
         @param cid: string. Tweet ID
+        @param max_point: tuple(id, time). Returns results with an ID (or time) less than (that is, older than)
+                          or equal to the specified ID (or time). None means return newest.
         @param count: int. Comments per page
         @param page: int. Page number
         @return: List of comment objects. See documentation
