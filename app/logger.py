@@ -14,13 +14,13 @@ def getLogger(name):
     # Standard output handler
     sh = logging.StreamHandler()
     sh.setLevel(g_level)
-    sh.setFormatter(logging.Formatter('%(levelname)s - %(name)s: %(message)s'))
+    sh.setFormatter(logging.Formatter('%(levelname)s - %(name)s:%(lineno)s: %(message)s'))
     log.addHandler(sh)
     
     # File output handler
     fh = logging.FileHandler('weii.log')
     fh.setLevel(logging.DEBUG)
-    fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s: %(message)s'))
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s:%(lineno)s: %(message)s'))
     log.addHandler(fh)
     
     return log
