@@ -269,6 +269,8 @@ class TweetWidget(QWidget):
         self.connect(self.btn_tweet_repost, SIGNAL_RESPONSE_CLICKED, self.onClicked_Repost)
         # Comment button
         self.connect(self.btn_tweet_comment, SIGNAL_RESPONSE_CLICKED, self.onClicked_Comment)
+        # Click time to show tweet in seperated window
+        self.connect(self.btn_tweet_time, SIGNAL_RESPONSE_CLICKED, self.onClicked_TweetTime)
         
         # Start downloading avatar
         avatar_url = tweet['user']['avatar_large']
@@ -310,6 +312,11 @@ class TweetWidget(QWidget):
             pic_path = broken_image_path
         finally:
             return (widget, pic_path, size)
+        
+    def onClicked_TweetTime(self):
+        from app.widget import seperated_tweet_window
+        window = seperated_tweet_window.SeperatedTweetWindow(self.account, self.tweet, self.avatar, self.thumbnail, self)
+        window.show()
         
     def onClicked_Repost(self):
         if self.response_widget.isHidden():
@@ -595,10 +602,10 @@ class TweetWidget(QWidget):
             str_time = time.strftime(self.time_format, time.localtime(self.tweet['created_at']))
         else:
             str_time = ''
-        label_tweet_time = QLabel(str_time, self)
+        self.btn_tweet_time = TweetResponseButton(str_time, 0, self)
         self.btn_tweet_repost = TweetResponseButton('转发', self.tweet['reposts_count'], self)
         self.btn_tweet_comment = TweetResponseButton('评论', self.tweet['comments_count'], self)
-        h2.addWidget(label_tweet_time)
+        h2.addWidget(self.btn_tweet_time)
         h2.addStretch()
         h2.addWidget(self.btn_tweet_repost)
         h2.addWidget(self.btn_tweet_comment)
